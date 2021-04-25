@@ -1,13 +1,36 @@
 import tempfile
 from pathlib import Path
+import sys
+import os
 import platform
 
 def get_path_to_lib():
     return Path(__file__).parent.parent / 'lib'
 
+def load_target(name):
+    return Target(name)
+
 class Target():
-    def __init__(self):
-        self._receptor = None # This should be a path to a temporary file with the pdbqt, which is copied from the repository
+    def __init__(self,name):
+        self._name = name
+
+    @property
+    def name(self):
+        return self._name
+    # TODO
+    @property
+    def _pdb(self):
+        return Path(sys.modules[self.__class__.__module__].__file__).parent.parent / 'receptors' / (self.name + '_receptor.pdb')
+
+    # TODO
+    @property
+    def _pdbqt(self):
+        return os.path.dirname(sys.modules[self.__class__.__module__].__file__)
+
+    @property
+    def _conf(self):
+        return Path(sys.modules[self.__class__.__module__].__file__).parent.parent / 'receptors' / (self.name + '_conf.txt')
+
 
     def dock(self,mol=None,seed=95390476):
         '''
@@ -55,7 +78,33 @@ class Target():
         '''
         Start pymol and view the receptor and the search box.
         '''
-        pass
+        with open(self._conf,'r') as f:
+            # Extract the search box information
+            for line in f:
+                if   'center_x' in line:
+                    center_x = float(line.split()[2])
+                elif 'center_y' in line:
+                    center_y = float(line.split()[2])
+                elif 'center_z' in line:
+                    center_z = float(line.split()[2])
+                elif 'size_x'   in line:
+                    size_x   = float(line.split()[2])
+                elif 'size_y'   in line:
+                    size_y   = float(line.split()[2])
+                elif 'size_z'   in line:
+                    size_z   = float(line.split()[2])
+
+            # TODO Change to subprocess
+            # TODO Get path in a portable way
+            receptor = str(self._pdb)
+            ligand = f'/home/mgarort/repos/dockgym/playground/crystal_ligands/{self.name}/crystal_ligand.mol2'
+            command = f'pymol -R /home/mgarort/repos/dockgym/utils/view_search_box.py {receptor} {ligand}' \
+                       + f" -d 'view_search_box center_x={center_x}, center_y={center_y}, center_z={center_z}, \
+                          size_x={size_x}, size_y={size_y}, size_z={size_z}'"
+            print(command)
+            os.system(command)
+
+
 
 
 
