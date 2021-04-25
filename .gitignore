@@ -1,3 +1,6 @@
 *.sw[po]
 *.pyc
 playground/*
+tasks/*
+!tasks/tasks.py
+.tags
