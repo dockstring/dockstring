@@ -102,7 +102,8 @@ class Target():
             if search_box:
                 command += f" -d 'view_search_box center_x={center_x}, center_y={center_y}, center_z={center_z}, \
                               size_x={size_x}, size_y={size_y}, size_z={size_z}'"
-            print(command)
+            command += ' > /dev/null'
+            # TODO Change to subprocess
             os.system(command)
 
 
