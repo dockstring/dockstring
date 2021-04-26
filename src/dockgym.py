@@ -13,6 +13,22 @@ def load_target(name):
 class Target():
     def __init__(self,name):
         self._name = name
+        # Create temporary directory where the PDB, PDBQT and conf files for the target will be saved
+        self._tmp_dir_handle = tempfile.TemporaryDirectory()
+        self._tmp_dir = Path(self._tmp_dir_handle.name).resolve()
+        # Copy PDB, PDBQT and conf files to the temporary directory
+        # TODO Check if PDB is needed or not ANSWER Maybe yes for visualization in pymol? Since PDBQT is not visualized the same way
+        # TODO Create PDBQT for receptors
+        pdb_reference = Path(sys.modules[self.__class__.__module__].__file__).parent.parent / 'receptors' / (self.name + '_receptor.pdb')
+        shutil.copyfile(pdb_reference,self._pdb)
+        pdbqt_reference = Path(sys.modules[self.__class__.__module__].__file__).parent.parent / 'receptors' / (self.name + '_receptor.pdbqt')
+        shutil.copyfile(pdbqt_reference,self._pdbqt)
+        conf_reference = Path(sys.modules[self.__class__.__module__].__file__).parent.parent / 'receptors' / (self.name + '_conf.txt')
+        shutil.copyfile(conf_reference,self._conf)
+
+
+    def __del__(self):
+        self._tmp_dir_handle.cleanup()
 
     @property
     def name(self):
@@ -20,16 +36,16 @@ class Target():
     # TODO
     @property
     def _pdb(self):
-        return Path(sys.modules[self.__class__.__module__].__file__).parent.parent / 'receptors' / (self.name + '_receptor.pdb')
+        return Path(self._tmp_dir / (self.name + '_receptor.pdb'))
 
     # TODO
     @property
     def _pdbqt(self):
-        return os.path.dirname(sys.modules[self.__class__.__module__].__file__)
+        return Path(self._tmp_dir / (self.name + '_receptor.pdbqt'))
 
     @property
     def _conf(self):
-        return Path(sys.modules[self.__class__.__module__].__file__).parent.parent / 'receptors' / (self.name + '_conf.txt')
+        return Path(self._tmp_dir / (self.name + '_conf.txt'))
 
 
     def dock(self,mol=None,seed=95390476):
