@@ -94,11 +94,11 @@ class Target():
                 elif 'size_z'   in line:
                     size_z   = float(line.split()[2])
 
-            # TODO Change to subprocess
-            # TODO Get path in a portable way
-            receptor = str(self._pdb)
+            receptor = str(self._pdb.resolve())
+            # TODO Remove ligand from the main view() method, make it a part of the docked ligands' method
             ligand = f'/home/mgarort/repos/dockgym/playground/crystal_ligands/{self.name}/crystal_ligand.mol2'
-            command = f'pymol -R /home/mgarort/repos/dockgym/utils/view_search_box.py {receptor} {ligand}'
+            pymol_view_search_box = Path(sys.modules[self.__class__.__module__].__file__).parent.parent / 'utils' / 'view_search_box.py'
+            command = f'pymol -R {pymol_view_search_box} {receptor} {ligand}'
             if search_box:
                 command += f" -d 'view_search_box center_x={center_x}, center_y={center_y}, center_z={center_z}, \
                               size_x={size_x}, size_y={size_y}, size_z={size_z}'"
