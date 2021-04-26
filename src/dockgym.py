@@ -74,7 +74,7 @@ class Target():
         '''
         pass
 
-    def view(self):
+    def view(self, search_box=True):
         '''
         Start pymol and view the receptor and the search box.
         '''
@@ -98,9 +98,10 @@ class Target():
             # TODO Get path in a portable way
             receptor = str(self._pdb)
             ligand = f'/home/mgarort/repos/dockgym/playground/crystal_ligands/{self.name}/crystal_ligand.mol2'
-            command = f'pymol -R /home/mgarort/repos/dockgym/utils/view_search_box.py {receptor} {ligand}' \
-                       + f" -d 'view_search_box center_x={center_x}, center_y={center_y}, center_z={center_z}, \
-                          size_x={size_x}, size_y={size_y}, size_z={size_z}'"
+            command = f'pymol -R /home/mgarort/repos/dockgym/utils/view_search_box.py {receptor} {ligand}'
+            if search_box:
+                command += f" -d 'view_search_box center_x={center_x}, center_y={center_y}, center_z={center_z}, \
+                              size_x={size_x}, size_y={size_y}, size_z={size_z}'"
             print(command)
             os.system(command)
 
