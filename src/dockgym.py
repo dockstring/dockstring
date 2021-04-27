@@ -2,10 +2,8 @@ import tempfile
 from pathlib import Path
 import sys
 import os
+import shutil
 import platform
-
-def get_path_to_lib():
-    return Path(__file__).parent.parent / 'lib'
 
 def load_target(name):
     return Target(name)
@@ -15,15 +13,13 @@ class Target():
         self._name = name
         # Create temporary directory where the PDB, PDBQT and conf files for the target will be saved
         self._tmp_dir_handle = tempfile.TemporaryDirectory()
-        self._tmp_dir = Path(self._tmp_dir_handle.name).resolve()
         # Copy PDB, PDBQT and conf files to the temporary directory
-        # TODO Check if PDB is needed or not ANSWER Maybe yes for visualization in pymol? Since PDBQT is not visualized the same way
         # TODO Create PDBQT for receptors
-        pdb_reference = Path(sys.modules[self.__class__.__module__].__file__).parent.parent / 'receptors' / (self.name + '_receptor.pdb')
+        pdb_reference = self._receptors_dir  / (self.name + '_receptor.pdb')
         shutil.copyfile(pdb_reference,self._pdb)
-        pdbqt_reference = Path(sys.modules[self.__class__.__module__].__file__).parent.parent / 'receptors' / (self.name + '_receptor.pdbqt')
+        pdbqt_reference = self._receptors_dir / (self.name + '_receptor.pdbqt')
         shutil.copyfile(pdbqt_reference,self._pdbqt)
-        conf_reference = Path(sys.modules[self.__class__.__module__].__file__).parent.parent / 'receptors' / (self.name + '_conf.txt')
+        conf_reference = self._receptors_dir / (self.name + '_conf.txt')
         shutil.copyfile(conf_reference,self._conf)
 
 
@@ -33,16 +29,25 @@ class Target():
     @property
     def name(self):
         return self._name
-    # TODO
+    # Paths to important locations as property methods
+    @property
+    def _tmp_dir(self):
+        return Path(self._tmp_dir_handle.name).resolve()
+    @property
+    def _receptors_dir(self):
+        return Path(sys.modules[self.__class__.__module__].__file__).parent.parent / 'receptors'
+    @property
+    def _bin_dir(self):
+        return Path(sys.modules[self.__class__.__module__].__file__).parent.parent / 'bin'
+    @property
+    def _bin_dir(self):
+        return Path(sys.modules[self.__class__.__module__].__file__).parent.parent / 'bin'
     @property
     def _pdb(self):
         return Path(self._tmp_dir / (self.name + '_receptor.pdb'))
-
-    # TODO
     @property
     def _pdbqt(self):
         return Path(self._tmp_dir / (self.name + '_receptor.pdbqt'))
-
     @property
     def _conf(self):
         return Path(self._tmp_dir / (self.name + '_conf.txt'))
