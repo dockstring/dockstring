@@ -93,6 +93,9 @@ class Target():
                                 'ligand conformation generation.')
         else:
             return mol
+
+    def _embedding_2_pdb(self,mol,pdb_filename):
+        Chem.MolToPDBFile(mol,str(pdb_filename))
         '''
         - mol: either a SMILES string, an inchikey or a RDKit molecule object
         - seed: integer random seed for reproducibility
