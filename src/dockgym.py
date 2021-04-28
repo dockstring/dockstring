@@ -96,32 +96,63 @@ class Target():
 
     def _embedding_2_pdb(self,mol,pdb_filename):
         Chem.MolToPDBFile(mol,str(pdb_filename))
+    def dock(self,mol,seed=None):
         '''
+        Given a molecule, this method will return a docking score against the current target.
         - mol: either a SMILES string, an inchikey or a RDKit molecule object
         - seed: integer random seed for reproducibility
+
+        The process is the following:
+        1. Obtain RDKit molecule object
+        2. Embed molecule to 3D conformation
+        3. Prepare ligand
+        4. Dock
+        5. Extract all the info from the docking output
         '''
+        self._mol_id = mol
+        if seed is None:
+            self._dock_random_seed = self.random_seed
+        else:
+            self._dock_random_seed = seed
+        # TODO Each step of the pipeline should be implemented as a method. Method extraction!
+        # Embed molecule to 3D conformation
         # Docking with Vina is performed in a temporary directory
-        with tempfile.TemporaryDirectory() as tmp_dir:
-            tmp_dir = Path(tmp_dir)
+        with tempfile.TemporaryDirectory() as dock_tmp_dir:
+            dock_tmp_dir = Path(dock_tmp_dir)
             # Define necessary filenames
-            pdb_filename   = (tmp_dir / 'ligand.pdb').resolve()
-            pdbqt_filename = (tmp_dir / 'ligand.pdbqt').resolve()
-            vina_logfile   = (tmp_dir / 'ligand.log').resolve()
-            vina_outfile   = (tmp_dir / 'ligand.out').resolve()
+            pdb_filename   = (dock_tmp_dir / 'ligand.pdb').resolve()
+            pdbqt_filename = (dock_tmp_dir / 'ligand.pdbqt').resolve()
+            vina_logfile   = (dock_tmp_dir / 'ligand.log').resolve()
+            vina_outfile   = (dock_tmp_dir / 'ligand.out').resolve()
             # Define paths to dependencies
-            lib = get_path_to_lib()
-            prep_ligand = lib / 'prepare_ligand4.py'
             system = platform.system()
             if system == 'Linux':
-                vina_binary = lib / 'vina_linux'
-                pythonsh_binary = lib / 'pythonsh' # TODO Check if pythonsh is platform-dependent, or it is the same for Linux, Mac, Windows, etc
+                # vina_binary = lib / 'vina_linux'
+                # pythonsh_binary = lib / 'pythonsh'
+                # TODO Check if pythonsh is platform-dependent, or it is the same for Linux, Mac, Windows, etc
+                #      I can do this with `diff`
+                pass
             elif system == 'Windows':
                 pass
             elif system == 'Darwin':
                 pass
-            # TODO Save all the temporary files in this directory
+            # Prepare ligand
+            # The ligand preparation script only works when the file is in the same directory where it's launched.
+            # So we
+            try:
+                # TODO Turn off RDKit warnings so that they don't clutter the output. Possibly add an optional
+                #      argument so that people can turn them on `show_rdkit_log`
+                mol = self._smiles_2_mol(mol)
+                mol = self._mol_2_embedding(mol)
+                self._embedding_2_pdb(mol,pdb_filename)
+                return mol
+            except Exception as error:
+                print(f'{error.__class__.__name__}: ' + str(error))
+                return None
+
+
             # Using tempfile makes the temporary file creation portable for all systems
-            print(tmp_dir)
+            print(dock_tmp_dir)
 
         # TODO Put the vina and pythonsh executables for Mac and Windows under "lib". And also the prepare_ligand4.py
         # TODO Check whether the current system is Linux, Mac or Windows with platform.system()
