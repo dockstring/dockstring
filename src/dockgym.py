@@ -4,13 +4,16 @@ import sys
 import os
 import shutil
 import platform
+from rdkit.Chem import AllChem as Chem
+from .utils import robust, DockingError, get_num_conf
 
 def load_target(name):
     return Target(name)
 
 class Target():
-    def __init__(self,name):
+    def __init__(self,name,random_seed=974528263):
         self._name = name
+        self.random_seed = random_seed
         # Create temporary directory where the PDB, PDBQT and conf files for the target will be saved
         self._tmp_dir_handle = tempfile.TemporaryDirectory()
         # Copy PDB, PDBQT and conf files to the temporary directory
@@ -52,6 +55,20 @@ class Target():
     def _conf(self):
         return Path(self._tmp_dir / (self.name + '_conf.txt'))
 
+    # Submethods for docking a ligand
+    def _smiles_2_mol(self,smiles):
+        mol =  Chem.MolFromSmiles(smiles)
+        if mol is None:
+            raise DockingError(f'Docking of molecule  {smiles}  failed during the ' \
+                    'conversion of SMILES to RDKit molecule object.')
+        return mol
+
+    def _inchi_2_mol(self,inchi):
+        mol = Chem.MolFromInchi(inchi)
+        if mol is None:
+            raise DockingError(f'Docking of molecule  {inchi}  failed during the ' \
+                    'conversion of SMILES to RDKit molecule object.')
+        return mol
 
     def dock(self,mol=None,seed=95390476):
         '''
