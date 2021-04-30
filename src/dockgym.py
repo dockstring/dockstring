@@ -94,12 +94,45 @@ class Target():
         else:
             return mol
 
-    def _embedding_2_pdb(self,mol,pdb_filename):
-        Chem.MolToPDBFile(mol,str(pdb_filename))
-    def dock(self,mol,seed=None):
+    def _embedding_2_pdb(self,mol,ligand_pdb):
+        Chem.MolToPDBFile(mol,str(ligand_pdb))
+
+    def _pdb_2_pdbqt(self,ligand_pdb,ligand_pdbqt):
+        # TODO Use subprocess instead of os.system
+        os.system(f'obabel -ipdb {ligand_pdb} -opdbqt -O{ligand_pdbqt} --partialcharge gasteiger')
+        # TODO Raise DockingError if this command fails. Investigate how we can check if vina fails
+    def _dock_pdbqt(self,ligand_pdbqt,vina_logfile,vina_outfile,num_cpu=None):
+        if num_cpu is None:
+            cpu_argument = ''
+        else:
+            cpu_argument = '--cpu {num_cpu}'
+        command = f'vina --config {self._conf} --ligand {ligand_pdbqt} --receptor {self._pdbqt} ' \
+                  f'--log {vina_logfile} --out {vina_outfile} {cpu_argument} {cpu_argument}'
+        os.system(command)
+        # TODO Use subprocess.run instead of os.system
+        # TODO Raise DockingError if this command fails. Investigate how we can check if vina fails
+    def _get_top_score_from_vina_logfile(self,vina_logfile):
+        with open(vina_logfile, 'r') as f:
+            counter_to_score = None
+            for each_line in f:
+                # Try to find the table header. Once found, count three lines to get the score
+                if 'mode |   affinity | dist from best mode' in each_line:
+                    counter_to_score = 0
+                elif counter_to_score == 3:
+                    line_with_score = each_line
+                    break
+                elif counter_to_score is not None:
+                    counter_to_score += 1
+        top_score = float(line_with_score.split()[1])
+        return top_score
+
+
+    def dock(self,mol,num_cpu=None,seed=None):
         '''
         Given a molecule, this method will return a docking score against the current target.
         - mol: either a SMILES string, an inchikey or a RDKit molecule object
+        - num_cpu: number of cpus that Autodock Vina should use for the docking. By default,
+          it will try to find all the cpus on the system, and failing that, it will use 1.
         - seed: integer random seed for reproducibility
 
         The process is the following:
@@ -120,10 +153,10 @@ class Target():
         with tempfile.TemporaryDirectory() as dock_tmp_dir:
             dock_tmp_dir = Path(dock_tmp_dir)
             # Define necessary filenames
-            pdb_filename   = (dock_tmp_dir / 'ligand.pdb').resolve()
-            pdbqt_filename = (dock_tmp_dir / 'ligand.pdbqt').resolve()
-            vina_logfile   = (dock_tmp_dir / 'ligand.log').resolve()
-            vina_outfile   = (dock_tmp_dir / 'ligand.out').resolve()
+            ligand_pdb   = (dock_tmp_dir / 'ligand.pdb').resolve()
+            ligand_pdbqt = (dock_tmp_dir / 'ligand.pdbqt').resolve()
+            vina_logfile = (dock_tmp_dir / 'vina.log').resolve()
+            vina_outfile = (dock_tmp_dir / 'vina.out').resolve()
             # Define paths to dependencies
             system = platform.system()
             if system == 'Linux':
@@ -142,13 +175,18 @@ class Target():
             try:
                 # TODO Turn off RDKit warnings so that they don't clutter the output. Possibly add an optional
                 #      argument so that people can turn them on `show_rdkit_log`
+                #      e.g. UFF gives warning but we could silence it  https://github.com/rdkit/rdkit/issues/200
                 mol = self._smiles_2_mol(mol)
                 mol = self._mol_2_embedding(mol)
-                self._embedding_2_pdb(mol,pdb_filename)
-                return mol
+                self._embedding_2_pdb(mol,ligand_pdb)
+                self._pdb_2_pdbqt(ligand_pdb,ligand_pdbqt)
+                self._dock_pdbqt(ligand_pdbqt,vina_logfile,vina_outfile,num_cpu=num_cpu)
+                score = self._get_top_score_from_vina_logfile(vina_logfile)
+                # TODO Get the pose from vina_outfile
+                return (score,None)
             except Exception as error:
                 print(f'{error.__class__.__name__}: ' + str(error))
-                return None
+                return (None, None)
 
 
             # Using tempfile makes the temporary file creation portable for all systems
