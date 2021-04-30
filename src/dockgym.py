@@ -124,7 +124,7 @@ class Target():
                 # Try to find the table header. Once found, count three lines to get the score
                 if 'mode |   affinity | dist from best mode' in each_line:
                     counter_to_score = 0
-                elif counter_to_score == 3:
+                elif counter_to_score == 2:
                     line_with_score = each_line
                     break
                 elif counter_to_score is not None:
