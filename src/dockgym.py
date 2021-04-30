@@ -101,14 +101,20 @@ class Target():
     def _pdb_2_pdbqt(self,ligand_pdb,ligand_pdbqt):
         cmd_list = ['obabel', '-ipdb', ligand_pdb, '-opdbqt', '-O', ligand_pdbqt, '--partialcharge', 'gasteiger']
         cmd_return = subprocess.run(cmd_list, stdout=subprocess.PIPE, stderr=subprocess.STDOUT)
-        if self._dock_logfile is not None:
-            with open(self._dock_logfile, 'a') as f:
-                f.write(cmd_return.stdout.decode('utf-8'))
+        output = cmd_return.stdout.decode('utf-8')
+        # If there exists a logfile handle, save output there. If not, do nothing
+        try:
+            self._dock_logfile_handle.write(output)
+        except AttributeError as exception:
+            pass
+        # If verbose, print output to string
         if self._dock_verbose:
-            print(cmd_return.stdout.decode('utf-8'))
+            print(output)
+        # If failure, raise DockingError
         if cmd_return.returncode != 0:
             raise DockingError(f'Docking of molecule  {self._mol_id}  failed during the ' \
                     'conversion of PDB to PDBQT with OpenBabel.')
+
     def _dock_pdbqt(self,ligand_pdbqt,vina_logfile,vina_outfile,num_cpu=None):
         if num_cpu is None:
             cpu_argument = ''
@@ -118,15 +124,21 @@ class Target():
                     '--log', vina_logfile, '--out', vina_outfile, '--seed', str(self._dock_random_seed)]
         if num_cpu is not None:
             cmd_list += ['--cpu', str(num_cpu)]
-        cmd_return = subprocess.run(cmd_list,stdout=subprocess.PIPE,stderr=subprocess.STDOUT)
-        if self._dock_logfile is not None:
-            with open(self._dock_logfile, 'a') as f:
-                f.write(cmd_return.stdout.decode('utf-8'))
+        cmd_return = subprocess.run(cmd_list, stdout=subprocess.PIPE, stderr=subprocess.STDOUT)
+        output = cmd_return.stdout.decode('utf-8')
+        # If there exists a logfile handle, save output there. If not, do nothing
+        try:
+            self._dock_logfile_handle.write(output)
+        except AttributeError as exception:
+            pass
+        # If verbose, print output to string
         if self._dock_verbose:
-            print(cmd_return.stdout.decode('utf-8'))
+            print(output)
+        # If failure, raise DockingError
         if cmd_return.returncode != 0:
             raise DockingError(f'Docking of molecule  {self._mol_id}  failed during the ' \
                     'docking with Vina.')
+
     def _get_top_score_from_vina_logfile(self,vina_logfile):
         with open(vina_logfile, 'r') as f:
             counter_to_score = None
@@ -167,7 +179,8 @@ class Target():
             self._dock_random_seed = self.random_seed
         else:
             self._dock_random_seed = seed
-        self._dock_logfile = logfile
+        if logfile is not None:
+            self._dock_logfile_handle = open(logfile,'w')
         self._dock_verbose = verbose
         # TODO Each step of the pipeline should be implemented as a method. Method extraction!
         # Embed molecule to 3D conformation
@@ -195,10 +208,7 @@ class Target():
             # The ligand preparation script only works when the file is in the same directory where it's launched.
             # So we
             try:
-                # TODO Turn off RDKit warnings so that they don't clutter the output. Possibly add an optional
-                #      argument so that people can turn them on `show_rdkit_log`
-                #      e.g. UFF gives warning but we could silence it  https://github.com/rdkit/rdkit/issues/200
-                mol = self._smiles_2_mol(mol)
+                # TODO Handle RDKit output too with verbose/logfile
                 mol = self._mol_2_embedding(mol)
                 self._embedding_2_pdb(mol,ligand_pdb)
                 self._pdb_2_pdbqt(ligand_pdb,ligand_pdbqt)
@@ -206,27 +216,30 @@ class Target():
                 score = self._get_top_score_from_vina_logfile(vina_logfile)
                 # TODO Get the pose from vina_outfile
                 del self._dock_random_seed
+                del self._dock_logfile_handle
+                del self._dock_verbose
                 return (score,None)
             except DockingError as error:
                 print(f'DockingError: ' + str(error))
                 del self._dock_random_seed
+                del self._dock_logfile_handle
+                del self._dock_verbose
                 return (None, None)
 
 
             # Using tempfile makes the temporary file creation portable for all systems
             print(dock_tmp_dir)
 
-        # TODO Put the vina and pythonsh executables for Mac and Windows under "lib". And also the prepare_ligand4.py
+        # TODO Include Mac and Windows binaries in the repository
         # TODO Check whether the current system is Linux, Mac or Windows with platform.system()
         #      https://stackoverflow.com/questions/22321397/python-os-name-return-nt-on-windows-7
-        # TODO Put all the receptors and configuration files under "receptors"
         # TODO Put all the calculated scores (and maybe the poses too?) under "data". What should be the format?
         # - Plain text for the scores and smiles?
         # - What format for the poses?
 
     def info(self):
         '''
-        Print some info about the target. Maybe just a string?
+        Print some info about the target.
         '''
         pass
 
