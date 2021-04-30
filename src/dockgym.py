@@ -193,11 +193,11 @@ class Target():
                 self._dock_pdbqt(ligand_pdbqt,vina_logfile,vina_outfile,num_cpu=num_cpu)
                 score = self._get_top_score_from_vina_logfile(vina_logfile)
                 # TODO Get the pose from vina_outfile
+                del self._dock_random_seed
                 return (score,None)
-            except Exception as error:
-                print(f'{error.__class__.__name__}: ' + str(error))
             except DockingError as error:
                 print(f'DockingError: ' + str(error))
+                del self._dock_random_seed
                 return (None, None)
 
 
