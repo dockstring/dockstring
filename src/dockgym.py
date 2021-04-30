@@ -100,7 +100,12 @@ class Target():
 
     def _pdb_2_pdbqt(self,ligand_pdb,ligand_pdbqt):
         cmd_list = ['obabel', '-ipdb', ligand_pdb, '-opdbqt', '-O', ligand_pdbqt, '--partialcharge', 'gasteiger']
-        cmd_return = subprocess.run(cmd_list)
+        cmd_return = subprocess.run(cmd_list, stdout=subprocess.PIPE, stderr=subprocess.STDOUT)
+        if self._dock_logfile is not None:
+            with open(self._dock_logfile, 'a') as f:
+                f.write(cmd_return.stdout.decode('utf-8'))
+        if self._dock_verbose:
+            print(cmd_return.stdout.decode('utf-8'))
         if cmd_return.returncode != 0:
             raise DockingError(f'Docking of molecule  {self._mol_id}  failed during the ' \
                     'conversion of PDB to PDBQT with OpenBabel.')
@@ -113,7 +118,12 @@ class Target():
                     '--log', vina_logfile, '--out', vina_outfile, '--seed', str(self._dock_random_seed)]
         if num_cpu is not None:
             cmd_list += ['--cpu', str(num_cpu)]
-        cmd_return = subprocess.run(cmd_list)
+        cmd_return = subprocess.run(cmd_list,stdout=subprocess.PIPE,stderr=subprocess.STDOUT)
+        if self._dock_logfile is not None:
+            with open(self._dock_logfile, 'a') as f:
+                f.write(cmd_return.stdout.decode('utf-8'))
+        if self._dock_verbose:
+            print(cmd_return.stdout.decode('utf-8'))
         if cmd_return.returncode != 0:
             raise DockingError(f'Docking of molecule  {self._mol_id}  failed during the ' \
                     'docking with Vina.')
@@ -133,7 +143,7 @@ class Target():
         return top_score
 
 
-    def dock(self,mol,num_cpu=None,seed=None):
+    def dock(self,mol,num_cpu=None,seed=None,logfile=None,verbose=False):
         '''
         Given a molecule, this method will return a docking score against the current target.
         - mol: either a SMILES string, an inchikey or a RDKit molecule object
@@ -157,6 +167,8 @@ class Target():
             self._dock_random_seed = self.random_seed
         else:
             self._dock_random_seed = seed
+        self._dock_logfile = logfile
+        self._dock_verbose = verbose
         # TODO Each step of the pipeline should be implemented as a method. Method extraction!
         # Embed molecule to 3D conformation
         # Docking with Vina is performed in a temporary directory
