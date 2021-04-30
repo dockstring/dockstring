@@ -2,6 +2,7 @@ import tempfile
 from pathlib import Path
 import sys
 import os
+import subprocess
 import shutil
 import platform
 from rdkit.Chem import AllChem as Chem
@@ -98,19 +99,24 @@ class Target():
         Chem.MolToPDBFile(mol,str(ligand_pdb))
 
     def _pdb_2_pdbqt(self,ligand_pdb,ligand_pdbqt):
-        # TODO Use subprocess instead of os.system
-        os.system(f'obabel -ipdb {ligand_pdb} -opdbqt -O{ligand_pdbqt} --partialcharge gasteiger')
-        # TODO Raise DockingError if this command fails. Investigate how we can check if vina fails
+        cmd_list = ['obabel', '-ipdb', ligand_pdb, '-opdbqt', '-O', ligand_pdbqt, '--partialcharge', 'gasteiger']
+        cmd_return = subprocess.run(cmd_list)
+        if cmd_return.returncode != 0:
+            raise DockingError(f'Docking of molecule  {self._mol_id}  failed during the ' \
+                    'conversion of PDB to PDBQT with OpenBabel.')
     def _dock_pdbqt(self,ligand_pdbqt,vina_logfile,vina_outfile,num_cpu=None):
         if num_cpu is None:
             cpu_argument = ''
         else:
             cpu_argument = '--cpu {num_cpu}'
-        command = f'vina --config {self._conf} --ligand {ligand_pdbqt} --receptor {self._pdbqt} ' \
-                  f'--log {vina_logfile} --out {vina_outfile} {cpu_argument} {cpu_argument}'
-        os.system(command)
-        # TODO Use subprocess.run instead of os.system
-        # TODO Raise DockingError if this command fails. Investigate how we can check if vina fails
+        cmd_list = ['vina', '--receptor', self._pdbqt, '--config', self._conf, '--ligand', ligand_pdbqt,
+                    '--log', vina_logfile, '--out', vina_outfile, '--seed', str(self._dock_random_seed)]
+        if num_cpu is not None:
+            cmd_list += ['--cpu', str(num_cpu)]
+        cmd_return = subprocess.run(cmd_list)
+        if cmd_return.returncode != 0:
+            raise DockingError(f'Docking of molecule  {self._mol_id}  failed during the ' \
+                    'docking with Vina.')
     def _get_top_score_from_vina_logfile(self,vina_logfile):
         with open(vina_logfile, 'r') as f:
             counter_to_score = None
