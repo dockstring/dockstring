@@ -25,13 +25,13 @@ class Target():
         conf_reference = self._receptors_dir / (self.name + '_conf.txt')
         shutil.copyfile(conf_reference,self._conf)
 
-
     def __del__(self):
         self._tmp_dir_handle.cleanup()
 
     @property
     def name(self):
         return self._name
+
     # Paths to important locations as property methods
     @property
     def _tmp_dir(self):
@@ -59,14 +59,14 @@ class Target():
     def _smiles_2_mol(self,smiles):
         mol =  Chem.MolFromSmiles(smiles)
         if mol is None:
-            raise DockingError(f'Docking of molecule  {smiles}  failed during the ' \
+            raise DockingError(f'Docking of molecule  {self._mol_id}  failed during the ' \
                     'conversion of SMILES to RDKit molecule object.')
         return mol
 
     def _inchi_2_mol(self,inchi):
         mol = Chem.MolFromInchi(inchi)
         if mol is None:
-            raise DockingError(f'Docking of molecule  {inchi}  failed during the ' \
+            raise DockingError(f'Docking of molecule  {self._mol_id}  failed during the ' \
                     'conversion of SMILES to RDKit molecule object.')
         return mol
 
@@ -90,7 +90,7 @@ class Target():
         # Otherwise, return the molecule with the conformation
         if get_num_conf(mol) == 0:
             raise DockingError(f'Docking of molecule  {self._mol_id}  failed during the ' \
-                                'ligand conformation generation.')
+                                'ligand conformation generation with RDKit.')
         else:
             return mol
 
@@ -142,7 +142,11 @@ class Target():
         4. Dock
         5. Extract all the info from the docking output
         '''
-        self._mol_id = mol
+        # Define molecule identifier for error messages
+        if isinstance(mol,Chem.Mol):
+            self._mol_id = Chem.MolToSmiles(mol)
+        else:
+            self._mol_id = mol
         if seed is None:
             self._dock_random_seed = self.random_seed
         else:
@@ -186,6 +190,8 @@ class Target():
                 return (score,None)
             except Exception as error:
                 print(f'{error.__class__.__name__}: ' + str(error))
+            except DockingError as error:
+                print(f'DockingError: ' + str(error))
                 return (None, None)
 
 
