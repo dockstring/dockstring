@@ -5,3 +5,4 @@ tasks/*
 !tasks/tasks.py
 !tasks/tests.py
 .tags
+bin/*
