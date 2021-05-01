@@ -6,6 +6,7 @@ import subprocess
 import shutil
 import platform
 from rdkit.Chem import AllChem as Chem
+from rdkit import rdBase
 from .utils import robust, DockingError, get_num_conf
 
 def load_target(name):
@@ -57,19 +58,17 @@ class Target():
         return Path(self._tmp_dir / (self.name + '_conf.txt'))
 
     # Submethods for docking a ligand
-    def _smiles_2_mol(self,smiles):
-        mol =  Chem.MolFromSmiles(smiles)
+    def _smiles_or_inchi_2_mol(self,smiles_or_inchi):
+        rdBase.DisableLog('rdApp.error')
+        mol = Chem.MolFromSmiles(smiles_or_inchi)
         if mol is None:
-            raise DockingError(f'Docking of molecule  {self._mol_id}  failed during the ' \
-                    'conversion of SMILES to RDKit molecule object.')
+            mol = Chem.MolFromInchi(smiles_or_inchi)
+            if mol is None:
+                raise DockingError(f'Docking of molecule {self._mol_id} failed because ' \
+                                    'it is not a proper SMILES, InChi or RDKit molecule object.')
+        rdBase.EnableLog('rdApp.error')
         return mol
 
-    def _inchi_2_mol(self,inchi):
-        mol = Chem.MolFromInchi(inchi)
-        if mol is None:
-            raise DockingError(f'Docking of molecule  {self._mol_id}  failed during the ' \
-                    'conversion of SMILES to RDKit molecule object.')
-        return mol
 
     def _mol_2_embedding(self,mol):
         # Will attempt to find 3D coordinates 10 times with different random seeds
@@ -208,11 +207,16 @@ class Target():
             # The ligand preparation script only works when the file is in the same directory where it's launched.
             # So we
             try:
+                # Prepare ligand
                 # TODO Handle RDKit output too with verbose/logfile
+                if not isinstance(mol,Chem.Mol):
+                    mol = self._smiles_or_inchi_2_mol(mol)
                 mol = self._mol_2_embedding(mol)
                 self._embedding_2_pdb(mol,ligand_pdb)
                 self._pdb_2_pdbqt(ligand_pdb,ligand_pdbqt)
+                # Dock
                 self._dock_pdbqt(ligand_pdbqt,vina_logfile,vina_outfile,num_cpu=num_cpu)
+                # Process docking output
                 score = self._get_top_score_from_vina_logfile(vina_logfile)
                 # TODO Get the pose from vina_outfile
                 del self._dock_random_seed
