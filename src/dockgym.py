@@ -16,6 +16,20 @@ class Target():
     def __init__(self,name,random_seed=974528263):
         self._name = name
         self.random_seed = random_seed
+        # TODO Determine whether the OS is Linux, Mac or Windows
+        # # Define paths to dependencies
+        # system = platform.system()
+        # if system == 'Linux':
+        #     # vina_binary = lib / 'vina_linux'
+        #     # pythonsh_binary = lib / 'pythonsh'
+        #     # TODO Check if pythonsh is platform-dependent, or it is the same for Linux, Mac, Windows, etc
+        #     #      I can do this with `diff`
+        #     pass
+        # elif system == 'Windows':
+        #     pass
+        # elif system == 'Darwin':
+        #     pass
+        self._vina = self._bin_dir / 'vina_linux'
         # Create temporary directory where the PDB, PDBQT and conf files for the target will be saved
         self._tmp_dir_handle = tempfile.TemporaryDirectory()
         # Copy PDB, PDBQT and conf files to the temporary directory
@@ -119,7 +133,7 @@ class Target():
             cpu_argument = ''
         else:
             cpu_argument = '--cpu {num_cpu}'
-        cmd_list = ['vina', '--receptor', self._pdbqt, '--config', self._conf, '--ligand', ligand_pdbqt,
+        cmd_list = [f'{self._vina}', '--receptor', self._pdbqt, '--config', self._conf, '--ligand', ligand_pdbqt,
                     '--log', vina_logfile, '--out', vina_outfile, '--seed', str(self._dock_random_seed)]
         if num_cpu is not None:
             cmd_list += ['--cpu', str(num_cpu)]
@@ -181,31 +195,14 @@ class Target():
         if logfile is not None:
             self._dock_logfile_handle = open(logfile,'w')
         self._dock_verbose = verbose
-        # TODO Each step of the pipeline should be implemented as a method. Method extraction!
-        # Embed molecule to 3D conformation
         # Docking with Vina is performed in a temporary directory
         with tempfile.TemporaryDirectory() as dock_tmp_dir:
-            dock_tmp_dir = Path(dock_tmp_dir)
             # Define necessary filenames
+            dock_tmp_dir = Path(dock_tmp_dir)
             ligand_pdb   = (dock_tmp_dir / 'ligand.pdb').resolve()
             ligand_pdbqt = (dock_tmp_dir / 'ligand.pdbqt').resolve()
             vina_logfile = (dock_tmp_dir / 'vina.log').resolve()
             vina_outfile = (dock_tmp_dir / 'vina.out').resolve()
-            # Define paths to dependencies
-            system = platform.system()
-            if system == 'Linux':
-                # vina_binary = lib / 'vina_linux'
-                # pythonsh_binary = lib / 'pythonsh'
-                # TODO Check if pythonsh is platform-dependent, or it is the same for Linux, Mac, Windows, etc
-                #      I can do this with `diff`
-                pass
-            elif system == 'Windows':
-                pass
-            elif system == 'Darwin':
-                pass
-            # Prepare ligand
-            # The ligand preparation script only works when the file is in the same directory where it's launched.
-            # So we
             try:
                 # Prepare ligand
                 # TODO Handle RDKit output too with verbose/logfile
@@ -219,6 +216,8 @@ class Target():
                 # Process docking output
                 score = self._get_top_score_from_vina_logfile(vina_logfile)
                 # TODO Get the pose from vina_outfile
+
+                # Clean up and return
                 del self._dock_random_seed
                 del self._dock_logfile_handle
                 del self._dock_verbose
