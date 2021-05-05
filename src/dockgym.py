@@ -219,13 +219,17 @@ class Target():
 
                 # Clean up and return
                 del self._dock_random_seed
-                del self._dock_logfile_handle
+                if hasattr(self, '_dock_logfile_handle'):
+                    self._dock_logfile_handle.close()
+                    del self._dock_logfile_handle
                 del self._dock_verbose
                 return (score,None)
             except DockingError as error:
                 print(f'DockingError: ' + str(error))
                 del self._dock_random_seed
-                del self._dock_logfile_handle
+                if hasattr(self, '_dock_logfile_handle'):
+                    self._dock_logfile_handle.close()
+                    del self._dock_logfile_handle
                 del self._dock_verbose
                 return (None, None)
 
