@@ -84,8 +84,10 @@ class Target():
         if mol is None:
             mol = Chem.MolFromInchi(smiles_or_inchi)
             if mol is None:
-                raise DockingError(f'Docking of molecule {self._mol_id} failed because ' \
-                                    'it is not a proper SMILES, InChi or RDKit molecule object.')
+                raise DockingError(
+                    f'Docking of molecule {self._mol_id} failed because '
+                    'it is not a proper SMILES, InChi or RDKit molecule object.'
+                )
         rdBase.EnableLog('rdApp.error')
         return mol
 
@@ -109,8 +111,9 @@ class Target():
         # If not a single conformation is obtained in all the attempts, raise an error and return None.
         # Otherwise, return the molecule with the conformation
         if get_num_conf(mol) == 0:
-            raise DockingError(f'Docking of molecule  {self._mol_id}  failed during the ' \
-                                'ligand conformation generation with RDKit.')
+            raise DockingError(
+                f'Docking of molecule  {self._mol_id}  failed during the '
+                'ligand conformation generation with RDKit.')
         else:
             return mol
 
@@ -136,8 +139,9 @@ class Target():
             print(output)
         # If failure, raise DockingError
         if cmd_return.returncode != 0:
-            raise DockingError(f'Docking of molecule  {self._mol_id}  failed during the ' \
-                    'conversion of PDB to PDBQT with OpenBabel.')
+            raise DockingError(
+                f'Docking of molecule  {self._mol_id}  failed during the '
+                'conversion of PDB to PDBQT with OpenBabel.')
 
     def _dock_pdbqt(self,
                     ligand_pdbqt,
@@ -170,8 +174,9 @@ class Target():
             print(output)
         # If failure, raise DockingError
         if cmd_return.returncode != 0:
-            raise DockingError(f'Docking of molecule  {self._mol_id}  failed during the ' \
-                    'docking with Vina.')
+            raise DockingError(
+                f'Docking of molecule  {self._mol_id}  failed during the '
+                'docking with Vina.')
 
     def _get_top_score_from_vina_logfile(self, vina_logfile):
         with open(vina_logfile, 'r') as f:
