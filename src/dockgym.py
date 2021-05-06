@@ -4,7 +4,6 @@ import sys
 import os
 import subprocess
 import shutil
-import platform
 from rdkit.Chem import AllChem as Chem
 from rdkit import rdBase
 from .utils import DockingError, get_num_conf
