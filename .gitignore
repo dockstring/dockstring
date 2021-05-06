@@ -1,6 +1,7 @@
 *.sw[po]
 *.pyc
 playground/*
+submissions/*
 tasks/*
 !tasks/tasks.py
 !tasks/tests.py
