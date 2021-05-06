@@ -194,7 +194,7 @@ class Target():
         return top_score
 
     def dock(self, mol, num_cpu=None, seed=None, logfile=None, verbose=False):
-        '''
+        """
         Given a molecule, this method will return a docking score against the current target.
         - mol: either a SMILES string, an inchikey or a RDKit molecule object
         - num_cpu: number of cpus that Autodock Vina should use for the docking. By default,
@@ -207,7 +207,7 @@ class Target():
         3. Prepare ligand
         4. Dock
         5. Extract all the info from the docking output
-        '''
+        """
         # Define molecule identifier for error messages
         if isinstance(mol, Chem.Mol):
             self._mol_id = Chem.MolToSmiles(mol)
@@ -272,15 +272,15 @@ class Target():
         # - What format for the poses?
 
     def info(self):
-        '''
+        """
         Print some info about the target.
-        '''
+        """
         pass
 
     def view(self, search_box=True):
-        '''
+        """
         Start pymol and view the receptor and the search box.
-        '''
+        """
         with open(self._conf, 'r') as f:
             # Extract the search box information
             for line in f:
