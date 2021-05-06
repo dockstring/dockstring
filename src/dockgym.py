@@ -66,11 +66,6 @@ class Target():
             self.__class__.__module__].__file__).parent.parent / 'bin'
 
     @property
-    def _bin_dir(self):
-        return Path(sys.modules[
-            self.__class__.__module__].__file__).parent.parent / 'bin'
-
-    @property
     def _pdb(self):
         return Path(self._tmp_dir / (self.name + '_receptor.pdb'))
 
