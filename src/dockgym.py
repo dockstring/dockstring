@@ -250,7 +250,7 @@ class Target():
                     self._dock_logfile_handle.close()
                     del self._dock_logfile_handle
                 del self._dock_verbose
-                return (score, None)
+                return score, None
             except DockingError as error:
                 print(f'DockingError: ' + str(error))
                 del self._dock_random_seed
@@ -258,7 +258,7 @@ class Target():
                     self._dock_logfile_handle.close()
                     del self._dock_logfile_handle
                 del self._dock_verbose
-                return (None, None)
+                return None, None
 
             # Using tempfile makes the temporary file creation portable for all systems
             print(dock_tmp_dir)
