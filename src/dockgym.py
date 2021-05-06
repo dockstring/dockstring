@@ -7,7 +7,7 @@ import shutil
 import platform
 from rdkit.Chem import AllChem as Chem
 from rdkit import rdBase
-from .utils import robust, DockingError, get_num_conf
+from .utils import DockingError, get_num_conf
 
 def load_target(name):
     return Target(name)
