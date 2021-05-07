@@ -1,5 +1,22 @@
+# IDE
+.idea/
+
+# mypy
+.mypy_cache/
+.pytest_cache/
+
+# Byte-compiled / optimized / DLL files
+__pycache__/
+*.py[cod]
+
+# Distribution and packaging
+*.egg-info/
+.eggs/
+
+# Jupyter
+.ipynb_checkpoints/
+
 *.sw[po]
-*.pyc
 playground/*
 submissions/*
 tasks/*
