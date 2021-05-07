@@ -76,6 +76,45 @@ class TestDocking(Task):
 
 class TestAllPDBQTs(Task):
     requires = []
+    # params = {'receptors': ['ABL1'     , 'ADAM17' , 'ADRB1'    , 'ADRB2'  , 'AKT2'   , 'MAOB'  ,
+    #                         'CASP3'    , 'DHFR'   , 'ESR2'     , 'PTK2'   , 'FGFR1'  , 'HMGCR' ,
+    #                         'HSP90AA1' , 'KIT'    , 'MAPKAPK2' , 'MAP2K1' , 'NOS1'   , 'PARP1' ,
+    #                         'PDE5A'    , 'PPARD'  , 'PGR'      , 'PTPN1'  , 'ROCK1'  , 'AKT1'  ,
+    #                         'AR'       , 'CDK2'   , 'CSF1R'    , 'ESR1'   , 'NR3C1'  , 'IGF1R' ,
+    #                         'JAK2'     , 'LCK'    , 'MET'      , 'MMP13'  , 'PTGS2'  , 'PPARA' ,
+    #                         'PPARG'    , 'REN'    , 'ADORA2A'  , 'ACHE'   , 'BACE1'  , 'CA2'   ,
+    #                         'CYP2C9'   , 'CYP3A4' , 'HSD11B1'  , 'DPP4'   , 'DRD2'   , 'DRD3'  ,
+    #                         'EGFR'     , 'F10'    , 'GBA'      , 'MAPK1'  , 'MAPK14' , 'PLK1'  ,
+    #                         'SRC'      , 'THRB'   , 'F2'       , 'KDR']}
+    params = {'receptors': ['CA2'   ,
+                            'CYP2C9'   , 'CYP3A4' , 'HSD11B1'  , 'DPP4'   , 'DRD2'   , 'DRD3'  ,
+                            'EGFR'     , 'F10'    , 'GBA'      , 'MAPK1'  , 'MAPK14' , 'PLK1'  ,
+                            'SRC'      , 'THRB'   , 'F2'       , 'KDR']}
+    directory = 'tests'
+    subdirectory = 'test_all_pdbqts'
+    output_filename = 'scores.tsv'
+    input_filename = '100_sample_smiles.txt'
+    debug = True
+    def run(self):
+        # Initialize dataframe
+        receptors = self.params['receptors']
+        with open(self.input_filepath,'r') as f:
+            smiles = [line.strip().strip('\n') for line in f][:2]
+        scores = pd.DataFrame(index=smiles,columns=receptors)
+        # Compute scores and save them in dataframe
+        for each_receptor in receptors:
+            target = load_target(each_receptor)
+            for each_smiles in smiles:
+                (score, other) = target.dock(each_smiles)
+                scores.loc[each_smiles,each_receptor] = score
+                print(each_receptor, each_smiles, score)
+        # Save dataframe
+        scores.to_csv(self.output_filepath,sep='\t')
+    def load_output(self):
+        pd.read_csv(self.output_filepath,sep='\t')
+
+class TestAllPDBQTs16CPUs(Task):
+    requires = []
     params = {'receptors': ['ABL1'     , 'ADAM17' , 'ADRB1'    , 'ADRB2'  , 'AKT2'   , 'MAOB'  ,
                             'CASP3'    , 'DHFR'   , 'ESR2'     , 'PTK2'   , 'FGFR1'  , 'HMGCR' ,
                             'HSP90AA1' , 'KIT'    , 'MAPKAPK2' , 'MAP2K1' , 'NOS1'   , 'PARP1' ,
@@ -88,7 +127,7 @@ class TestAllPDBQTs(Task):
                             'SRC'      , 'THRB'   , 'F2'       , 'KDR']}
     directory = 'tests'
     subdirectory = 'test_all_pdbqts'
-    output_filename = 'scores.tsv'
+    output_filename = 'scores_16cpu.tsv'
     input_filename = '100_sample_smiles.txt'
     debug = True
     def run(self):
