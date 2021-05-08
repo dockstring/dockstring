@@ -1,4 +1,3 @@
-import os
 import platform
 import subprocess
 import tempfile
@@ -8,8 +7,8 @@ import pkg_resources
 from rdkit import rdBase
 from rdkit.Chem import AllChem as Chem
 
-from dockgym.utils import (DockingError, convert_pdbqt_to_pdb, convert_pdb_to_pdbqt, read_pdb_to_mol,
-                           parse_scores_from_pdb, parse_search_box_conf)
+from dockgym.utils import (DockingError, convert_pdbqt_to_pdb, convert_pdb_to_pdbqt, read_mol_from_pdb,
+                           parse_scores_from_pdb, write_mol_to_pdb)
 
 
 def load_target(name):
@@ -77,12 +76,6 @@ class Target:
 
         return mol
 
-    @staticmethod
-    def _write_embedded_mol_to_pdb(mol, ligand_pdb):
-        if len(mol.GetConformers()) < 1:
-            raise DockingError('For conversion to PDB a conformer is required')
-        Chem.MolToPDBFile(mol, filename=str(ligand_pdb))
-
     def _dock_pdbqt(self, ligand_pdbqt, vina_logfile, vina_outfile, seed, num_cpu=1, verbose=False):
         # yapf: disable
         cmd_list = [
@@ -139,7 +132,7 @@ class Target:
                 mol = self._embed_mol(mol, seed=seed)
 
             # Prepare ligand files
-            self._write_embedded_mol_to_pdb(mol, ligand_pdb)
+            write_mol_to_pdb(mol, ligand_pdb)
             convert_pdb_to_pdbqt(ligand_pdb, ligand_pdbqt, verbose=verbose)
 
             # Dock
@@ -147,7 +140,7 @@ class Target:
 
             # Process docking output
             convert_pdbqt_to_pdb(pdbqt_file=vina_outfile, pdb_file=vina_pdb_file, verbose=verbose)
-            ligands = read_pdb_to_mol(vina_pdb_file)
+            ligands = read_mol_from_pdb(vina_pdb_file)
             scores = parse_scores_from_pdb(vina_pdb_file)
 
             assert len(scores) == len(ligands.GetConformers())
@@ -171,20 +164,3 @@ class Target:
         Print some info about the target.
         """
         pass
-
-    def view(self, search_box=True):
-        """
-        Start pymol and view the receptor and the search box.
-        """
-        pymol_view_search_box_file = pkg_resources.resource_filename(__package__,
-                                                                     os.path.join('utils', 'view_search_box.py'))
-        commands = ['pymol', pymol_view_search_box_file, self._pdb]
-
-        if search_box:
-            conf = parse_search_box_conf(self._conf)
-            commands += [
-                '-d', 'view_search_box center_x={center_x}, center_y={center_y}, center_z={center_z}, '
-                'size_x={size_x}, size_y={size_y}, size_z={size_z}'.format(**conf)
-            ]
-
-        return subprocess.run(commands)
