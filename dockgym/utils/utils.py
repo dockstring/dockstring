@@ -52,7 +52,7 @@ def convert_pdb_to_pdbqt(pdf_file: PathType, pdbqt_file: PathType, verbose=False
         raise DockingError('Conversion from PDB to PDBQT failed')
 
 
-def read_pdb_to_mol(pdb_file: os.PathLike):
+def read_pdb_to_mol(pdb_file: PathType):
     return Chem.MolFromPDBFile(str(pdb_file))
 
 
@@ -60,6 +60,6 @@ real_number_re = r'[-+]?[0-9]*\.?[0-9]+(e[-+]?[0-9]+)?'
 score_re = re.compile(rf'REMARK VINA RESULT:\s*(?P<score>{real_number_re})')
 
 
-def parse_scores_from_pdb(pdb_file: os.PathLike) -> List[float]:
+def parse_scores_from_pdb(pdb_file: PathType) -> List[float]:
     content = open(pdb_file, mode='r').read()
     return [float(match.group('score')) for match in score_re.finditer(content)]
