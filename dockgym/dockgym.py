@@ -1,4 +1,5 @@
 import os
+import platform
 import subprocess
 import sys
 import tempfile
@@ -8,7 +9,7 @@ import pkg_resources
 from rdkit import rdBase
 from rdkit.Chem import AllChem as Chem
 
-from .utils import DockingError, get_num_conf
+from .utils import DockingError
 
 
 def load_target(name):
@@ -16,80 +17,74 @@ def load_target(name):
 
 
 class Target:
-    def __init__(self, name, random_seed=974528263):
+    def __init__(self, name):
         self.name = name
-        self.random_seed = random_seed
-        # TODO Determine whether the OS is Linux, Mac or Windows
-        # # Define paths to dependencies
-        # system = platform.system()
-        # if system == 'Linux':
-        #     # vina_binary = lib / 'vina_linux'
-        #     # pythonsh_binary = lib / 'pythonsh'
-        #     # TODO Check if pythonsh is platform-dependent, or it is the same for Linux, Mac, Windows, etc
-        #     #      I can do this with `diff`
-        #     pass
-        # elif system == 'Windows':
-        #     pass
-        # elif system == 'Darwin':
-        #     pass
 
         self._bin_dir = Path(pkg_resources.resource_filename(__package__, 'bin')).resolve()
         self._receptors_dir = Path(pkg_resources.resource_filename(__package__, 'receptors')).resolve()
 
-        self._vina = self._bin_dir / 'vina_linux'
+        self._vina = self._bin_dir / self._get_vina_filename()
 
         # Create temporary directory where the PDB, PDBQT and conf files for the target will be saved
         self._tmp_dir_handle = tempfile.TemporaryDirectory()
         self._tmp_dir = Path(self._tmp_dir_handle.name).resolve()
 
-        # Copy PDB, PDBQT and conf files to the temporary directory
-        # TODO Create PDBQT for receptors
+        # Set PDB, PDBQT, and conf files
         self._pdb = self._receptors_dir / (self.name + '_receptor.pdb')
         self._pdbqt = self._receptors_dir / (self.name + '_receptor.pdbqt')
         self._conf = self._receptors_dir / (self.name + '_conf.txt')
 
         # Ensure files exist
-        if not all(p.is_file() for p in [self._pdb, self._pdbqt, self._conf]):
+        if not all(p.exists() for p in [self._tmp_dir, self._pdb, self._pdbqt, self._conf]):
             raise DockingError(f"'{self.name}' is not a target we support")
 
-    def __del__(self):
-        self._tmp_dir_handle.cleanup()
+    @staticmethod
+    def _get_vina_filename() -> str:
+        system_name = platform.system()
+        if system_name == 'Linux':
+            return 'vina_linux'
+        else:
+            raise DockingError(f"System '{system_name}' not yet supported")
 
-    # Submethods for docking a ligand
-    def _smiles_or_inchi_2_mol(self, smiles_or_inchi):
-        rdBase.DisableLog('rdApp.error')
+    @staticmethod
+    def _smiles_or_inchi_to_mol(smiles_or_inchi, verbose=False):
+        if not verbose:
+            rdBase.DisableLog('rdApp.error')
+
         mol = Chem.MolFromSmiles(smiles_or_inchi)
         if mol is None:
             mol = Chem.MolFromInchi(smiles_or_inchi)
             if mol is None:
-                raise DockingError(
-                    f'Docking of molecule {self._mol_id} failed because '
-                    'it is not a proper SMILES, InChi or RDKit molecule object.'
-                )
-        rdBase.EnableLog('rdApp.error')
+                raise DockingError('Could not parse SMILES or InChI string')
+
+        if not verbose:
+            rdBase.EnableLog('rdApp.error')
+
         return mol
 
-    def _embed_mol(self, mol, max_num_attempts: int = 10):
-        """
-        Will attempt to find 3D coordinates <max_num_attempts> times with different random seeds
-        """
+    @staticmethod
+    def _embed_mol(mol, seed: int, max_num_attempts: int = 10):
+        """Will attempt to find 3D coordinates <max_num_attempts> times with different random seeds"""
 
         # Add hydrogen atoms in order to get a sensible 3D structure, and remove them later
         mol = Chem.AddHs(mol)
-        Chem.EmbedMolecule(mol, randomSeed=self.random_seed, maxAttempts=max_num_attempts)
-        # TODO: are we sure about this? Why?
-        mol = Chem.RemoveHs(mol)
+        Chem.EmbedMolecule(mol, randomSeed=seed, maxAttempts=max_num_attempts)
+        mol = Chem.RemoveHs(mol)  # TODO: Why?
 
         # If not a single conformation is obtained in all the attempts, raise an error
-        if get_num_conf(mol) == 0:
-            raise DockingError(
-                f'Docking of molecule {self._mol_id} failed during the '
-                'ligand conformation generation with RDKit.')
+        if len(mol.GetConformers()) == 0:
+            raise DockingError('Generation of ligand conformation failed')
 
-    def _embedding_2_pdb(self, mol, ligand_pdb):
-        Chem.MolToPDBFile(mol, str(ligand_pdb))
+        return mol
 
-    def _pdb_to_pdbqt(self, ligand_pdb, ligand_pdbqt):
+    @staticmethod
+    def _write_embedded_mol_to_pdb(mol, ligand_pdb):
+        if len(mol.GetConformers()) < 1:
+            raise DockingError('For conversion to PDB a conformer is required')
+        Chem.MolToPDBFile(mol, filename=str(ligand_pdb))
+
+    @staticmethod
+    def _convert_pdb_to_pdbqt(ligand_pdb, ligand_pdbqt, verbose=False):
         # yapf: disable
         cmd_list = [
             'obabel',
@@ -99,31 +94,18 @@ class Target:
             '--partialcharge', 'gasteiger'
         ]
         # yapf: enable
-        cmd_return = subprocess.run(cmd_list,
-                                    stdout=subprocess.PIPE,
-                                    stderr=subprocess.STDOUT)
+        cmd_return = subprocess.run(cmd_list, stdout=subprocess.PIPE, stderr=subprocess.STDOUT)
         output = cmd_return.stdout.decode('utf-8')
 
-        # If there exists a logfile handle, save output there. If not, do nothing
-        try:
-            self._dock_logfile_handle.write(output)
-        except AttributeError as exception:
-            pass
-
         # If verbose, print output to string
-        if self._dock_verbose:
+        if verbose:
             print(output)
 
         # If failure, raise DockingError
         if cmd_return.returncode != 0:
-            raise DockingError(f'Docking of molecule {self._mol_id} failed '
-                               f'during the conversion of PDB to PDBQT with OpenBabel.')
+            raise DockingError(f'Conversion from PDB to PDBQT failed')
 
-    def _dock_pdbqt(self,
-                    ligand_pdbqt,
-                    vina_logfile,
-                    vina_outfile,
-                    num_cpu=None):
+    def _dock_pdbqt(self, ligand_pdbqt, vina_logfile, vina_outfile, seed, num_cpu=1, verbose=False):
         # yapf: disable
         cmd_list = [
             str(self._vina),
@@ -132,36 +114,27 @@ class Target:
             '--ligand', ligand_pdbqt,
             '--log', vina_logfile,
             '--out', vina_outfile,
-            '--seed', str(self._dock_random_seed),
+            '--seed', str(seed),
         ]
         # yapf: enable
         if num_cpu is not None:
             cmd_list += ['--cpu', str(num_cpu)]
 
-        cmd_return = subprocess.run(cmd_list,
-                                    stdout=subprocess.PIPE,
-                                    stderr=subprocess.STDOUT)
+        cmd_return = subprocess.run(cmd_list, stdout=subprocess.PIPE, stderr=subprocess.STDOUT)
         output = cmd_return.stdout.decode('utf-8')
 
-        # If there exists a logfile handle, save output there. If not, do nothing
-        try:
-            self._dock_logfile_handle.write(output)
-        except AttributeError as exception:
-            pass
-
         # If verbose, print output to string
-        if self._dock_verbose:
+        if verbose:
             print(output)
 
         # If failure, raise DockingError
         if cmd_return.returncode != 0:
-            raise DockingError(
-                f'Docking of molecule {self._mol_id} failed during the docking with Vina.'
-            )
+            raise DockingError(f'Docking with Vina failed')
 
-    def _get_top_score_from_vina_logfile(self, vina_logfile):
+    @staticmethod
+    def _get_top_score_from_vina_logfile(vina_logfile):
         try:
-            with open(vina_logfile, 'r') as f:
+            with open(vina_logfile, mode='r') as f:
                 counter_to_score = None
                 for each_line in f:
                     # Try to find the table header. Once found, count three lines to get the score
@@ -172,17 +145,16 @@ class Target:
                         break
                     elif counter_to_score is not None:
                         counter_to_score += 1
-            top_score = float(line_with_score.split()[1])
-            return top_score
-        except Exception as exception:
-            raise DockingError(f'Docking of molecule {self._mol_id}  failed '
-                               'because no suitable poses were found.')
+            return float(line_with_score.split()[1])
 
-    def dock(self, mol, num_cpu=None, seed=None, logfile=None, verbose=False):
+        except Exception:
+            raise DockingError('Failed to find suitable poses')
+
+    def dock(self, mol, num_cpu=1, seed=974528263, verbose=False):
         """
         Given a molecule, this method will return a docking score against the current target.
-        - mol: either a SMILES string, an inchikey or a RDKit molecule object
-        - num_cpu: number of cpus that Autodock Vina should use for the docking. By default,
+        - mol: either a SMILES string, an InChIKey or a RDKit molecule object
+        - num_cpu: number of cpus that AutoDock Vina should use for the docking. By default,
           it will try to find all the cpus on the system, and failing that, it will use 1.
         - seed: integer random seed for reproducibility
 
@@ -193,63 +165,38 @@ class Target:
         4. Dock
         5. Extract all the info from the docking output
         """
-        # Define molecule identifier for error messages
-        if isinstance(mol, Chem.Mol):
-            self._mol_id = Chem.MolToSmiles(mol)
-        else:
-            self._mol_id = mol
-        if seed is None:
-            self._dock_random_seed = self.random_seed
-        else:
-            self._dock_random_seed = seed
-        if logfile is not None:
-            self._dock_logfile_handle = open(logfile, 'w')
-        self._dock_verbose = verbose
+
         # Docking with Vina is performed in a temporary directory
-        with tempfile.TemporaryDirectory() as dock_tmp_dir:
-            # Define necessary filenames
-            dock_tmp_dir = Path(dock_tmp_dir)
-            ligand_pdb = (dock_tmp_dir / 'ligand.pdb').resolve()
-            ligand_pdbqt = (dock_tmp_dir / 'ligand.pdbqt').resolve()
-            vina_logfile = (dock_tmp_dir / 'vina.log').resolve()
-            vina_outfile = (dock_tmp_dir / 'vina.out').resolve()
-            try:
-                # Prepare ligand
-                # TODO Handle RDKit output too with verbose/logfile
-                if not isinstance(mol, Chem.Mol):
-                    mol = self._smiles_or_inchi_2_mol(mol)
-                    self._embed_mol(mol)
+        ligand_pdb = self._tmp_dir / 'ligand.pdb'
+        ligand_pdbqt = self._tmp_dir / 'ligand.pdbqt'
+        vina_logfile = self._tmp_dir / 'vina.log'
+        vina_outfile = self._tmp_dir / 'vina.out'
 
-                self._embedding_2_pdb(mol, ligand_pdb)
-                self._pdb_to_pdbqt(ligand_pdb, ligand_pdbqt)
-                # Dock
-                self._dock_pdbqt(ligand_pdbqt,
-                                 vina_logfile,
-                                 vina_outfile,
-                                 num_cpu=num_cpu)
-                # Process docking output
-                score = self._get_top_score_from_vina_logfile(vina_logfile)
-                # TODO Get the pose from vina_outfile
+        try:
+            # Prepare ligand
+            if not isinstance(mol, Chem.Mol):
+                mol = self._smiles_or_inchi_to_mol(mol, verbose=verbose)
+                mol = self._embed_mol(mol, seed=seed)
 
-                # Clean up and return
-                del self._dock_random_seed
-                if hasattr(self, '_dock_logfile_handle'):
-                    self._dock_logfile_handle.close()
-                    del self._dock_logfile_handle
-                del self._dock_verbose
-                return score, None
-            except DockingError as error:
-                print(f'DockingError: ' + str(error))
-                del self._dock_random_seed
-                if hasattr(self, '_dock_logfile_handle'):
-                    self._dock_logfile_handle.close()
-                    del self._dock_logfile_handle
-                del self._dock_verbose
-                return None, None
+            # Prepare ligand files
+            self._write_embedded_mol_to_pdb(mol, ligand_pdb)
+            self._convert_pdb_to_pdbqt(ligand_pdb, ligand_pdbqt, verbose=verbose)
+
+            # Dock
+            self._dock_pdbqt(ligand_pdbqt, vina_logfile, vina_outfile, seed=seed, num_cpu=num_cpu, verbose=verbose)
+
+            # Process docking output
+            score = self._get_top_score_from_vina_logfile(vina_logfile)
+
+            # TODO Get the pose from vina_outfile
+
+            return score, None
+
+        except DockingError as error:
+            mol_id = Chem.MolToSmiles(mol) if isinstance(mol, Chem.Mol) else mol
+            raise DockingError(f"An error occurred for ligand '{mol_id}': {error}")
 
         # TODO Include Mac and Windows binaries in the repository
-        # TODO Check whether the current system is Linux, Mac or Windows with platform.system()
-        #      https://stackoverflow.com/questions/22321397/python-os-name-return-nt-on-windows-7
         # TODO Put all the calculated scores (and maybe the poses too?) under "data". What should be the format?
         # - Plain text for the scores and smiles?
         # - What format for the poses?
@@ -284,8 +231,7 @@ class Target:
             # TODO Remove ligand from the main view() method, make it a part of the docked ligands' method
             ligand = f'/home/mgarort/repos/dockgym/playground/crystal_ligands/{self.name}/crystal_ligand.mol2'
             pymol_view_search_box = Path(
-                sys.modules[self.__class__.__module__].__file__
-            ).parent.parent / 'utils' / 'view_search_box.py'
+                sys.modules[self.__class__.__module__].__file__).parent.parent / 'utils' / 'view_search_box.py'
             command = f'pymol -R {pymol_view_search_box} {receptor} {ligand}'
             if search_box:
                 command += f" -d 'view_search_box center_x={center_x}, center_y={center_y}, center_z={center_z}, \
