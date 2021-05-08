@@ -9,7 +9,7 @@ from rdkit import rdBase
 from rdkit.Chem import AllChem as Chem
 
 from dockgym.utils import (DockingError, convert_pdbqt_to_pdb, convert_pdb_to_pdbqt, read_pdb_to_mol,
-                           parse_scores_from_pdb)
+                           parse_scores_from_pdb, parse_search_box_conf)
 
 
 def load_target(name):
@@ -176,30 +176,15 @@ class Target:
         """
         Start pymol and view the receptor and the search box.
         """
-        with open(self._conf, 'r') as f:
-            # Extract the search box information
-            for line in f:
-                if 'center_x' in line:
-                    center_x = float(line.split()[2])
-                elif 'center_y' in line:
-                    center_y = float(line.split()[2])
-                elif 'center_z' in line:
-                    center_z = float(line.split()[2])
-                elif 'size_x' in line:
-                    size_x = float(line.split()[2])
-                elif 'size_y' in line:
-                    size_y = float(line.split()[2])
-                elif 'size_z' in line:
-                    size_z = float(line.split()[2])
-
         pymol_view_search_box_file = pkg_resources.resource_filename(__package__,
                                                                      os.path.join('utils', 'view_search_box.py'))
         commands = ['pymol', pymol_view_search_box_file, self._pdb]
 
         if search_box:
+            conf = parse_search_box_conf(self._conf)
             commands += [
-                '-d', f'view_search_box center_x={center_x}, center_y={center_y}, center_z={center_z}, '
-                f'size_x={size_x}, size_y={size_y}, size_z={size_z}'
+                '-d', 'view_search_box center_x={center_x}, center_y={center_y}, center_z={center_z}, '
+                'size_x={size_x}, size_y={size_y}, size_z={size_z}'.format(**conf)
             ]
 
         return subprocess.run(commands)
