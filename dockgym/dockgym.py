@@ -1,10 +1,10 @@
 import os
-import shutil
 import subprocess
 import sys
 import tempfile
 from pathlib import Path
 
+import pkg_resources
 from rdkit import rdBase
 from rdkit.Chem import AllChem as Chem
 
@@ -32,47 +32,24 @@ class Target:
         #     pass
         # elif system == 'Darwin':
         #     pass
+
+        self._bin_dir = Path(pkg_resources.resource_filename(__package__, 'bin')).resolve()
+        self._receptors_dir = Path(pkg_resources.resource_filename(__package__, 'receptors')).resolve()
+
         self._vina = self._bin_dir / 'vina_linux'
+
         # Create temporary directory where the PDB, PDBQT and conf files for the target will be saved
         self._tmp_dir_handle = tempfile.TemporaryDirectory()
+        self._tmp_dir = Path(self._tmp_dir_handle.name).resolve()
+
         # Copy PDB, PDBQT and conf files to the temporary directory
         # TODO Create PDBQT for receptors
-        pdb_reference = self._receptors_dir / (self.name + '_receptor.pdb')
-        shutil.copyfile(pdb_reference, self._pdb)
-        pdbqt_reference = self._receptors_dir / (self.name + '_receptor.pdbqt')
-        shutil.copyfile(pdbqt_reference, self._pdbqt)
-        conf_reference = self._receptors_dir / (self.name + '_conf.txt')
-        shutil.copyfile(conf_reference, self._conf)
+        self._pdb = self._receptors_dir / (self.name + '_receptor.pdb')
+        self._pdbqt = self._receptors_dir / (self.name + '_receptor.pdbqt')
+        self._conf = self._receptors_dir / (self.name + '_conf.txt')
 
     def __del__(self):
         self._tmp_dir_handle.cleanup()
-
-    # Paths to important locations as property methods
-    @property
-    def _tmp_dir(self):
-        return Path(self._tmp_dir_handle.name).resolve()
-
-    @property
-    def _receptors_dir(self):
-        return Path(sys.modules[
-            self.__class__.__module__].__file__).parent / 'receptors'
-
-    @property
-    def _bin_dir(self):
-        return Path(
-            sys.modules[self.__class__.__module__].__file__).parent / 'bin'
-
-    @property
-    def _pdb(self):
-        return Path(self._tmp_dir / (self.name + '_receptor.pdb'))
-
-    @property
-    def _pdbqt(self):
-        return Path(self._tmp_dir / (self.name + '_receptor.pdbqt'))
-
-    @property
-    def _conf(self):
-        return Path(self._tmp_dir / (self.name + '_conf.txt'))
 
     # Submethods for docking a ligand
     def _smiles_or_inchi_2_mol(self, smiles_or_inchi):
