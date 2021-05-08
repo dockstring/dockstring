@@ -76,7 +76,7 @@ class Target:
 
         # Add hydrogen atoms in order to get a sensible 3D structure, and remove them later
         mol = Chem.AddHs(mol)
-        Chem.EmbedMolecule(mol, randomSeed=self.random_seed, max_num_attempts=max_num_attempts)
+        Chem.EmbedMolecule(mol, randomSeed=self.random_seed, maxAttempts=max_num_attempts)
         # TODO: are we sure about this? Why?
         mol = Chem.RemoveHs(mol)
 
