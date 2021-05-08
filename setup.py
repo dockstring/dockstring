@@ -22,7 +22,7 @@ setup(
     python_requires='>=3.7',
     packages=find_packages(),
     include_package_data=True,
-    package_data={'dockgym': ['receptors/*','bin/*']},
+    package_data={'dockgym': ['receptors/*', 'bin/*']},
     install_requires=[],
     zip_safe=False,
     test_suite='pytest',
