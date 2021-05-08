@@ -17,7 +17,7 @@ def load_target(name):
 
 class Target:
     def __init__(self, name, random_seed=974528263):
-        self._name = name
+        self.name = name
         self.random_seed = random_seed
         # TODO Determine whether the OS is Linux, Mac or Windows
         # # Define paths to dependencies
@@ -46,10 +46,6 @@ class Target:
 
     def __del__(self):
         self._tmp_dir_handle.cleanup()
-
-    @property
-    def name(self):
-        return self._name
 
     # Paths to important locations as property methods
     @property
