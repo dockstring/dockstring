@@ -1,11 +1,13 @@
+import os
+import shutil
+import subprocess
+import sys
 import tempfile
 from pathlib import Path
-import sys
-import os
-import subprocess
-import shutil
-from rdkit.Chem import AllChem as Chem
+
 from rdkit import rdBase
+from rdkit.Chem import AllChem as Chem
+
 from .utils import DockingError, get_num_conf
 
 
@@ -13,7 +15,7 @@ def load_target(name):
     return Target(name)
 
 
-class Target():
+class Target:
     def __init__(self, name, random_seed=974528263):
         self._name = name
         self.random_seed = random_seed
@@ -61,8 +63,8 @@ class Target():
 
     @property
     def _bin_dir(self):
-        return Path(sys.modules[
-            self.__class__.__module__].__file__).parent / 'bin'
+        return Path(
+            sys.modules[self.__class__.__module__].__file__).parent / 'bin'
 
     @property
     def _pdb(self):
@@ -119,63 +121,75 @@ class Target():
     def _embedding_2_pdb(self, mol, ligand_pdb):
         Chem.MolToPDBFile(mol, str(ligand_pdb))
 
-    def _pdb_2_pdbqt(self, ligand_pdb, ligand_pdbqt):
+    def _pdb_to_pdbqt(self, ligand_pdb, ligand_pdbqt):
+        # yapf: disable
         cmd_list = [
-            'obabel', '-ipdb', ligand_pdb, '-opdbqt', '-O', ligand_pdbqt,
+            'obabel',
+            '-ipdb', ligand_pdb,
+            '-opdbqt',
+            '-O', ligand_pdbqt,
             '--partialcharge', 'gasteiger'
         ]
+        # yapf: enable
         cmd_return = subprocess.run(cmd_list,
                                     stdout=subprocess.PIPE,
                                     stderr=subprocess.STDOUT)
         output = cmd_return.stdout.decode('utf-8')
+
         # If there exists a logfile handle, save output there. If not, do nothing
         try:
             self._dock_logfile_handle.write(output)
         except AttributeError as exception:
             pass
+
         # If verbose, print output to string
         if self._dock_verbose:
             print(output)
+
         # If failure, raise DockingError
         if cmd_return.returncode != 0:
-            raise DockingError(
-                f'Docking of molecule  {self._mol_id}  failed during the '
-                'conversion of PDB to PDBQT with OpenBabel.')
+            raise DockingError(f'Docking of molecule {self._mol_id} failed '
+                               f'during the conversion of PDB to PDBQT with OpenBabel.')
 
     def _dock_pdbqt(self,
                     ligand_pdbqt,
                     vina_logfile,
                     vina_outfile,
                     num_cpu=None):
-        if num_cpu is None:
-            cpu_argument = ''
-        else:
-            cpu_argument = '--cpu {num_cpu}'
+        # yapf: disable
         cmd_list = [
-            f'{self._vina}', '--receptor', self._pdbqt, '--config', self._conf,
-            '--ligand', ligand_pdbqt, '--log', vina_logfile, '--out',
-            vina_outfile, '--seed',
-            str(self._dock_random_seed)
+            str(self._vina),
+            '--receptor', self._pdbqt,
+            '--config', self._conf,
+            '--ligand', ligand_pdbqt,
+            '--log', vina_logfile,
+            '--out', vina_outfile,
+            '--seed', str(self._dock_random_seed),
         ]
+        # yapf: enable
         if num_cpu is not None:
             cmd_list += ['--cpu', str(num_cpu)]
+
         cmd_return = subprocess.run(cmd_list,
                                     stdout=subprocess.PIPE,
                                     stderr=subprocess.STDOUT)
         output = cmd_return.stdout.decode('utf-8')
+
         # If there exists a logfile handle, save output there. If not, do nothing
         try:
             self._dock_logfile_handle.write(output)
         except AttributeError as exception:
             pass
+
         # If verbose, print output to string
         if self._dock_verbose:
             print(output)
+
         # If failure, raise DockingError
         if cmd_return.returncode != 0:
             raise DockingError(
-                f'Docking of molecule  {self._mol_id}  failed during the '
-                'docking with Vina.')
+                f'Docking of molecule {self._mol_id} failed during the docking with Vina.'
+            )
 
     def _get_top_score_from_vina_logfile(self, vina_logfile):
         try:
@@ -193,9 +207,8 @@ class Target():
             top_score = float(line_with_score.split()[1])
             return top_score
         except Exception as exception:
-            raise DockingError(
-                f'Docking of molecule {self._mol_id}  failed '
-                'because no suitable poses were found.')
+            raise DockingError(f'Docking of molecule {self._mol_id}  failed '
+                               'because no suitable poses were found.')
 
     def dock(self, mol, num_cpu=None, seed=None, logfile=None, verbose=False):
         """
@@ -239,7 +252,7 @@ class Target():
                     mol = self._smiles_or_inchi_2_mol(mol)
                 mol = self._mol_2_embedding(mol)
                 self._embedding_2_pdb(mol, ligand_pdb)
-                self._pdb_2_pdbqt(ligand_pdb, ligand_pdbqt)
+                self._pdb_to_pdbqt(ligand_pdb, ligand_pdbqt)
                 # Dock
                 self._dock_pdbqt(ligand_pdbqt,
                                  vina_logfile,
