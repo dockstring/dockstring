@@ -9,7 +9,8 @@ import pkg_resources
 from rdkit import rdBase
 from rdkit.Chem import AllChem as Chem
 
-from .utils import DockingError
+from dockgym.utils import (DockingError, convert_pdbqt_to_pdb, convert_pdb_to_pdbqt, read_pdb_to_mol,
+                           parse_scores_from_pdb)
 
 
 def load_target(name):
@@ -83,28 +84,6 @@ class Target:
             raise DockingError('For conversion to PDB a conformer is required')
         Chem.MolToPDBFile(mol, filename=str(ligand_pdb))
 
-    @staticmethod
-    def _convert_pdb_to_pdbqt(ligand_pdb, ligand_pdbqt, verbose=False):
-        # yapf: disable
-        cmd_list = [
-            'obabel',
-            '-ipdb', ligand_pdb,
-            '-opdbqt',
-            '-O', ligand_pdbqt,
-            '--partialcharge', 'gasteiger'
-        ]
-        # yapf: enable
-        cmd_return = subprocess.run(cmd_list, stdout=subprocess.PIPE, stderr=subprocess.STDOUT)
-        output = cmd_return.stdout.decode('utf-8')
-
-        # If verbose, print output to string
-        if verbose:
-            print(output)
-
-        # If failure, raise DockingError
-        if cmd_return.returncode != 0:
-            raise DockingError('Conversion from PDB to PDBQT failed')
-
     def _dock_pdbqt(self, ligand_pdbqt, vina_logfile, vina_outfile, seed, num_cpu=1, verbose=False):
         # yapf: disable
         cmd_list = [
@@ -131,25 +110,6 @@ class Target:
         if cmd_return.returncode != 0:
             raise DockingError('Docking with Vina failed')
 
-    @staticmethod
-    def _get_top_score_from_vina_logfile(vina_logfile):
-        try:
-            with open(vina_logfile, mode='r') as f:
-                counter_to_score = None
-                for each_line in f:
-                    # Try to find the table header. Once found, count three lines to get the score
-                    if 'mode |   affinity | dist from best mode' in each_line:
-                        counter_to_score = 0
-                    elif counter_to_score == 2:
-                        line_with_score = each_line
-                        break
-                    elif counter_to_score is not None:
-                        counter_to_score += 1
-            return float(line_with_score.split()[1])
-
-        except Exception:
-            raise DockingError('Failed to find suitable poses')
-
     def dock(self, mol, num_cpu=1, seed=974528263, verbose=False):
         """
         Given a molecule, this method will return a docking score against the current target.
@@ -171,6 +131,7 @@ class Target:
         ligand_pdbqt = self._tmp_dir / 'ligand.pdbqt'
         vina_logfile = self._tmp_dir / 'vina.log'
         vina_outfile = self._tmp_dir / 'vina.out'
+        vina_pdb_file = self._tmp_dir / 'vina.pdb'
 
         try:
             # Prepare ligand
@@ -180,17 +141,22 @@ class Target:
 
             # Prepare ligand files
             self._write_embedded_mol_to_pdb(mol, ligand_pdb)
-            self._convert_pdb_to_pdbqt(ligand_pdb, ligand_pdbqt, verbose=verbose)
+            convert_pdb_to_pdbqt(ligand_pdb, ligand_pdbqt, verbose=verbose)
 
             # Dock
             self._dock_pdbqt(ligand_pdbqt, vina_logfile, vina_outfile, seed=seed, num_cpu=num_cpu, verbose=verbose)
 
             # Process docking output
-            score = self._get_top_score_from_vina_logfile(vina_logfile)
+            convert_pdbqt_to_pdb(pdbqt_file=vina_outfile, pdb_file=vina_pdb_file, verbose=verbose)
+            ligands = read_pdb_to_mol(vina_pdb_file)
+            scores = parse_scores_from_pdb(vina_pdb_file)
 
-            # TODO Get the pose from vina_outfile
+            assert len(scores) == len(ligands.GetConformers())
 
-            return score, None
+            return scores[0], {
+                'ligands': ligands,
+                'scores': scores,
+            }
 
         except DockingError as error:
             mol_id = Chem.MolToSmiles(mol) if isinstance(mol, Chem.Mol) else mol
