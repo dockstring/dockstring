@@ -255,9 +255,6 @@ class Target:
                 del self._dock_verbose
                 return None, None
 
-            # Using tempfile makes the temporary file creation portable for all systems
-            print(dock_tmp_dir)
-
         # TODO Include Mac and Windows binaries in the repository
         # TODO Check whether the current system is Linux, Mac or Windows with platform.system()
         #      https://stackoverflow.com/questions/22321397/python-os-name-return-nt-on-windows-7
