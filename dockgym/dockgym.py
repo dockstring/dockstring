@@ -1,7 +1,6 @@
 import os
 import platform
 import subprocess
-import sys
 import tempfile
 from pathlib import Path
 
@@ -193,16 +192,14 @@ class Target:
                 elif 'size_z' in line:
                     size_z = float(line.split()[2])
 
-            receptor = str(self._pdb.resolve())
-            # TODO Remove ligand from the main view() method, make it a part of the docked ligands' method
-            ligand = f'/home/mgarort/repos/dockgym/playground/crystal_ligands/{self.name}/crystal_ligand.mol2'
-            pymol_view_search_box = Path(
-                sys.modules[self.__class__.__module__].__file__).parent.parent / 'utils' / 'view_search_box.py'
-            command = f'pymol -R {pymol_view_search_box} {receptor} {ligand}'
-            if search_box:
-                command += f" -d 'view_search_box center_x={center_x}, center_y={center_y}, center_z={center_z}, \
-                              size_x={size_x}, size_y={size_y}, size_z={size_z}'"
+        pymol_view_search_box_file = pkg_resources.resource_filename(__package__,
+                                                                     os.path.join('utils', 'view_search_box.py'))
+        commands = ['pymol', pymol_view_search_box_file, self._pdb]
 
-            command += ' > /dev/null'
-            # TODO Change to subprocess
-            os.system(command)
+        if search_box:
+            commands += [
+                '-d', f'view_search_box center_x={center_x}, center_y={center_y}, center_z={center_z}, '
+                f'size_x={size_x}, size_y={size_y}, size_z={size_z}'
+            ]
+
+        return subprocess.run(commands)
