@@ -178,19 +178,24 @@ class Target():
                 'docking with Vina.')
 
     def _get_top_score_from_vina_logfile(self, vina_logfile):
-        with open(vina_logfile, 'r') as f:
-            counter_to_score = None
-            for each_line in f:
-                # Try to find the table header. Once found, count three lines to get the score
-                if 'mode |   affinity | dist from best mode' in each_line:
-                    counter_to_score = 0
-                elif counter_to_score == 2:
-                    line_with_score = each_line
-                    break
-                elif counter_to_score is not None:
-                    counter_to_score += 1
-        top_score = float(line_with_score.split()[1])
-        return top_score
+        try:
+            with open(vina_logfile, 'r') as f:
+                counter_to_score = None
+                for each_line in f:
+                    # Try to find the table header. Once found, count three lines to get the score
+                    if 'mode |   affinity | dist from best mode' in each_line:
+                        counter_to_score = 0
+                    elif counter_to_score == 2:
+                        line_with_score = each_line
+                        break
+                    elif counter_to_score is not None:
+                        counter_to_score += 1
+            top_score = float(line_with_score.split()[1])
+            return top_score
+        except Exception as exception:
+            raise DockingError(
+                f'Docking of molecule {self._mol_id}  failed '
+                'because no suitable poses were found.')
 
     def dock(self, mol, num_cpu=None, seed=None, logfile=None, verbose=False):
         """
