@@ -48,6 +48,10 @@ class Target:
         self._pdbqt = self._receptors_dir / (self.name + '_receptor.pdbqt')
         self._conf = self._receptors_dir / (self.name + '_conf.txt')
 
+        # Ensure files exist
+        if not all(p.is_file() for p in [self._pdb, self._pdbqt, self._conf]):
+            raise DockingError(f"'{self.name}' is not a target we support")
+
     def __del__(self):
         self._tmp_dir_handle.cleanup()
 
@@ -73,7 +77,7 @@ class Target:
         for i in range(n_attempts):
             # Simple approach to get subsequent random seeds from first random seed
             random_seed = (random_seed -
-                           (-1)**(i % 2) * i * random_seed) % 766523564
+                           (-1) ** (i % 2) * i * random_seed) % 766523564
             # Always add hydrogens in order to get a sensible 3D structure, and remove them later
             mol = Chem.AddHs(mol)
             Chem.EmbedMolecule(mol, randomSeed=random_seed)
