@@ -1,7 +1,6 @@
 from guatask import Task, run_task
 import sys
 from dockgym import load_target
-import dockgym.src.utils as utils
 from rdkit import Chem
 import pandas as pd
 
