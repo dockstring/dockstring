@@ -69,31 +69,22 @@ class Target:
         rdBase.EnableLog('rdApp.error')
         return mol
 
-    def _mol_2_embedding(self, mol):
-        # Will attempt to find 3D coordinates 10 times with different random seeds
-        n_attempts = 10
-        # Set first random seed for reproducibility
-        random_seed = self._dock_random_seed
-        for i in range(n_attempts):
-            # Simple approach to get subsequent random seeds from first random seed
-            random_seed = (random_seed -
-                           (-1) ** (i % 2) * i * random_seed) % 766523564
-            # Always add hydrogens in order to get a sensible 3D structure, and remove them later
-            mol = Chem.AddHs(mol)
-            Chem.EmbedMolecule(mol, randomSeed=random_seed)
-            mol = Chem.RemoveHs(mol)
-            # If at least one conformation has been obtained, don't try more and break out of the loop.
-            # Otherwise, keep trying to hopefully generate a ligand conformation
-            if get_num_conf(mol) > 0:
-                break
-        # If not a single conformation is obtained in all the attempts, raise an error and return None.
-        # Otherwise, return the molecule with the conformation
+    def _embed_mol(self, mol, max_num_attempts: int = 10):
+        """
+        Will attempt to find 3D coordinates <max_num_attempts> times with different random seeds
+        """
+
+        # Add hydrogen atoms in order to get a sensible 3D structure, and remove them later
+        mol = Chem.AddHs(mol)
+        Chem.EmbedMolecule(mol, randomSeed=self.random_seed, max_num_attempts=max_num_attempts)
+        # TODO: are we sure about this? Why?
+        mol = Chem.RemoveHs(mol)
+
+        # If not a single conformation is obtained in all the attempts, raise an error
         if get_num_conf(mol) == 0:
             raise DockingError(
-                f'Docking of molecule  {self._mol_id}  failed during the '
+                f'Docking of molecule {self._mol_id} failed during the '
                 'ligand conformation generation with RDKit.')
-        else:
-            return mol
 
     def _embedding_2_pdb(self, mol, ligand_pdb):
         Chem.MolToPDBFile(mol, str(ligand_pdb))
@@ -227,7 +218,8 @@ class Target:
                 # TODO Handle RDKit output too with verbose/logfile
                 if not isinstance(mol, Chem.Mol):
                     mol = self._smiles_or_inchi_2_mol(mol)
-                mol = self._mol_2_embedding(mol)
+                    self._embed_mol(mol)
+
                 self._embedding_2_pdb(mol, ligand_pdb)
                 self._pdb_to_pdbqt(ligand_pdb, ligand_pdbqt)
                 # Dock
