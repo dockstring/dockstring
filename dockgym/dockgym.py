@@ -57,12 +57,12 @@ class Target():
     @property
     def _receptors_dir(self):
         return Path(sys.modules[
-            self.__class__.__module__].__file__).parent.parent / 'receptors'
+            self.__class__.__module__].__file__).parent / 'receptors'
 
     @property
     def _bin_dir(self):
         return Path(sys.modules[
-            self.__class__.__module__].__file__).parent.parent / 'bin'
+            self.__class__.__module__].__file__).parent / 'bin'
 
     @property
     def _pdb(self):

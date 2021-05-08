@@ -2,7 +2,7 @@
 
 
 class DockingError(Exception):
-    """Raised then Target.dock fails at any step"""
+    """Raised when Target.dock fails at any step"""
     pass
 
 
