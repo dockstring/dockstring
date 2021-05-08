@@ -103,7 +103,7 @@ class Target:
 
         # If failure, raise DockingError
         if cmd_return.returncode != 0:
-            raise DockingError(f'Conversion from PDB to PDBQT failed')
+            raise DockingError('Conversion from PDB to PDBQT failed')
 
     def _dock_pdbqt(self, ligand_pdbqt, vina_logfile, vina_outfile, seed, num_cpu=1, verbose=False):
         # yapf: disable
@@ -129,7 +129,7 @@ class Target:
 
         # If failure, raise DockingError
         if cmd_return.returncode != 0:
-            raise DockingError(f'Docking with Vina failed')
+            raise DockingError('Docking with Vina failed')
 
     @staticmethod
     def _get_top_score_from_vina_logfile(vina_logfile):
