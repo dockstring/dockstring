@@ -1,0 +1,9 @@
+name: dockgym
+channels:
+  - conda-forge
+  - defaults
+dependencies:
+  - rdkit=2021.03.*
+  - pymol-open-source=2.4.*
+  - openbabel=3.1.*
+  - python=3.8.*
