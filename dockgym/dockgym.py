@@ -3,6 +3,7 @@ import platform
 import subprocess
 import tempfile
 from pathlib import Path
+from typing import Optional
 
 import pkg_resources
 from rdkit import rdBase
@@ -26,8 +27,7 @@ class Target:
         self._vina = self._bin_dir / self._get_vina_filename()
 
         # Create temporary directory where the PDB, PDBQT and conf files for the target will be saved
-        self._tmp_dir_handle = tempfile.TemporaryDirectory()
-        self._tmp_dir = Path(self._tmp_dir_handle.name).resolve()
+        self._tmp_dir_handle: Optional[tempfile.TemporaryDirectory] = None
 
         # Set PDB, PDBQT, and conf files
         self._pdb = self._receptors_dir / (self.name + '_receptor.pdb')
@@ -35,8 +35,14 @@ class Target:
         self._conf = self._receptors_dir / (self.name + '_conf.txt')
 
         # Ensure files exist
-        if not all(p.exists() for p in [self._tmp_dir, self._pdb, self._pdbqt, self._conf]):
+        if not all(p.exists() for p in [self._pdb, self._pdbqt, self._conf]):
             raise DockingError(f"'{self.name}' is not a target we support")
+
+    @property
+    def _tmp_dir(self) -> Path:
+        if not self._tmp_dir_handle:
+            self._tmp_dir_handle = tempfile.TemporaryDirectory()
+        return Path(self._tmp_dir_handle.name).resolve()
 
     @staticmethod
     def _get_vina_filename() -> str:
