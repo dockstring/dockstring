@@ -2,6 +2,6 @@ center_x = -9.373
 center_y = -6.808
 center_z = 55.570
 
-size_x = 7.355
-size_y = 6.255
-size_z = 14.929
+size_x = 12.355
+size_y = 11.255
+size_z = 19.929
