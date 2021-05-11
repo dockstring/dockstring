@@ -128,6 +128,10 @@ class Target:
             # Process docking output
             convert_pdbqt_to_pdb(pdbqt_file=vina_outfile, pdb_file=docked_ligand_pdb, verbose=verbose)
             ligands = read_pdb_to_mol(docked_ligand_pdb)
+
+            if len(ligands.GetConformers()) < 1:
+                raise DockingError('Failed to get pose')
+
             scores = parse_scores_from_pdb(docked_ligand_pdb)
 
             assert len(scores) == len(ligands.GetConformers())
