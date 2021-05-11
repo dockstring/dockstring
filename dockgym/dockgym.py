@@ -13,8 +13,8 @@ from dockgym.utils import (DockingError, get_vina_filename, smiles_or_inchi_to_m
                            parse_scores_from_pdb, parse_search_box_conf)
 
 
-def get_receptors_dir() -> Path:
-    return Path(pkg_resources.resource_filename(__package__, 'receptors')).resolve()
+def get_targets_dir() -> Path:
+    return Path(pkg_resources.resource_filename(__package__, 'targets')).resolve()
 
 
 def load_target(name):
@@ -22,13 +22,13 @@ def load_target(name):
 
 
 def list_all_target_names() -> List[str]:
-    receptors_dir = get_receptors_dir()
-    file_names = [f for f in os.listdir(receptors_dir) if os.path.isfile(os.path.join(receptors_dir, f))]
+    targets_dir = get_targets_dir()
+    file_names = [f for f in os.listdir(targets_dir) if os.path.isfile(os.path.join(targets_dir, f))]
 
-    receptor_re = re.compile(r'^(?P<name>\w+)_receptor\.pdb$')
+    target_re = re.compile(r'^(?P<name>\w+)_target\.pdb$')
     names = []
     for file_name in file_names:
-        match = receptor_re.match(file_name)
+        match = target_re.match(file_name)
         if match:
             names.append(match.group('name'))
 
@@ -40,7 +40,7 @@ class Target:
         self.name = name
 
         self._bin_dir = Path(pkg_resources.resource_filename(__package__, 'bin')).resolve()
-        self._receptors_dir = get_receptors_dir()
+        self._targets_dir = get_targets_dir()
 
         self._vina = self._bin_dir / get_vina_filename()
 
@@ -48,9 +48,9 @@ class Target:
         self._tmp_dir_handle: Optional[tempfile.TemporaryDirectory] = None
 
         # Set PDB, PDBQT, and conf files
-        self._pdb = self._receptors_dir / (self.name + '_receptor.pdb')
-        self._pdbqt = self._receptors_dir / (self.name + '_receptor.pdbqt')
-        self._conf = self._receptors_dir / (self.name + '_conf.txt')
+        self._pdb = self._targets_dir / (self.name + '_target.pdb')
+        self._pdbqt = self._targets_dir / (self.name + '_target.pdbqt')
+        self._conf = self._targets_dir / (self.name + '_conf.txt')
 
         # Ensure files exist
         if not all(p.exists() for p in [self._pdb, self._pdbqt, self._conf]):
@@ -66,7 +66,7 @@ class Target:
         # yapf: disable
         cmd_list = [
             str(self._vina),
-            '--receptor', self._pdbqt,
+            '--target', self._pdbqt,
             '--config', self._conf,
             '--ligand', ligand_pdbqt,
             '--log', vina_logfile,
@@ -159,7 +159,7 @@ class Target:
 
     def view(self, search_box=True):
         """
-        Start pymol and view the receptor and the search box.
+        Start pymol and view the target and the search box.
         """
         pymol_view_search_box_file = pkg_resources.resource_filename(__package__,
                                                                      os.path.join('utils', 'view_search_box.py'))
