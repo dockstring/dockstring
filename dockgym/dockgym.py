@@ -1,5 +1,4 @@
 import os
-import platform
 import re
 import subprocess
 import tempfile
@@ -7,11 +6,11 @@ from pathlib import Path
 from typing import Optional, List
 
 import pkg_resources
-from rdkit import rdBase
 from rdkit.Chem import AllChem as Chem
 
-from dockgym.utils import (DockingError, convert_pdbqt_to_pdb, convert_pdb_to_pdbqt, read_pdb_to_mol,
-                           parse_scores_from_pdb, parse_search_box_conf)
+from dockgym.utils import (DockingError, get_vina_filename, smiles_or_inchi_to_mol, embed_mol, write_embedded_mol_to_pdb,
+                           convert_pdbqt_to_pdb, convert_pdb_to_pdbqt, read_pdb_to_mol, parse_scores_from_pdb,
+                           parse_search_box_conf)
 
 
 def get_receptors_dir() -> Path:
@@ -43,7 +42,7 @@ class Target:
         self._bin_dir = Path(pkg_resources.resource_filename(__package__, 'bin')).resolve()
         self._receptors_dir = get_receptors_dir()
 
-        self._vina = self._bin_dir / self._get_vina_filename()
+        self._vina = self._bin_dir / get_vina_filename()
 
         # Create temporary directory where the PDB, PDBQT and conf files for the target will be saved
         self._tmp_dir_handle: Optional[tempfile.TemporaryDirectory] = None
@@ -63,49 +62,6 @@ class Target:
             self._tmp_dir_handle = tempfile.TemporaryDirectory()
         return Path(self._tmp_dir_handle.name).resolve()
 
-    @staticmethod
-    def _get_vina_filename() -> str:
-        system_name = platform.system()
-        if system_name == 'Linux':
-            return 'vina_linux'
-        else:
-            raise DockingError(f"System '{system_name}' not yet supported")
-
-    @staticmethod
-    def _smiles_or_inchi_to_mol(smiles_or_inchi, verbose=False):
-        if not verbose:
-            rdBase.DisableLog('rdApp.error')
-
-        mol = Chem.MolFromSmiles(smiles_or_inchi)
-        if mol is None:
-            mol = Chem.MolFromInchi(smiles_or_inchi)
-            if mol is None:
-                raise DockingError('Could not parse SMILES or InChI string')
-
-        if not verbose:
-            rdBase.EnableLog('rdApp.error')
-
-        return mol
-
-    @staticmethod
-    def _embed_mol(mol, seed: int, max_num_attempts: int = 10):
-        """Will attempt to find 3D coordinates <max_num_attempts> times with different random seeds"""
-
-        # Add hydrogen atoms in order to get a sensible 3D structure, and remove them later
-        mol = Chem.AddHs(mol)
-        Chem.EmbedMolecule(mol, randomSeed=seed, maxAttempts=max_num_attempts)
-
-        # If not a single conformation is obtained in all the attempts, raise an error
-        if len(mol.GetConformers()) == 0:
-            raise DockingError('Generation of ligand conformation failed')
-
-        return mol
-
-    @staticmethod
-    def _write_embedded_mol_to_pdb(mol, ligand_pdb):
-        if len(mol.GetConformers()) < 1:
-            raise DockingError('For conversion to PDB a conformer is required')
-        Chem.MolToPDBFile(mol, filename=str(ligand_pdb))
 
     def _dock_pdbqt(self, ligand_pdbqt, vina_logfile, vina_outfile, seed, num_cpu=1, verbose=False):
         # yapf: disable
@@ -159,11 +115,11 @@ class Target:
         try:
             # Prepare ligand
             if not isinstance(mol, Chem.Mol):
-                mol = self._smiles_or_inchi_to_mol(mol, verbose=verbose)
-                mol = self._embed_mol(mol, seed=seed)
+                mol = smiles_or_inchi_to_mol(mol, verbose=verbose)
+                mol = embed_mol(mol, seed=seed)
 
             # Prepare ligand files
-            self._write_embedded_mol_to_pdb(mol, ligand_pdb)
+            write_embedded_mol_to_pdb(mol, ligand_pdb)
             convert_pdb_to_pdbqt(ligand_pdb, ligand_pdbqt, verbose=verbose)
 
             # Dock
