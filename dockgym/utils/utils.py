@@ -38,7 +38,7 @@ def smiles_or_inchi_to_mol(smiles_or_inchi, verbose=False):
 
 def embed_mol(mol, seed: int, max_num_attempts: int = 10):
     """Will attempt to find 3D coordinates <max_num_attempts> times with different random seeds"""
-    # Add hydrogen atoms in order to get a sensible 3D structure, and remove them later
+    # Add hydrogen atoms in order to get a sensible 3D structure
     mol = Chem.AddHs(mol)
     Chem.EmbedMolecule(mol, randomSeed=seed, maxAttempts=max_num_attempts)
     # If not a single conformation is obtained in all the attempts, raise an error
