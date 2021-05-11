@@ -66,7 +66,7 @@ class Target:
         # yapf: disable
         cmd_list = [
             str(self._vina),
-            '--target', self._pdbqt,
+            '--receptor', self._pdbqt,
             '--config', self._conf,
             '--ligand', ligand_pdbqt,
             '--log', vina_logfile,
@@ -125,12 +125,10 @@ class Target:
             self._dock_pdbqt(ligand_pdbqt, vina_logfile, vina_outfile, seed=seed, num_cpu=num_cpu, verbose=verbose)
 
             # Process docking output
-            # If vina does not find any appropriate poses, the output file will be empty
-            with open(vina_outfile,'r') as f:
-                was_vina_unsuccessful = f.read() == ''
-            if was_vina_unsuccessful:
-                raise DockingError(f"Autodock Vina could not find any appropriate pose. " \
-                                    "No score produced.")
+            # If Vina does not find any appropriate poses, the output file will be empty
+            if os.stat(vina_outfile).st_size == 0:
+                raise DockingError('AutoDock Vina could not find any appropriate pose.')
+
             convert_pdbqt_to_pdb(pdbqt_file=vina_outfile, pdb_file=docked_ligand_pdb, verbose=verbose)
             ligands = read_pdb_to_mol(docked_ligand_pdb)
             scores = parse_scores_from_pdb(docked_ligand_pdb)
