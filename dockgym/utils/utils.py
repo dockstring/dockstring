@@ -101,7 +101,8 @@ score_re = re.compile(rf'REMARK VINA RESULT:\s*(?P<score>{real_number_pattern})'
 
 
 def parse_scores_from_pdb(pdb_file: PathType) -> List[float]:
-    content = open(pdb_file, mode='r').read()
+    with open(pdb_file, mode='r') as f:
+        content = f.read()
     return [float(match.group('score')) for match in score_re.finditer(content)]
 
 
@@ -110,10 +111,11 @@ conf_re = re.compile(rf'^(?P<key>\w+)\s*=\s*(?P<value>{real_number_pattern})\s*\
 
 def parse_search_box_conf(conf_file: PathType) -> Dict[str, float]:
     d = {}
-    for line in open(conf_file, mode='r').readlines():
-        match = conf_re.match(line)
-        if match:
-            d[match.group('key')] = float(match.group('value'))
+    with open(conf_file, mode='r') as f:
+        for line in f.readlines():
+            match = conf_re.match(line)
+            if match:
+                d[match.group('key')] = float(match.group('value'))
 
-    assert len(d) == 6
-    return d
+        assert len(d) == 6
+        return d
