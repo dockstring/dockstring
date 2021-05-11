@@ -75,7 +75,6 @@ class Target:
         # Add hydrogen atoms in order to get a sensible 3D structure, and remove them later
         mol = Chem.AddHs(mol)
         Chem.EmbedMolecule(mol, randomSeed=seed, maxAttempts=max_num_attempts)
-        mol = Chem.RemoveHs(mol)  # TODO: Why?
 
         # If not a single conformation is obtained in all the attempts, raise an error
         if len(mol.GetConformers()) == 0:
