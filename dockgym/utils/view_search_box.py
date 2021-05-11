@@ -1,7 +1,7 @@
 # Inspired by drawBoundingBox.py by JasonVertrees
 
 from pymol import cmd
-from pymol.cgo import *
+from pymol.cgo import BEGIN, END, VERTEX, LINES, LINEWIDTH, COLOR
 
 
 def view_search_box(center_x, center_y, center_z, size_x, size_y, size_z):
