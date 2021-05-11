@@ -1,9 +1,10 @@
 import os
 import platform
+import re
 import subprocess
 import tempfile
 from pathlib import Path
-from typing import Optional
+from typing import Optional, List
 
 import pkg_resources
 from rdkit import rdBase
@@ -13,8 +14,26 @@ from dockgym.utils import (DockingError, convert_pdbqt_to_pdb, convert_pdb_to_pd
                            parse_scores_from_pdb, parse_search_box_conf)
 
 
+def get_receptors_dir() -> Path:
+    return Path(pkg_resources.resource_filename(__package__, 'receptors')).resolve()
+
+
 def load_target(name):
     return Target(name)
+
+
+def list_all_target_names() -> List[str]:
+    receptors_dir = get_receptors_dir()
+    file_names = [f for f in os.listdir(receptors_dir) if os.path.isfile(os.path.join(receptors_dir, f))]
+
+    receptor_re = re.compile(r'^(?P<name>\w+)_receptor\.pdb$')
+    names = []
+    for file_name in file_names:
+        match = receptor_re.match(file_name)
+        if match:
+            names.append(match.group('name'))
+
+    return names
 
 
 class Target:
@@ -22,7 +41,7 @@ class Target:
         self.name = name
 
         self._bin_dir = Path(pkg_resources.resource_filename(__package__, 'bin')).resolve()
-        self._receptors_dir = Path(pkg_resources.resource_filename(__package__, 'receptors')).resolve()
+        self._receptors_dir = get_receptors_dir()
 
         self._vina = self._bin_dir / self._get_vina_filename()
 
@@ -190,7 +209,7 @@ class Target:
             conf = parse_search_box_conf(self._conf)
             commands += [
                 '-d', 'view_search_box center_x={center_x}, center_y={center_y}, center_z={center_z}, '
-                'size_x={size_x}, size_y={size_y}, size_z={size_z}'.format(**conf)
+                      'size_x={size_x}, size_y={size_y}, size_z={size_z}'.format(**conf)
             ]
 
         return subprocess.run(commands)
