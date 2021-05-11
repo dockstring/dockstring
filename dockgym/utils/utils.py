@@ -1,10 +1,10 @@
 import os
+import platform
 import re
 import subprocess
 from typing import List, Union, Dict
-import platform
-from rdkit import rdBase
 
+from rdkit import rdBase
 from rdkit.Chem import AllChem as Chem
 
 PathType = Union[str, os.PathLike]
