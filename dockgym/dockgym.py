@@ -209,7 +209,7 @@ class Target:
             conf = parse_search_box_conf(self._conf)
             commands += [
                 '-d', 'view_search_box center_x={center_x}, center_y={center_y}, center_z={center_z}, '
-                      'size_x={size_x}, size_y={size_y}, size_z={size_z}'.format(**conf)
+                'size_x={size_x}, size_y={size_y}, size_z={size_z}'.format(**conf)
             ]
 
         return subprocess.run(commands)
