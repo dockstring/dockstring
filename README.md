@@ -1,17 +1,18 @@
 # dockgym
+
 A docking benchmark for ML applications. (TODO improve description)
 
-# Installation
+## Installation
 
 ```bash
-conda create -n dockgym
-conda activate dockgym
-conda install -c conda-forge pymol-open-source rdkit openbabel
+conda env create -f environment.yml
 ```
 
-# Development
+## Development
 
-## YAPF
+### Code format
+
+We use yapf for code formatting. This is enforced with CI checks.
 
 ```bash
 yapf --style=.style.yapf --in-place --recursive ./src

@@ -74,11 +74,10 @@ class TestDocking(Task):
         target = load_target(receptor)
         # mol = target.dock('C1=CC=CC=C1', seed=28,logfile='hello',verbose=True)
         # mol = target.dock('C1=CC=CC=C1OBEF*@&#BR', seed=28,logfile='hello',verbose=True)
-        mol = target.dock(
-            'InChI=1S/C13H18O2/c1-9(2)8-11-4-6-12(7-5-11)10(3)13(14)15/h4-7,9-10H,8H2,1-3H3,(H,14,15)',
-            seed=28,
-            logfile='hello',
-            verbose=True)
+        mol = target.dock('InChI=1S/C13H18O2/c1-9(2)8-11-4-6-12(7-5-11)10(3)13(14)15/h4-7,9-10H,8H2,1-3H3,(H,14,15)',
+                          seed=28,
+                          logfile='hello',
+                          verbose=True)
         # score, other = target.dock('CC=C(C)C(=O)OC1C(=CC23C1(C(C(=CC(C2=O)C4C(C4(C)C)CC3C)CO)O)O)C',seed=10, num_cpu=1)
         # target.view()
     def load_output(self):
@@ -108,23 +107,26 @@ class TestAllPDBQTs(Task):
     output_filename = 'scores.tsv'
     input_filename = '100_sample_smiles.txt'
     debug = True
+
     def run(self):
         # Initialize dataframe
         receptors = self.params['receptors']
-        with open(self.input_filepath,'r') as f:
+        with open(self.input_filepath, 'r') as f:
             smiles = [line.strip().strip('\n') for line in f][:2]
-        scores = pd.DataFrame(index=smiles,columns=receptors)
+        scores = pd.DataFrame(index=smiles, columns=receptors)
         # Compute scores and save them in dataframe
         for each_receptor in receptors:
             target = load_target(each_receptor)
             for each_smiles in smiles:
                 (score, other) = target.dock(each_smiles)
-                scores.loc[each_smiles,each_receptor] = score
+                scores.loc[each_smiles, each_receptor] = score
                 print(each_receptor, each_smiles, score)
         # Save dataframe
-        scores.to_csv(self.output_filepath,sep='\t')
+        scores.to_csv(self.output_filepath, sep='\t')
+
     def load_output(self):
-        pd.read_csv(self.output_filepath,sep='\t')
+        pd.read_csv(self.output_filepath, sep='\t')
+
 
 class TestAllPDBQTs16CPUs(Task):
     requires = []
