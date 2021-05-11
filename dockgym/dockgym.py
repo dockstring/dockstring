@@ -8,9 +8,9 @@ from typing import Optional, List
 import pkg_resources
 from rdkit.Chem import AllChem as Chem
 
-from dockgym.utils import (DockingError, get_vina_filename, smiles_or_inchi_to_mol, embed_mol, write_embedded_mol_to_pdb,
-                           convert_pdbqt_to_pdb, convert_pdb_to_pdbqt, read_pdb_to_mol, parse_scores_from_pdb,
-                           parse_search_box_conf)
+from dockgym.utils import (DockingError, get_vina_filename, smiles_or_inchi_to_mol, embed_mol,
+                           write_embedded_mol_to_pdb, convert_pdbqt_to_pdb, convert_pdb_to_pdbqt, read_pdb_to_mol,
+                           parse_scores_from_pdb, parse_search_box_conf)
 
 
 def get_receptors_dir() -> Path:
@@ -61,7 +61,6 @@ class Target:
         if not self._tmp_dir_handle:
             self._tmp_dir_handle = tempfile.TemporaryDirectory()
         return Path(self._tmp_dir_handle.name).resolve()
-
 
     def _dock_pdbqt(self, ligand_pdbqt, vina_logfile, vina_outfile, seed, num_cpu=1, verbose=False):
         # yapf: disable
@@ -134,6 +133,10 @@ class Target:
                                     "No score produced.")
             convert_pdbqt_to_pdb(pdbqt_file=vina_outfile, pdb_file=docked_ligand_pdb, verbose=verbose)
             ligands = read_pdb_to_mol(docked_ligand_pdb)
+
+            if len(ligands.GetConformers()) < 1:
+                raise DockingError('Failed to get pose')
+
             scores = parse_scores_from_pdb(docked_ligand_pdb)
 
             assert len(scores) == len(ligands.GetConformers())
