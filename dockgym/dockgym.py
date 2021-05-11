@@ -144,7 +144,8 @@ class Target:
 
         except DockingError as error:
             mol_id = Chem.MolToSmiles(mol) if isinstance(mol, Chem.Mol) else mol
-            raise DockingError(f"An error occurred for ligand '{mol_id}': {error}")
+            print(f"DockingError: An error occured for ligand '{mol_id}': {error}")
+            return (None, None)
 
         # TODO Include Mac and Windows binaries in the repository
         # TODO Put all the calculated scores (and maybe the poses too?) under "data". What should be the format?
