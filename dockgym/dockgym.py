@@ -154,7 +154,7 @@ class Target:
         ligand_pdbqt = self._tmp_dir / 'ligand.pdbqt'
         vina_logfile = self._tmp_dir / 'vina.log'
         vina_outfile = self._tmp_dir / 'vina.out'
-        vina_pdb_file = self._tmp_dir / 'vina.pdb'
+        docked_ligand_pdb = self._tmp_dir / 'docked_ligand.pdb'
 
         try:
             # Prepare ligand
@@ -170,9 +170,9 @@ class Target:
             self._dock_pdbqt(ligand_pdbqt, vina_logfile, vina_outfile, seed=seed, num_cpu=num_cpu, verbose=verbose)
 
             # Process docking output
-            convert_pdbqt_to_pdb(pdbqt_file=vina_outfile, pdb_file=vina_pdb_file, verbose=verbose)
-            ligands = read_pdb_to_mol(vina_pdb_file)
-            scores = parse_scores_from_pdb(vina_pdb_file)
+            convert_pdbqt_to_pdb(pdbqt_file=vina_outfile, pdb_file=docked_ligand_pdb, verbose=verbose)
+            ligands = read_pdb_to_mol(docked_ligand_pdb)
+            scores = parse_scores_from_pdb(docked_ligand_pdb)
 
             assert len(scores) == len(ligands.GetConformers())
 
