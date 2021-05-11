@@ -66,7 +66,7 @@ class Target:
         # yapf: disable
         cmd_list = [
             str(self._vina),
-            '--target', self._pdbqt,
+            '--receptor', self._pdbqt,
             '--config', self._conf,
             '--ligand', ligand_pdbqt,
             '--log', vina_logfile,
