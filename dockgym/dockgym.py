@@ -9,7 +9,7 @@ import pkg_resources
 from rdkit.Chem import AllChem as Chem
 
 from dockgym.utils import (DockingError, get_vina_filename, smiles_or_inchi_to_mol, embed_mol,
-                           write_embedded_mol_to_pdb, convert_pdbqt_to_pdb, convert_pdb_to_pdbqt, read_pdb_to_mol,
+                           write_embedded_mol_to_pdb, convert_pdbqt_to_pdb, convert_pdb_to_pdbqt, read_mol_from_pdb,
                            parse_scores_from_pdb, parse_search_box_conf)
 
 import logging
@@ -134,7 +134,7 @@ class Target:
                 raise DockingError('AutoDock Vina could not find any appropriate pose.')
 
             convert_pdbqt_to_pdb(pdbqt_file=vina_outfile, pdb_file=docked_ligand_pdb, verbose=verbose)
-            ligands = read_pdb_to_mol(docked_ligand_pdb)
+            ligands = read_mol_from_pdb(docked_ligand_pdb)
             scores = parse_scores_from_pdb(docked_ligand_pdb)
 
             assert len(scores) == len(ligands.GetConformers())
@@ -160,19 +160,31 @@ class Target:
         """
         pass
 
-    def view(self, search_box=True):
+    def view(self, mols: List[Chem.Mol] = None, search_box=True):
         """
-        Start pymol and view the target and the search box.
+        Start pymol and view the receptor and the search box.
         """
-        pymol_view_search_box_file = pkg_resources.resource_filename(__package__,
-                                                                     os.path.join('utils', 'view_search_box.py'))
-        commands = ['pymol', pymol_view_search_box_file, self._pdb]
+        commands = ['pymol', self._pdb]
 
         if search_box:
+            pymol_view_search_box_file = pkg_resources.resource_filename(__package__,
+                                                                         os.path.join('utils', 'view_search_box.py'))
             conf = parse_search_box_conf(self._conf)
+            # yapf: disable
             commands += [
+                pymol_view_search_box_file,
                 '-d', 'view_search_box center_x={center_x}, center_y={center_y}, center_z={center_z}, '
-                'size_x={size_x}, size_y={size_y}, size_z={size_z}'.format(**conf)
+                      'size_x={size_x}, size_y={size_y}, size_z={size_z}'.format(**conf)
             ]
+            # yapf: enable
+
+        if mols:
+            tmp_dir_handle = tempfile.TemporaryDirectory()
+            tmp_dir = Path(tmp_dir_handle.name).resolve()
+
+            for index, mol in enumerate(mols):
+                mol_pdb_file = tmp_dir / f'ligand_{index}.pdb'
+                write_embedded_mol_to_pdb(mol, mol_pdb_file)
+                commands += [str(mol_pdb_file)]
 
         return subprocess.run(commands)

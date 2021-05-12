@@ -93,8 +93,14 @@ def convert_pdb_to_pdbqt(pdf_file: PathType, pdbqt_file: PathType, verbose=False
         raise DockingError('Conversion from PDB to PDBQT failed')
 
 
-def read_pdb_to_mol(pdb_file: PathType):
+def read_mol_from_pdb(pdb_file: PathType) -> Chem.Mol:
     return Chem.MolFromPDBFile(str(pdb_file))
+
+
+def write_mol_to_pdb(mol: Chem.Mol, pdb_file: PathType):
+    if len(mol.GetConformers()) < 1:
+        raise DockingError('For conversion to PDB a conformer is required')
+    Chem.MolToPDBFile(mol, filename=str(pdb_file))
 
 
 real_number_pattern = r'[-+]?[0-9]*\.?[0-9]+(e[-+]?[0-9]+)?'
