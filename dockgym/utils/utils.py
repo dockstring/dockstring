@@ -1,3 +1,4 @@
+import logging
 import os
 import platform
 import re
@@ -66,7 +67,7 @@ def convert_pdbqt_to_pdb(pdbqt_file: PathType, pdb_file: PathType, verbose=False
     stdout = cmd_return.stdout.decode('utf-8')
 
     if verbose:
-        print(stdout)
+        logging.info(stdout)
 
     if cmd_return.returncode != 0:
         raise DockingError('Conversion from PDBQT to PDB failed')
@@ -86,7 +87,7 @@ def convert_pdb_to_pdbqt(pdf_file: PathType, pdbqt_file: PathType, verbose=False
     output = cmd_return.stdout.decode('utf-8')
 
     if verbose:
-        print(output)
+        logging.info(output)
 
     if cmd_return.returncode != 0:
         raise DockingError('Conversion from PDB to PDBQT failed')

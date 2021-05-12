@@ -1,3 +1,4 @@
+import logging
 import os
 import re
 import subprocess
@@ -80,9 +81,8 @@ class Target:
         cmd_return = subprocess.run(cmd_list, stdout=subprocess.PIPE, stderr=subprocess.STDOUT)
         output = cmd_return.stdout.decode('utf-8')
 
-        # If verbose, print output to string
         if verbose:
-            print(output)
+            logging.info(output)
 
         # If failure, raise DockingError
         if cmd_return.returncode != 0:
@@ -142,7 +142,7 @@ class Target:
 
         except DockingError as error:
             mol_id = Chem.MolToSmiles(mol) if isinstance(mol, Chem.Mol) else mol
-            print(f"DockingError: An error occured for ligand '{mol_id}': {error}")
+            logging.error(f"DockingError: An error occurred for ligand '{mol_id}': {error}")
             return (None, None)
 
         # TODO Include Mac and Windows binaries in the repository
