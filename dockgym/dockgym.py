@@ -58,6 +58,9 @@ class Target:
         if not all(p.exists() for p in [self._pdb, self._pdbqt, self._conf]):
             raise DockingError(f"'{self.name}' is not a target we support")
 
+    def __repr__(self):
+        return f"dockgym.Target(name='{self.name}', dir='{self._tmp_dir}')"
+
     @property
     def _tmp_dir(self) -> Path:
         if not self._tmp_dir_handle:
