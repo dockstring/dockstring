@@ -1,18 +1,38 @@
-import platform
+import os
+import re
 import subprocess
 import tempfile
 from pathlib import Path
+from typing import Optional, List
 
 import pkg_resources
-from rdkit import rdBase
 from rdkit.Chem import AllChem as Chem
 
-from dockgym.utils import (DockingError, convert_pdbqt_to_pdb, convert_pdb_to_pdbqt, read_mol_from_pdb,
-                           parse_scores_from_pdb, write_mol_to_pdb)
+from dockgym.utils import (DockingError, get_vina_filename, smiles_or_inchi_to_mol, embed_mol,
+                           write_embedded_mol_to_pdb, convert_pdbqt_to_pdb, convert_pdb_to_pdbqt, read_pdb_to_mol,
+                           parse_scores_from_pdb, parse_search_box_conf)
+
+
+def get_targets_dir() -> Path:
+    return Path(pkg_resources.resource_filename(__package__, 'targets')).resolve()
 
 
 def load_target(name):
     return Target(name)
+
+
+def list_all_target_names() -> List[str]:
+    targets_dir = get_targets_dir()
+    file_names = [f for f in os.listdir(targets_dir) if os.path.isfile(os.path.join(targets_dir, f))]
+
+    target_re = re.compile(r'^(?P<name>\w+)_target\.pdb$')
+    names = []
+    for file_name in file_names:
+        match = target_re.match(file_name)
+        if match:
+            names.append(match.group('name'))
+
+    return names
 
 
 class Target:
@@ -20,61 +40,27 @@ class Target:
         self.name = name
 
         self._bin_dir = Path(pkg_resources.resource_filename(__package__, 'bin')).resolve()
-        self._receptors_dir = Path(pkg_resources.resource_filename(__package__, 'receptors')).resolve()
+        self._targets_dir = get_targets_dir()
 
-        self._vina = self._bin_dir / self._get_vina_filename()
+        self._vina = self._bin_dir / get_vina_filename()
 
         # Create temporary directory where the PDB, PDBQT and conf files for the target will be saved
-        self._tmp_dir_handle = tempfile.TemporaryDirectory()
-        self._tmp_dir = Path(self._tmp_dir_handle.name).resolve()
+        self._tmp_dir_handle: Optional[tempfile.TemporaryDirectory] = None
 
         # Set PDB, PDBQT, and conf files
-        self._pdb = self._receptors_dir / (self.name + '_receptor.pdb')
-        self._pdbqt = self._receptors_dir / (self.name + '_receptor.pdbqt')
-        self._conf = self._receptors_dir / (self.name + '_conf.txt')
+        self._pdb = self._targets_dir / (self.name + '_target.pdb')
+        self._pdbqt = self._targets_dir / (self.name + '_target.pdbqt')
+        self._conf = self._targets_dir / (self.name + '_conf.txt')
 
         # Ensure files exist
-        if not all(p.exists() for p in [self._tmp_dir, self._pdb, self._pdbqt, self._conf]):
+        if not all(p.exists() for p in [self._pdb, self._pdbqt, self._conf]):
             raise DockingError(f"'{self.name}' is not a target we support")
 
-    @staticmethod
-    def _get_vina_filename() -> str:
-        system_name = platform.system()
-        if system_name == 'Linux':
-            return 'vina_linux'
-        else:
-            raise DockingError(f"System '{system_name}' not yet supported")
-
-    @staticmethod
-    def _smiles_or_inchi_to_mol(smiles_or_inchi, verbose=False):
-        if not verbose:
-            rdBase.DisableLog('rdApp.error')
-
-        mol = Chem.MolFromSmiles(smiles_or_inchi)
-        if mol is None:
-            mol = Chem.MolFromInchi(smiles_or_inchi)
-            if mol is None:
-                raise DockingError('Could not parse SMILES or InChI string')
-
-        if not verbose:
-            rdBase.EnableLog('rdApp.error')
-
-        return mol
-
-    @staticmethod
-    def _embed_mol(mol, seed: int, max_num_attempts: int = 10):
-        """Will attempt to find 3D coordinates <max_num_attempts> times with different random seeds"""
-
-        # Add hydrogen atoms in order to get a sensible 3D structure, and remove them later
-        mol = Chem.AddHs(mol)
-        Chem.EmbedMolecule(mol, randomSeed=seed, maxAttempts=max_num_attempts)
-        mol = Chem.RemoveHs(mol)  # TODO: Why?
-
-        # If not a single conformation is obtained in all the attempts, raise an error
-        if len(mol.GetConformers()) == 0:
-            raise DockingError('Generation of ligand conformation failed')
-
-        return mol
+    @property
+    def _tmp_dir(self) -> Path:
+        if not self._tmp_dir_handle:
+            self._tmp_dir_handle = tempfile.TemporaryDirectory()
+        return Path(self._tmp_dir_handle.name).resolve()
 
     def _dock_pdbqt(self, ligand_pdbqt, vina_logfile, vina_outfile, seed, num_cpu=1, verbose=False):
         # yapf: disable
@@ -123,25 +109,29 @@ class Target:
         ligand_pdbqt = self._tmp_dir / 'ligand.pdbqt'
         vina_logfile = self._tmp_dir / 'vina.log'
         vina_outfile = self._tmp_dir / 'vina.out'
-        vina_pdb_file = self._tmp_dir / 'vina.pdb'
+        docked_ligand_pdb = self._tmp_dir / 'docked_ligand.pdb'
 
         try:
             # Prepare ligand
             if not isinstance(mol, Chem.Mol):
-                mol = self._smiles_or_inchi_to_mol(mol, verbose=verbose)
-                mol = self._embed_mol(mol, seed=seed)
+                mol = smiles_or_inchi_to_mol(mol, verbose=verbose)
+                mol = embed_mol(mol, seed=seed)
 
             # Prepare ligand files
-            write_mol_to_pdb(mol, ligand_pdb)
+            write_embedded_mol_to_pdb(mol, ligand_pdb)
             convert_pdb_to_pdbqt(ligand_pdb, ligand_pdbqt, verbose=verbose)
 
             # Dock
             self._dock_pdbqt(ligand_pdbqt, vina_logfile, vina_outfile, seed=seed, num_cpu=num_cpu, verbose=verbose)
 
             # Process docking output
-            convert_pdbqt_to_pdb(pdbqt_file=vina_outfile, pdb_file=vina_pdb_file, verbose=verbose)
-            ligands = read_mol_from_pdb(vina_pdb_file)
-            scores = parse_scores_from_pdb(vina_pdb_file)
+            # If Vina does not find any appropriate poses, the output file will be empty
+            if os.stat(vina_outfile).st_size == 0:
+                raise DockingError('AutoDock Vina could not find any appropriate pose.')
+
+            convert_pdbqt_to_pdb(pdbqt_file=vina_outfile, pdb_file=docked_ligand_pdb, verbose=verbose)
+            ligands = read_pdb_to_mol(docked_ligand_pdb)
+            scores = parse_scores_from_pdb(docked_ligand_pdb)
 
             assert len(scores) == len(ligands.GetConformers())
 
@@ -152,7 +142,8 @@ class Target:
 
         except DockingError as error:
             mol_id = Chem.MolToSmiles(mol) if isinstance(mol, Chem.Mol) else mol
-            raise DockingError(f"An error occurred for ligand '{mol_id}': {error}")
+            print(f"DockingError: An error occured for ligand '{mol_id}': {error}")
+            return (None, None)
 
         # TODO Include Mac and Windows binaries in the repository
         # TODO Put all the calculated scores (and maybe the poses too?) under "data". What should be the format?

@@ -1,0 +1,25 @@
+name: Linting and code formatting
+
+on: [push, pull_request]
+
+jobs:
+  build-linux:
+    runs-on: ubuntu-latest
+
+    steps:
+    - uses: actions/checkout@v2
+    - name: Set up Python 3.7
+      uses: actions/setup-python@v2
+      with:
+        python-version: 3.7
+    - name: Install dependencies
+      run: |
+        pip install flake8 yapf
+    - name: Check for yapf formatting
+      run: |
+        # stop build if yapf formatting fails
+        yapf --style=.style.yapf --diff --recursive .
+    - name: Lint with flake8
+      run: |
+        # stop build if flake8 formatting fails
+        flake8 --config=.flake8 .
