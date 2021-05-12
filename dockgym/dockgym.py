@@ -1,4 +1,3 @@
-import logging
 import os
 import re
 import subprocess
@@ -13,6 +12,8 @@ from dockgym.utils import (DockingError, get_vina_filename, smiles_or_inchi_to_m
                            write_embedded_mol_to_pdb, convert_pdbqt_to_pdb, convert_pdb_to_pdbqt, read_pdb_to_mol,
                            parse_scores_from_pdb, parse_search_box_conf)
 
+import logging
+logging.basicConfig(format='%(message)s')
 
 def get_targets_dir() -> Path:
     return Path(pkg_resources.resource_filename(__package__, 'targets')).resolve()
