@@ -8,7 +8,7 @@ import pkg_resources
 from rdkit.Chem import AllChem as Chem
 
 from dockgym.dockgym import Target
-from dockgym.utils import parse_search_box_conf, write_mol_to_pdb
+from dockgym.utils import parse_search_box_conf, write_embedded_mol_to_pdb
 
 
 def view(target: Target, mols: List[Chem.Mol] = None, search_box=True):
@@ -32,7 +32,7 @@ def view(target: Target, mols: List[Chem.Mol] = None, search_box=True):
 
         for index, mol in enumerate(mols):
             mol_pdb_file = tmp_dir / f'ligand_{index}.pdb'
-            write_mol_to_pdb(mol, mol_pdb_file)
+            write_embedded_mol_to_pdb(mol, mol_pdb_file)
             commands += [str(mol_pdb_file)]
 
     return subprocess.run(commands)
