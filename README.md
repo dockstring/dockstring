@@ -12,8 +12,10 @@ conda env create -f environment.yml
 
 ### Code format
 
-We use yapf for code formatting. This is enforced with CI checks.
+We use yapf and flake8 for code formatting.
+This is enforced with CI checks.
 
 ```bash
-yapf --style=.style.yapf --in-place --recursive ./src
+yapf --style=.style.yapf --in-place --recursive .
+flake8 --config=.flake8 .
 ```
