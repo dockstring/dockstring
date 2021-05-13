@@ -1,0 +1,13 @@
+# yapf
+-   repo: https://github.com/pre-commit/mirrors-yapf
+    rev: 'v0.31.0'  # Use the sha / tag you want to point at
+    hooks:
+    -   id: yapf
+        args: [--style=.style.yapf, --diff, --recursive, .]
+
+# flake8
+-   repo: https://github.com/pycqa/flake8
+    rev: '3.9.2'  # pick a git hash / tag to point to
+    hooks:
+    -   id: flake8
+        args: [--config=.flake8]
