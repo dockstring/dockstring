@@ -16,6 +16,11 @@ jobs:
     strategy:
       max-parallel: 5
 
+    defaults:
+      run:
+        # Use a default shell for conda
+        shell: bash -l {0}
+
     steps:
       - name: Checkout
         uses: actions/checkout@v2
