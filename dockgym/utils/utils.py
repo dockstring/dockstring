@@ -43,13 +43,13 @@ def embed_mol(mol, seed: int, max_num_attempts: int = 10):
     mol = Chem.AddHs(mol)
     Chem.EmbedMolecule(mol, randomSeed=seed, maxAttempts=max_num_attempts)
     # If not a single conformation is obtained in all the attempts, raise an error
-    if len(mol.GetConformers()) == 0:
+    if mol.GetNumConformers() == 0:
         raise DockingError('Generation of ligand conformation failed')
     return mol
 
 
 def write_embedded_mol_to_pdb(mol, ligand_pdb):
-    if len(mol.GetConformers()) < 1:
+    if mol.GetNumConformers() < 1:
         raise DockingError('For conversion to PDB a conformer is required')
     Chem.MolToPDBFile(mol, filename=str(ligand_pdb))
 
@@ -98,7 +98,7 @@ def read_mol_from_pdb(pdb_file: PathType) -> Chem.Mol:
 
 
 def write_mol_to_pdb(mol: Chem.Mol, pdb_file: PathType):
-    if len(mol.GetConformers()) < 1:
+    if mol.GetNumConformers() < 1:
         raise DockingError('For conversion to PDB a conformer is required')
     Chem.MolToPDBFile(mol, filename=str(pdb_file))
 
