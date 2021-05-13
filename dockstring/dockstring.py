@@ -9,10 +9,11 @@ import pkg_resources
 from rdkit.Chem import AllChem as Chem
 
 from dockstring.utils import (DockingError, get_vina_filename, smiles_or_inchi_to_mol, embed_mol,
-               write_embedded_mol_to_pdb, convert_pdbqt_to_pdb, convert_pdb_to_pdbqt, read_mol_from_pdb,
-               parse_scores_from_pdb, parse_search_box_conf)
+                              write_embedded_mol_to_pdb, convert_pdbqt_to_pdb, convert_pdb_to_pdbqt, read_mol_from_pdb,
+                              parse_scores_from_pdb, parse_search_box_conf)
 
 import logging
+
 logging.basicConfig(format='%(message)s')
 
 
@@ -168,8 +169,8 @@ class Target:
         commands = ['pymol', self._pdb]
 
         if search_box:
-            pymol_view_search_box_file = pkg_resources.resource_filename(__package__,
-                                                                         os.path.join('resources', 'view_search_box.py'))
+            pymol_view_search_box_file = pkg_resources.resource_filename(
+                __package__, os.path.join('resources', 'view_search_box.py'))
             conf = parse_search_box_conf(self._conf)
             # yapf: disable
             commands += [
