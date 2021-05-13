@@ -10,11 +10,11 @@ def readme() -> str:
 
 
 version_dict = {}  # type: Dict[str, str]
-with open(os.path.join('dockgym', '_version.py')) as file:
+with open(os.path.join('dockstring', '_version.py')) as file:
     exec(file.read(), version_dict)
 
 setup(
-    name='dockgym',
+    name='dockstring',
     version=version_dict['__version__'],
     description='',
     long_description=readme(),
@@ -22,7 +22,7 @@ setup(
     python_requires='>=3.7',
     packages=find_packages(),
     include_package_data=True,
-    package_data={'dockgym': ['receptors/*', 'bin/*']},
+    package_data={'dockstring': ['receptors/*', 'bin/*']},
     install_requires=[],
     zip_safe=False,
     test_suite='pytest',

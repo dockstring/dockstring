@@ -1,6 +1,6 @@
-# dockgym
+# dockstring
 
-A docking benchmark for ML applications. (TODO improve description)
+A dockstring benchmark for ML applications. (TODO improve description)
 
 ## Installation
 

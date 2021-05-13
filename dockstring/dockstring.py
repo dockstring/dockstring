@@ -8,7 +8,7 @@ from typing import Optional, List
 import pkg_resources
 from rdkit.Chem import AllChem as Chem
 
-from dockgym.utils import (DockingError, get_vina_filename, smiles_or_inchi_to_mol, embed_mol,
+from dockstring.utils import (DockingError, get_vina_filename, smiles_or_inchi_to_mol, embed_mol,
                            write_embedded_mol_to_pdb, convert_pdbqt_to_pdb, convert_pdb_to_pdbqt, read_mol_from_pdb,
                            parse_scores_from_pdb, parse_search_box_conf)
 
@@ -59,7 +59,7 @@ class Target:
             raise DockingError(f"'{self.name}' is not a target we support")
 
     def __repr__(self):
-        return f"dockgym.Target(name='{self.name}', dir='{self._tmp_dir}')"
+        return f"dockstring.Target(name='{self.name}', dir='{self._tmp_dir}')"
 
     @property
     def _tmp_dir(self) -> Path:

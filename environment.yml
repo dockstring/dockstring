@@ -1,4 +1,4 @@
-name: dockgym
+name: dockstring
 channels:
   - conda-forge
 dependencies:
