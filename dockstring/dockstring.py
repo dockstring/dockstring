@@ -168,7 +168,7 @@ class Target:
 
         if search_box:
             pymol_view_search_box_file = pkg_resources.resource_filename(__package__,
-                                                                         os.path.join('utils', 'view_search_box.py'))
+                                                                         os.path.join('resources', 'view_search_box.py'))
             conf = parse_search_box_conf(self._conf)
             # yapf: disable
             commands += [
