@@ -15,14 +15,12 @@ def view_search_box(center_x, center_y, center_z, size_x, size_y, size_z):
     size_x = float(size_x)
     size_y = float(size_y)
     size_z = float(size_z)
-
-    # Vina adds a 5Å padding (TODO check this is exactly true)
-    min_x = center_x - size_x / 2 - 5
-    min_y = center_y - size_y / 2 - 5
-    min_z = center_z - size_z / 2 - 5
-    max_x = center_x + size_x / 2 + 5
-    max_y = center_y + size_y / 2 + 5
-    max_z = center_z + size_z / 2 + 5
+    min_x = center_x - size_x / 2
+    min_y = center_y - size_y / 2
+    min_z = center_z - size_z / 2
+    max_x = center_x + size_x / 2
+    max_y = center_y + size_y / 2
+    max_z = center_z + size_z / 2
 
     # Define the search box
     # yapf: disable
