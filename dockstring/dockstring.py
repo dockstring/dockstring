@@ -137,7 +137,7 @@ class Target:
             ligands = read_mol_from_pdb(docked_ligand_pdb)
             scores = parse_scores_from_pdb(docked_ligand_pdb)
 
-            assert len(scores) == len(ligands.GetConformers())
+            assert len(scores) == ligands.GetNumConformers()
 
             return scores[0], {
                 'ligands': ligands,
