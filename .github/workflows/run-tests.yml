@@ -46,5 +46,4 @@ jobs:
       - name: Test with pytest
         run: |
           conda activate dockstring
-          conda install pytest
           pytest
