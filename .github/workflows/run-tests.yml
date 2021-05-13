@@ -17,19 +17,27 @@ jobs:
       max-parallel: 5
 
     steps:
-    - uses: actions/checkout@v2
-    - name: Set up Python 3.7
-      uses: actions/setup-python@v2
-      with:
-        python-version: 3.7
-    - name: Add conda to system path
-      run: |
-        # $CONDA is an environment variable pointing to the root of the miniconda directory
-        echo $CONDA/bin >> $GITHUB_PATH
-    # - name: Install dependencies
-    #   run: |
-    #     conda env update --file environment.yml --name base
-    # - name: Test with pytest
-    #   run: |
-    #     conda install pytest
-    #     pytest
+      - name: Checkout
+        uses: actions/checkout@v2
+
+      - name: Cache conda
+        uses: actions/cache@v2
+        env:
+          # Increase this value to reset cache if environment.yml has not changed
+          CACHE_NUMBER: 0
+        with:
+          path: ~/conda_pkgs_dir
+          key:
+            ${{ runner.os }}-conda-${{ env.CACHE_NUMBER }}-${{ hashFiles('environment.yml') }}
+
+      - uses: conda-incubator/setup-miniconda@v2
+        with:
+          activate-environment: dockstring
+          channel-priority: strict
+          environment-file: environment.yml
+          use-only-tar-bz2: true # IMPORTANT: This needs to be set for caching to work properly!
+
+      - name: Test with pytest
+        run: |
+          conda install pytest
+          pytest
