@@ -69,7 +69,7 @@ class Target:
             self._tmp_dir_handle = tempfile.TemporaryDirectory()
         return Path(self._tmp_dir_handle.name).resolve()
 
-    def _dock_pdbqt(self, ligand_pdbqt, vina_logfile, vina_outfile, seed, num_cpu=1, verbose=False):
+    def _dock_pdbqt(self, ligand_pdbqt, vina_logfile, vina_outfile, seed, num_cpu: Optional[int] = None, verbose=False):
         # yapf: disable
         cmd_list = [
             str(self._vina),
@@ -94,7 +94,7 @@ class Target:
         if cmd_return.returncode != 0:
             raise DockingError('Docking with Vina failed')
 
-    def dock(self, mol, num_cpu=1, seed=974528263, verbose=False):
+    def dock(self, mol, num_cpu: Optional[int] = None, seed=974528263, verbose=False):
         """
         Given a molecule, this method will return a docking score against the current target.
         - mol: either a SMILES string, an InChIKey or a RDKit molecule object
