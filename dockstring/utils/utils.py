@@ -47,6 +47,7 @@ def embed_mol(mol, seed: int, max_num_attempts: int = 10):
         raise DockingError('Generation of ligand conformation failed')
     return mol
 
+
 def refine_mol_with_ff(mol, max_num_attempts: int = 10):
     """
     Will attempt to refine the embedded coordinates. If refinement does not converge in the first
