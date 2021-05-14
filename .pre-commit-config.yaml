@@ -15,6 +15,9 @@ repos:
         args: [--config=.flake8]
 
 # mypy
+# For some reason, pre-commit mypy doesn't like our folder structure raising errors such as:
+# Duplicate module named 'dockstring'
+# Disabling for now.
 #-   repo: https://github.com/pre-commit/mirrors-mypy
 #    rev: 'v0.812'  # pick a git hash / tag to point to
 #    hooks:
