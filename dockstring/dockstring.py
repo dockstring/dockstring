@@ -1,3 +1,4 @@
+import logging
 import os
 import re
 import subprocess
@@ -8,21 +9,19 @@ from typing import Optional, List
 import pkg_resources
 from rdkit.Chem import AllChem as Chem
 
-from dockstring.utils import (DockingError, get_vina_filename, smiles_or_inchi_to_mol, embed_mol,
-                              write_embedded_mol_to_pdb, convert_pdbqt_to_pdb, convert_pdb_to_pdbqt, read_mol_from_pdb,
-                              parse_scores_from_pdb, parse_search_box_conf)
-
-import logging
+from .utils import (DockingError, get_vina_filename, smiles_or_inchi_to_mol, embed_mol, refine_mol_with_ff,
+                    write_embedded_mol_to_pdb, convert_pdbqt_to_pdb, convert_pdb_to_pdbqt, read_mol_from_pdb,
+                    parse_scores_from_pdb, parse_search_box_conf, PathType)
 
 logging.basicConfig(format='%(message)s')
 
 
 def get_targets_dir() -> Path:
-    return Path(pkg_resources.resource_filename(__package__, 'targets')).resolve()
+    return Path(pkg_resources.resource_filename(__package__, 'resources')).resolve() / 'targets'
 
 
-def load_target(name):
-    return Target(name)
+def load_target(name: str, *args, **kwargs):
+    return Target(name, *args, **kwargs)
 
 
 def list_all_target_names() -> List[str]:
@@ -40,15 +39,16 @@ def list_all_target_names() -> List[str]:
 
 
 class Target:
-    def __init__(self, name):
+    def __init__(self, name, working_dir: Optional[PathType] = None):
         self.name = name
 
-        self._bin_dir = Path(pkg_resources.resource_filename(__package__, 'bin')).resolve()
+        self._bin_dir = Path(pkg_resources.resource_filename(__package__, 'resources')).resolve() / 'bin'
         self._targets_dir = get_targets_dir()
 
         self._vina = self._bin_dir / get_vina_filename()
 
-        # Create temporary directory where the PDB, PDBQT and conf files for the target will be saved
+        # Directory where the ligand and output files will be saved
+        self._custom_working_dir = working_dir
         self._tmp_dir_handle: Optional[tempfile.TemporaryDirectory] = None
 
         # Set PDB, PDBQT, and conf files
@@ -65,11 +65,16 @@ class Target:
 
     @property
     def _tmp_dir(self) -> Path:
+        # If no custom working dir is set and the tmp working dir handle is not initialized, initialize it
+        if self._custom_working_dir:
+            return Path(self._custom_working_dir).resolve()
+
         if not self._tmp_dir_handle:
             self._tmp_dir_handle = tempfile.TemporaryDirectory()
+
         return Path(self._tmp_dir_handle.name).resolve()
 
-    def _dock_pdbqt(self, ligand_pdbqt, vina_logfile, vina_outfile, seed, num_cpu=1, verbose=False):
+    def _dock_pdbqt(self, ligand_pdbqt, vina_logfile, vina_outfile, seed, num_cpu: Optional[int] = None, verbose=False):
         # yapf: disable
         cmd_list = [
             str(self._vina),
@@ -94,7 +99,7 @@ class Target:
         if cmd_return.returncode != 0:
             raise DockingError('Docking with Vina failed')
 
-    def dock(self, string: str, num_cpu=1, seed=974528263, verbose=False):
+    def dock(self, string: str, num_cpu: Optional[int] = None, seed=974528263, verbose=False):
         """
         Given a molecule, this method will return a docking score against the current target.
         - mol: either a SMILES or an InChI string
@@ -105,9 +110,10 @@ class Target:
         The process is the following:
         1. Obtain RDKit molecule object
         2. Embed molecule to 3D conformation
-        3. Prepare ligand
-        4. Dock
-        5. Extract all the info from the docking output
+        3. Refine embedding with a force field.
+        4. Prepare ligand
+        6. Dock
+        8. Parse docking results from the output
         """
 
         # Docking with Vina is performed in a temporary directory
@@ -121,9 +127,10 @@ class Target:
             # Prepare ligand
             mol = smiles_or_inchi_to_mol(string, verbose=verbose)
             embedded_mol = embed_mol(mol, seed=seed)
+            refined_mol = refine_mol_with_ff(embedded_mol)
 
             # Prepare ligand files
-            write_embedded_mol_to_pdb(embedded_mol, ligand_pdb)
+            write_embedded_mol_to_pdb(refined_mol, ligand_pdb)
             convert_pdb_to_pdbqt(ligand_pdb, ligand_pdbqt, verbose=verbose)
 
             # Dock
