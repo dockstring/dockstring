@@ -14,7 +14,7 @@ jobs:
         python-version: 3.7
     - name: Install dependencies
       run: |
-        pip install flake8 yapf
+        pip install flake8 yapf mypy
     - name: Check for yapf formatting
       run: |
         # stop build if yapf formatting fails
@@ -23,3 +23,7 @@ jobs:
       run: |
         # stop build if flake8 formatting fails
         flake8 --config=.flake8 .
+    - name: Check type annotations with mypy
+      run: |
+        # stop build if mypy fails
+        mypy --config-file=.mypy.ini .
