@@ -21,7 +21,7 @@ flake8 --config=.flake8 .
 ```
 
 We have CI set up to check this, but we _highly_ recommend setting up
-[pre-commit](https://pre-commit.com/) to avoid accidentally commiting bad code.
+[pre-commit](https://pre-commit.com/) to avoid accidentally committing bad code.
 You can do so in the following way:
 
 ```bash
