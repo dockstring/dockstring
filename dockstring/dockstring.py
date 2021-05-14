@@ -1,3 +1,4 @@
+import logging
 import os
 import re
 import subprocess
@@ -8,11 +9,9 @@ from typing import Optional, List
 import pkg_resources
 from rdkit.Chem import AllChem as Chem
 
-from dockstring.utils import (DockingError, get_vina_filename, smiles_or_inchi_to_mol, embed_mol, refine_mol_with_ff,
-                              write_embedded_mol_to_pdb, convert_pdbqt_to_pdb, convert_pdb_to_pdbqt, read_mol_from_pdb,
-                              parse_scores_from_pdb, parse_search_box_conf)
-
-import logging
+from .utils import (DockingError, get_vina_filename, smiles_or_inchi_to_mol, embed_mol, refine_mol_with_ff,
+                    write_embedded_mol_to_pdb, convert_pdbqt_to_pdb, convert_pdb_to_pdbqt, read_mol_from_pdb,
+                    parse_scores_from_pdb, parse_search_box_conf, PathType)
 
 logging.basicConfig(format='%(message)s')
 
@@ -21,8 +20,8 @@ def get_targets_dir() -> Path:
     return Path(pkg_resources.resource_filename(__package__, 'resources')).resolve() / 'targets'
 
 
-def load_target(name):
-    return Target(name)
+def load_target(name: str, *args, **kwargs):
+    return Target(name, *args, **kwargs)
 
 
 def list_all_target_names() -> List[str]:
@@ -40,7 +39,7 @@ def list_all_target_names() -> List[str]:
 
 
 class Target:
-    def __init__(self, name):
+    def __init__(self, name, working_dir: Optional[PathType] = None):
         self.name = name
 
         self._bin_dir = Path(pkg_resources.resource_filename(__package__, 'resources')).resolve() / 'bin'
@@ -48,7 +47,8 @@ class Target:
 
         self._vina = self._bin_dir / get_vina_filename()
 
-        # Create temporary directory where the PDB, PDBQT and conf files for the target will be saved
+        # Directory where the ligand and output files will be saved
+        self._custom_working_dir = working_dir
         self._tmp_dir_handle: Optional[tempfile.TemporaryDirectory] = None
 
         # Set PDB, PDBQT, and conf files
@@ -65,8 +65,13 @@ class Target:
 
     @property
     def _tmp_dir(self) -> Path:
+        # If no custom working dir is set and the tmp working dir handle is not initialized, initialize it
+        if self._custom_working_dir:
+            return Path(self._custom_working_dir).resolve()
+
         if not self._tmp_dir_handle:
             self._tmp_dir_handle = tempfile.TemporaryDirectory()
+
         return Path(self._tmp_dir_handle.name).resolve()
 
     def _dock_pdbqt(self, ligand_pdbqt, vina_logfile, vina_outfile, seed, num_cpu: Optional[int] = None, verbose=False):
