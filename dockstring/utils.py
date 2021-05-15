@@ -27,19 +27,31 @@ def get_vina_filename() -> str:
 
 
 def get_resources_dir() -> Path:
-    return Path(pkg_resources.resource_filename(__package__, 'resources'))
+    path = Path(pkg_resources.resource_filename(__package__, 'resources'))
+    if not path.is_dir():
+        raise DockingError("'resources' directory not found")
+    return path
 
 
 def get_targets_dir() -> Path:
-    return get_resources_dir() / 'targets'
+    path = get_resources_dir() / 'targets'
+    if not path.is_dir():
+        raise DockingError("'targets' directory not found")
+    return path
 
 
 def get_bin_dir() -> Path:
-    return get_resources_dir() / 'bin'
+    path = get_resources_dir() / 'bin'
+    if not path.is_dir():
+        raise DockingError("'bin' directory not found")
+    return path
 
 
 def get_vina_path() -> Path:
-    return get_bin_dir() / get_vina_filename()
+    path = get_bin_dir() / get_vina_filename()
+    if not path.is_file():
+        raise DockingError('AutoDock Vina executable not found')
+    return path
 
 
 def smiles_or_inchi_to_mol(smiles_or_inchi, verbose=False):
