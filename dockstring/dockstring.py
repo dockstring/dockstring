@@ -99,10 +99,10 @@ class Target:
         if cmd_return.returncode != 0:
             raise DockingError('Docking with Vina failed')
 
-    def dock(self, mol, num_cpu: Optional[int] = None, seed=974528263, verbose=False):
+    def dock(self, string: str, num_cpu: Optional[int] = None, seed=974528263, verbose=False):
         """
         Given a molecule, this method will return a docking score against the current target.
-        - mol: either a SMILES string, an InChIKey or a RDKit molecule object
+        - mol: either a SMILES or an InChI string
         - num_cpu: number of cpus that AutoDock Vina should use for the docking. By default,
           it will try to find all the cpus on the system, and failing that, it will use 1.
         - seed: integer random seed for reproducibility
@@ -125,13 +125,12 @@ class Target:
 
         try:
             # Prepare ligand
-            if not isinstance(mol, Chem.Mol):
-                mol = smiles_or_inchi_to_mol(mol, verbose=verbose)
-                mol = embed_mol(mol, seed=seed)
-                refine_mol_with_ff(mol)
+            mol = smiles_or_inchi_to_mol(string, verbose=verbose)
+            embedded_mol = embed_mol(mol, seed=seed)
+            refine_mol_with_ff(embedded_mol)
 
             # Prepare ligand files
-            write_embedded_mol_to_pdb(mol, ligand_pdb)
+            write_embedded_mol_to_pdb(embedded_mol, ligand_pdb)
             convert_pdb_to_pdbqt(ligand_pdb, ligand_pdbqt, verbose=verbose)
 
             # Dock
@@ -154,8 +153,7 @@ class Target:
             }
 
         except DockingError as error:
-            mol_id = Chem.MolToSmiles(mol) if isinstance(mol, Chem.Mol) else mol
-            logging.error(f"DockingError: An error occurred for ligand '{mol_id}': {error}")
+            logging.error(f"An error occurred for ligand '{string}': {error}")
             return (None, None)
 
         # TODO Include Mac and Windows binaries in the repository
