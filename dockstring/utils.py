@@ -3,8 +3,10 @@ import os
 import platform
 import re
 import subprocess
+from pathlib import Path
 from typing import List, Union, Dict
 
+import pkg_resources
 from rdkit import rdBase
 from rdkit.Chem import AllChem as Chem
 
@@ -22,6 +24,22 @@ def get_vina_filename() -> str:
         return 'vina_linux'
     else:
         raise DockingError(f"System '{system_name}' not yet supported")
+
+
+def get_resources_dir() -> Path:
+    return Path(pkg_resources.resource_filename(__package__, 'resources'))
+
+
+def get_targets_dir() -> Path:
+    return get_resources_dir() / 'targets'
+
+
+def get_bin_dir() -> Path:
+    return get_resources_dir() / 'bin'
+
+
+def get_vina_path() -> Path:
+    return get_bin_dir() / get_vina_filename()
 
 
 def smiles_or_inchi_to_mol(smiles_or_inchi, verbose=False):
