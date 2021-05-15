@@ -1,20 +1,23 @@
 # Inspired by drawBoundingBox.py by JasonVertrees
+# PyMOL script for visualization of bounding box
 
 from pymol import cmd
 from pymol.cgo import BEGIN, END, VERTEX, LINES, LINEWIDTH, COLOR
 
 
 def view_search_box(center_x, center_y, center_z, size_x, size_y, size_z):
-    linewidth = 2.0
-    r = 1.0
-    g = 1.0
-    b = 1.0
+    line_width = 2.0
+    rgb = (1.0, 1.0, 1.0)
+
+    # Convert center_{x,y,z} and size_{x,y,z} to floats
     center_x = float(center_x)
     center_y = float(center_y)
     center_z = float(center_z)
     size_x = float(size_x)
     size_y = float(size_y)
     size_z = float(size_z)
+
+    # Compute min and max coordinates of bound box
     min_x = center_x - size_x / 2
     min_y = center_y - size_y / 2
     min_z = center_z - size_z / 2
@@ -25,10 +28,10 @@ def view_search_box(center_x, center_y, center_z, size_x, size_y, size_z):
     # Define the search box
     # yapf: disable
     search_box = [
-        LINEWIDTH, float(linewidth),
+        LINEWIDTH, line_width,
 
         BEGIN, LINES,
-        COLOR, float(r), float(g), float(b),
+        COLOR, *rgb,
 
         VERTEX, min_x, min_y, min_z,  # 1
         VERTEX, min_x, min_y, max_z,  # 2
