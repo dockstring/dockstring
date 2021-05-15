@@ -128,7 +128,7 @@ class Target:
             if not isinstance(mol, Chem.Mol):
                 mol = smiles_or_inchi_to_mol(mol, verbose=verbose)
                 mol = embed_mol(mol, seed=seed)
-                mol = refine_mol_with_ff(mol)
+                refine_mol_with_ff(mol)
 
             # Prepare ligand files
             write_embedded_mol_to_pdb(mol, ligand_pdb)
