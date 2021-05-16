@@ -87,11 +87,49 @@ def convert_pdbqt_to_pdb(pdbqt_file: PathType, pdb_file: PathType, verbose=False
         raise DockingError('Conversion from PDBQT to PDB failed')
 
 
-def convert_pdb_to_pdbqt(pdf_file: PathType, pdbqt_file: PathType, verbose=False):
+def protonate_pdb(pdb_file: PathType, verbose=False):
+    # Remove all hydrogens
     # yapf: disable
     cmd_list = [
         'obabel',
-        '-ipdb', pdf_file,
+        pdb_file,
+        '-O', pdb_file,
+        '-d'
+    ]
+    # yapf: enable
+    cmd_return = subprocess.run(cmd_list, stdout=subprocess.PIPE, stderr=subprocess.STDOUT)
+    output = cmd_return.stdout.decode('utf-8')
+
+    if verbose:
+        logging.info(output)
+
+    if cmd_return.returncode != 0:
+        raise DockingError('Protonation of PDB file failed.')
+
+    # Add hydrogens for pH 7
+    # yapf: disable
+    cmd_list = [
+        'obabel',
+        pdb_file,
+        '-O', pdb_file,
+        '-p', '7.0'
+    ]
+    # yapf: enable
+    cmd_return = subprocess.run(cmd_list, stdout=subprocess.PIPE, stderr=subprocess.STDOUT)
+    output = cmd_return.stdout.decode('utf-8')
+
+    if verbose:
+        logging.info(output)
+
+    if cmd_return.returncode != 0:
+        raise DockingError('Protonation of PDB file failed.')
+
+
+def convert_pdb_to_pdbqt(pdb_file: PathType, pdbqt_file: PathType, verbose=False):
+    # yapf: disable
+    cmd_list = [
+        'obabel',
+        '-ipdb', pdb_file,
         '-opdbqt',
         '-O', pdbqt_file,
         '--partialcharge', 'gasteiger'
