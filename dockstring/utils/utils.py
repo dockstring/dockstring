@@ -104,7 +104,7 @@ def protonate_pdb(pdb_file: PathType, verbose=False):
         logging.info(output)
 
     if cmd_return.returncode != 0:
-        raise DockingError('Protonation of PDB file failed.')
+        raise DockingError('Protonation of ligand failed.')
 
     # Add hydrogens for pH 7
     # yapf: disable
@@ -122,7 +122,7 @@ def protonate_pdb(pdb_file: PathType, verbose=False):
         logging.info(output)
 
     if cmd_return.returncode != 0:
-        raise DockingError('Protonation of PDB file failed.')
+        raise DockingError('Protonation of ligand failed.')
 
 
 def convert_pdb_to_pdbqt(pdb_file: PathType, pdbqt_file: PathType, verbose=False):
