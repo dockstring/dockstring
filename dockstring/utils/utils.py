@@ -73,8 +73,7 @@ def convert_pdbqt_to_pdb(pdbqt_file: PathType, pdb_file: PathType, verbose=False
     cmd_args = [
         'obabel',
         '-ipdbqt', pdbqt_file,
-        '-opdb',
-        '-O', pdb_file,
+        '-opdb', pdb_file,
     ]
     # yapf: enable
     cmd_return = subprocess.run(cmd_args, stdout=subprocess.PIPE, stderr=subprocess.STDOUT)
@@ -88,13 +87,13 @@ def convert_pdbqt_to_pdb(pdbqt_file: PathType, pdb_file: PathType, verbose=False
 
 
 def protonate_pdb(pdb_file: PathType, verbose=False):
-    # Remove all hydrogens
+    # Remove all hydrogen atoms
     # yapf: disable
     cmd_list = [
         'obabel',
-        pdb_file,
-        '-O', pdb_file,
-        '-d'
+        '-d',  # delete hydrogen atoms
+        '-ipdb', pdb_file,
+        '-opdb', pdb_file,
     ]
     # yapf: enable
     cmd_return = subprocess.run(cmd_list, stdout=subprocess.PIPE, stderr=subprocess.STDOUT)
@@ -106,13 +105,13 @@ def protonate_pdb(pdb_file: PathType, verbose=False):
     if cmd_return.returncode != 0:
         raise DockingError('Protonation of ligand failed.')
 
-    # Add hydrogens for pH 7
+    # Add hydrogen atoms for pH 7
     # yapf: disable
     cmd_list = [
         'obabel',
-        pdb_file,
-        '-O', pdb_file,
-        '-p', '7.0'
+        '-p', '7.0',  # add hydrogen atoms
+        '-ipdb', pdb_file,
+        '-opdb', pdb_file,
     ]
     # yapf: enable
     cmd_return = subprocess.run(cmd_list, stdout=subprocess.PIPE, stderr=subprocess.STDOUT)
@@ -129,10 +128,9 @@ def convert_pdb_to_pdbqt(pdb_file: PathType, pdbqt_file: PathType, verbose=False
     # yapf: disable
     cmd_list = [
         'obabel',
+        '--partialcharge', 'gasteiger',
         '-ipdb', pdb_file,
-        '-opdbqt',
-        '-O', pdbqt_file,
-        '--partialcharge', 'gasteiger'
+        '-opdbqt', pdbqt_file,
     ]
     # yapf: enable
     cmd_return = subprocess.run(cmd_list, stdout=subprocess.PIPE, stderr=subprocess.STDOUT)
