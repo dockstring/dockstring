@@ -48,18 +48,13 @@ def embed_mol(mol, seed: int, max_num_attempts: int = 10):
     return mol
 
 
-def refine_mol_with_ff(mol, max_num_attempts: int = 10):
+def refine_mol_with_ff(mol, max_iters=1000):
     """
-    Will attempt to refine the embedded coordinates. If refinement does not converge in the first
-    attempt, it continued up to <max_num_attempts> times.
+    Will attempt to refine the embedded coordinates.
     """
-    for _ in range(max_num_attempts):
-        needs_more_optimization = Chem.MMFFOptimizeMolecule(mol)
-        if needs_more_optimization == 0:
-            break
-    if needs_more_optimization != 0:
-        raise DockingError('Refinement of ligand conformation with force field failed.')
-    return mol
+    opt_failed = Chem.MMFFOptimizeMolecule(mol, mmffVariant='MMFF94', maxIters=max_iters)
+    if opt_failed != 0:
+        raise DockingError('Structure refinement of ligand failed')
 
 
 def write_embedded_mol_to_pdb(mol, ligand_pdb):

@@ -127,10 +127,10 @@ class Target:
             # Prepare ligand
             mol = smiles_or_inchi_to_mol(string, verbose=verbose)
             embedded_mol = embed_mol(mol, seed=seed)
-            refined_mol = refine_mol_with_ff(embedded_mol)
+            refine_mol_with_ff(embedded_mol)
 
             # Prepare ligand files
-            write_embedded_mol_to_pdb(refined_mol, ligand_pdb)
+            write_embedded_mol_to_pdb(embedded_mol, ligand_pdb)
             protonate_pdb(ligand_pdb, verbose=verbose)
             convert_pdb_to_pdbqt(ligand_pdb, ligand_pdbqt, verbose=verbose)
 
