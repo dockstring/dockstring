@@ -1,5 +1,8 @@
 # dockstring
 
+![CI Tests](https://github.com/mgarort/dockstring/workflows/Install%20conda%20env%20and%20run%20pytest./badge.svg?branch=main)
+![Code Style: yapf](https://img.shields.io/badge/code%20style-yapf-orange.svg)
+
 A dockstring benchmark for ML applications. (TODO improve description)
 
 ## Installation
