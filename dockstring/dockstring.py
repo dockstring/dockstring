@@ -9,9 +9,9 @@ from typing import Optional, List
 import pkg_resources
 from rdkit.Chem import AllChem as Chem
 
-from .utils import (DockingError, get_vina_filename, smiles_or_inchi_to_mol, embed_mol, refine_mol_with_ff,
-                    write_embedded_mol_to_pdb, convert_pdbqt_to_pdb, convert_pdb_to_pdbqt, read_mol_from_pdb,
-                    parse_scores_from_pdb, parse_search_box_conf, PathType)
+from dockstring.utils import (DockingError, get_vina_filename, smiles_or_inchi_to_mol, embed_mol, refine_mol_with_ff,
+                              write_embedded_mol_to_pdb, protonate_pdb, convert_pdbqt_to_pdb, convert_pdb_to_pdbqt,
+                              read_mol_from_pdb, parse_scores_from_pdb, parse_search_box_conf, PathType)
 
 logging.basicConfig(format='%(message)s')
 
@@ -131,6 +131,7 @@ class Target:
 
             # Prepare ligand files
             write_embedded_mol_to_pdb(embedded_mol, ligand_pdb)
+            protonate_pdb(ligand_pdb, verbose=verbose)
             convert_pdb_to_pdbqt(ligand_pdb, ligand_pdbqt, verbose=verbose)
 
             # Dock
