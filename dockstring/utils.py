@@ -78,18 +78,13 @@ def embed_mol(mol, seed: int, max_num_attempts: int = 10):
     return mol
 
 
-def refine_mol_with_ff(mol, max_num_attempts: int = 10):
+def refine_mol_with_ff(mol, max_iters=1000):
     """
-    Will attempt to refine the embedded coordinates. If refinement does not converge in the first
-    attempt, it continued up to <max_num_attempts> times.
+    Will attempt to refine the embedded coordinates.
     """
-    for _ in range(max_num_attempts):
-        needs_more_optimization = Chem.MMFFOptimizeMolecule(mol)
-        if needs_more_optimization == 0:
-            break
-    if needs_more_optimization != 0:
-        raise DockingError('Refinement of ligand conformation with force field failed.')
-    return mol
+    opt_failed = Chem.MMFFOptimizeMolecule(mol, mmffVariant='MMFF94', maxIters=max_iters)
+    if opt_failed != 0:
+        raise DockingError('Structure refinement of ligand failed')
 
 
 def write_embedded_mol_to_pdb(mol, ligand_pdb):
@@ -117,11 +112,49 @@ def convert_pdbqt_to_pdb(pdbqt_file: PathType, pdb_file: PathType, verbose=False
         raise DockingError('Conversion from PDBQT to PDB failed')
 
 
-def convert_pdb_to_pdbqt(pdf_file: PathType, pdbqt_file: PathType, verbose=False):
+def protonate_pdb(pdb_file: PathType, verbose=False):
+    # Remove all hydrogen atoms
     # yapf: disable
     cmd_list = [
         'obabel',
-        '-ipdb', pdf_file,
+        pdb_file,
+        '-O', pdb_file,
+        '-d',  # delete hydrogen atoms
+    ]
+    # yapf: enable
+    cmd_return = subprocess.run(cmd_list, stdout=subprocess.PIPE, stderr=subprocess.STDOUT)
+    output = cmd_return.stdout.decode('utf-8')
+
+    if verbose:
+        logging.info(output)
+
+    if cmd_return.returncode != 0:
+        raise DockingError('Protonation of ligand failed.')
+
+    # Add hydrogen atoms for pH 7
+    # yapf: disable
+    cmd_list = [
+        'obabel',
+        pdb_file,
+        '-O', pdb_file,
+        '-p', '7.0',  # add hydrogen atoms
+    ]
+    # yapf: enable
+    cmd_return = subprocess.run(cmd_list, stdout=subprocess.PIPE, stderr=subprocess.STDOUT)
+    output = cmd_return.stdout.decode('utf-8')
+
+    if verbose:
+        logging.info(output)
+
+    if cmd_return.returncode != 0:
+        raise DockingError('Protonation of ligand failed.')
+
+
+def convert_pdb_to_pdbqt(pdb_file: PathType, pdbqt_file: PathType, verbose=False):
+    # yapf: disable
+    cmd_list = [
+        'obabel',
+        '-ipdb', pdb_file,
         '-opdbqt',
         '-O', pdbqt_file,
         '--partialcharge', 'gasteiger'
