@@ -99,10 +99,7 @@ class TestDocking:
         charge = sum(atom.GetFormalCharge() for atom in aux['ligands'].GetAtoms())
         assert charge == 2
 
-    # def test_difficult(self):
-    #     working_dir = '/home/gregor/.config/JetBrains/PyCharm2021.1/scratches/vina_tmp'
-    #     target = load_target('CYP3A4', working_dir=working_dir)
-    #     smiles = 'O=C1N(C=2N=C(OC)N=CC2N=C1C=3C=CC=CC3)C4CC4'
-    #
-    #     output = target.dock(smiles, verbose=True)
-    #     print(output)
+    def test_challenging(self):
+        target = load_target('CYP3A4')
+        score, aux = target.dock('O=C1N(C=2N=C(OC)N=CC2N=C1C=3C=CC=CC3)C4CC4')
+        assert math.isclose(score, -9.1)
