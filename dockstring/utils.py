@@ -3,8 +3,10 @@ import os
 import platform
 import re
 import subprocess
+from pathlib import Path
 from typing import List, Union, Dict
 
+import pkg_resources
 from rdkit import rdBase
 from rdkit.Chem import AllChem as Chem
 
@@ -22,6 +24,34 @@ def get_vina_filename() -> str:
         return 'vina_linux'
     else:
         raise DockingError(f"System '{system_name}' not yet supported")
+
+
+def get_resources_dir() -> Path:
+    path = Path(pkg_resources.resource_filename(__package__, 'resources'))
+    if not path.is_dir():
+        raise DockingError("'resources' directory not found")
+    return path
+
+
+def get_targets_dir() -> Path:
+    path = get_resources_dir() / 'targets'
+    if not path.is_dir():
+        raise DockingError("'targets' directory not found")
+    return path
+
+
+def get_bin_dir() -> Path:
+    path = get_resources_dir() / 'bin'
+    if not path.is_dir():
+        raise DockingError("'bin' directory not found")
+    return path
+
+
+def get_vina_path() -> Path:
+    path = get_bin_dir() / get_vina_filename()
+    if not path.is_file():
+        raise DockingError('AutoDock Vina executable not found')
+    return path
 
 
 def smiles_or_inchi_to_mol(smiles_or_inchi, verbose=False):
@@ -48,18 +78,18 @@ def embed_mol(mol, seed: int, max_num_attempts: int = 10):
     return mol
 
 
-def refine_mol_with_ff(mol, max_num_attempts: int = 10):
+def refine_mol_with_ff(mol, max_iters=1000):
     """
-    Will attempt to refine the embedded coordinates. If refinement does not converge in the first
-    attempt, it continued up to <max_num_attempts> times.
+    Will attempt to refine the embedded coordinates.
     """
-    for _ in range(max_num_attempts):
-        needs_more_optimization = Chem.MMFFOptimizeMolecule(mol)
-        if needs_more_optimization == 0:
-            break
-    if needs_more_optimization != 0:
-        raise DockingError('Refinement of ligand conformation with force field failed.')
-    return mol
+    try:
+        opt_failed = Chem.MMFFOptimizeMolecule(mol, mmffVariant='MMFF94', maxIters=max_iters)
+    except Chem.rdchem.KekulizeException as exception:
+        raise DockingError('Structure refinement of ligand failed because the ligand could not be kekulized.\n'
+                           'Message by RDKit:\n'
+                           f'{exception}')
+    if opt_failed != 0:
+        raise DockingError('Structure refinement of ligand failed')
 
 
 def write_embedded_mol_to_pdb(mol, ligand_pdb):
