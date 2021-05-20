@@ -176,7 +176,10 @@ def convert_pdb_to_pdbqt(pdb_file: PathType, pdbqt_file: PathType, verbose=False
 
 
 def read_mol_from_pdb(pdb_file: PathType) -> Chem.Mol:
-    return Chem.MolFromPDBFile(str(pdb_file))
+    mol = Chem.MolFromPDBFile(str(pdb_file))
+    if not mol or mol.GetNumConformers() == 0:
+        raise DockingError(f'Cannot read PDB file {pdb_file}')
+    return mol
 
 
 def write_mol_to_pdb(mol: Chem.Mol, pdb_file: PathType):
