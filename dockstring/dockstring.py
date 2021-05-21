@@ -8,9 +8,10 @@ from typing import Optional, List
 
 from rdkit.Chem import AllChem as Chem
 
-from .utils import (DockingError, smiles_or_inchi_to_mol, embed_mol, refine_mol_with_ff, write_embedded_mol_to_pdb,
+from .utils import (DockingError, smiles_to_mol, embed_mol, refine_mol_with_ff, write_embedded_mol_to_pdb,
                     protonate_pdb, convert_pdbqt_to_pdb, convert_pdb_to_pdbqt, read_mol_from_pdb, parse_scores_from_pdb,
-                    parse_search_box_conf, PathType, get_targets_dir, get_vina_path, get_resources_dir, check_mol)
+                    parse_search_box_conf, PathType, get_targets_dir, get_vina_path, get_resources_dir, check_mol,
+                    canonicalize_smiles)
 
 logging.basicConfig(format='%(message)s')
 
@@ -90,10 +91,10 @@ class Target:
         if cmd_return.returncode != 0:
             raise DockingError('Docking with Vina failed')
 
-    def dock(self, string: str, num_cpu: Optional[int] = None, seed=974528263, verbose=False):
+    def dock(self, smiles: str, num_cpu: Optional[int] = None, seed=974528263, verbose=False):
         """
         Given a molecule, this method will return a docking score against the current target.
-        - mol: either a SMILES or an InChI string
+        - string: SMILES string
         - num_cpu: number of cpus that AutoDock Vina should use for the docking. By default,
           it will try to find all the cpus on the system, and failing that, it will use 1.
         - seed: integer random seed for reproducibility
@@ -116,7 +117,8 @@ class Target:
 
         try:
             # Prepare ligand
-            mol = smiles_or_inchi_to_mol(string, verbose=verbose)
+            canonical_smiles = canonicalize_smiles(smiles)
+            mol = smiles_to_mol(canonical_smiles, verbose=verbose)
             check_mol(mol)
             embedded_mol = embed_mol(mol, seed=seed)
             refine_mol_with_ff(embedded_mol)
@@ -147,7 +149,7 @@ class Target:
             }
 
         except DockingError as error:
-            logging.error(f"An error occurred for ligand '{string}': {error}")
+            logging.error(f"An error occurred for ligand '{smiles}': {error}")
             return (None, None)
 
         # TODO Include Mac and Windows binaries in the repository

@@ -5,8 +5,8 @@ import pytest
 import rdkit.Chem as Chem
 
 from dockstring import list_all_target_names, load_target, DockingError
-from dockstring.utils import (smiles_or_inchi_to_mol, write_embedded_mol_to_pdb, embed_mol, read_mol_from_pdb,
-                              protonate_pdb, convert_pdb_to_pdbqt, convert_pdbqt_to_pdb)
+from dockstring.utils import (smiles_to_mol, write_embedded_mol_to_pdb, embed_mol, read_mol_from_pdb, protonate_pdb,
+                              convert_pdb_to_pdbqt, convert_pdbqt_to_pdb)
 
 
 class TestLoader:
@@ -26,24 +26,24 @@ lysine_smiles = 'C(CCN)C[C@@H](C(=O)O)N'
 
 class TestConversions:
     def test_convert_string_success(self):
-        assert smiles_or_inchi_to_mol('C')
+        assert smiles_to_mol('C')
 
     def test_convert_string_fail(self):
         with pytest.raises(DockingError):
-            smiles_or_inchi_to_mol('not_a_mol')
+            smiles_to_mol('not_a_mol')
 
     def test_charged_mol(self):
         with pytest.raises(DockingError):
-            smiles_or_inchi_to_mol('CCC(=O)O{-1}')
+            smiles_to_mol('CCC(=O)O{-1}')
 
     def test_read_fail(self):
-        mol = smiles_or_inchi_to_mol(lysine_smiles)
+        mol = smiles_to_mol(lysine_smiles)
         with tempfile.NamedTemporaryFile(suffix='.pdb') as f:
             with pytest.raises(DockingError):
                 write_embedded_mol_to_pdb(mol, ligand_pdb=f.name)
 
     def test_read_write_pdb(self):
-        mol = smiles_or_inchi_to_mol(lysine_smiles)
+        mol = smiles_to_mol(lysine_smiles)
         embedded_mol = embed_mol(mol, seed=1)
 
         # Added Hs
@@ -57,7 +57,7 @@ class TestConversions:
         assert Chem.MolToSmiles(mol) == Chem.MolToSmiles(read_mol)
 
     def test_protonation(self):
-        mol = smiles_or_inchi_to_mol(lysine_smiles)
+        mol = smiles_to_mol(lysine_smiles)
         embedded_mol = embed_mol(mol, seed=1)
 
         with tempfile.NamedTemporaryFile(suffix='.pdb') as pdb_file:

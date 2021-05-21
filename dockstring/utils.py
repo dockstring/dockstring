@@ -55,15 +55,19 @@ def get_vina_path() -> Path:
     return path
 
 
-def smiles_or_inchi_to_mol(smiles_or_inchi, verbose=False) -> Chem.Mol:
-    # Read smiles or
+def canonicalize_smiles(smiles: str) -> str:
+    try:
+        return Chem.CanonSmiles(smiles, useChiral=True)
+    except Exception as e:
+        raise DockingError(f'Cannot canonicalize SMILES: {e}')
+
+
+def smiles_to_mol(smiles, verbose=False) -> Chem.Mol:
     if not verbose:
         rdBase.DisableLog('rdApp.error')
-    mol = Chem.MolFromSmiles(smiles_or_inchi, sanitize=True)
+    mol = Chem.MolFromSmiles(smiles, sanitize=True)
     if mol is None:
-        mol = Chem.MolFromInchi(smiles_or_inchi, sanitize=True)
-        if mol is None:
-            raise DockingError('Could not parse SMILES or InChI string')
+        raise DockingError('Could not parse SMILES string')
     if not verbose:
         rdBase.EnableLog('rdApp.error')
 
