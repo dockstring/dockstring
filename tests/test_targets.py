@@ -112,4 +112,6 @@ class TestDocking:
     def test_pdbqt_to_pdb_error(self):
         target = load_target('CYP3A4')
         score, aux = target.dock('O=C1N(C=2N=C(OC)N=CC2N=C1C=3C=CC=CC3)C4CC4')
-        assert math.isclose(score, -9.1)
+        scores = [-9.1, -8.5, -8.2, -8.2, -8.0, -7.9, -7.8, -7.8, -7.7]
+        assert aux['ligand'].GetNumConformers() == 9
+        assert all(math.isclose(a, b) for a, b in zip(aux['scores'], scores))
