@@ -118,7 +118,7 @@ def write_embedded_mol_to_pdb(mol, ligand_pdb):
     Chem.MolToPDBFile(mol, filename=str(ligand_pdb))
 
 
-def convert_pdbqt_to_pdb(pdbqt_file: PathType, pdb_file: PathType, verbose=False) -> None:
+def convert_pdbqt_to_pdb(pdbqt_file: PathType, pdb_file: PathType, disable_bonding=False, verbose=False) -> None:
     # yapf: disable
     cmd_args = [
         'obabel',
@@ -127,6 +127,12 @@ def convert_pdbqt_to_pdb(pdbqt_file: PathType, pdb_file: PathType, verbose=False
         '-O', pdb_file,
     ]
     # yapf: enable
+
+    if disable_bonding:
+        # "a" = read option
+        # "b" = disable automatic bonding
+        cmd_args += ['-ab']
+
     cmd_return = subprocess.run(cmd_args, stdout=subprocess.PIPE, stderr=subprocess.STDOUT)
     stdout = cmd_return.stdout.decode('utf-8')
 

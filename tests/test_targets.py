@@ -103,7 +103,7 @@ class TestDocking:
         assert math.isclose(energy, -4.7)
 
         charge = sum(atom.GetFormalCharge() for atom in aux['ligands'].GetAtoms())
-        assert charge == 2
+        assert charge == 1
 
     def test_challenging(self):
         target = load_target('CYP3A4')
