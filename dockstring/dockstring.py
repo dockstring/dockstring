@@ -65,7 +65,13 @@ class Target:
 
         return Path(self._tmp_dir_handle.name).resolve()
 
-    def _dock_pdbqt(self, ligand_pdbqt, vina_logfile, vina_outfile, seed, num_cpu: Optional[int] = None, verbose=False):
+    def _dock_pdbqt(self,
+                    ligand_pdbqt,
+                    vina_logfile,
+                    vina_outfile,
+                    seed,
+                    num_cpus: Optional[int] = None,
+                    verbose=False):
         # yapf: disable
         cmd_list = [
             get_vina_path(),
@@ -77,8 +83,8 @@ class Target:
             '--seed', str(seed),
         ]
         # yapf: enable
-        if num_cpu is not None:
-            cmd_list += ['--cpu', str(num_cpu)]
+        if num_cpus is not None:
+            cmd_list += ['--cpu', str(num_cpus)]
 
         cmd_return = subprocess.run(cmd_list, stdout=subprocess.PIPE, stderr=subprocess.STDOUT)
         output = cmd_return.stdout.decode('utf-8')
@@ -90,11 +96,11 @@ class Target:
         if cmd_return.returncode != 0:
             raise DockingError('Docking with Vina failed')
 
-    def dock(self, string: str, num_cpu: Optional[int] = None, seed=974528263, verbose=False):
+    def dock(self, string: str, num_cpus: Optional[int] = None, seed=974528263, verbose=False):
         """
         Given a molecule, this method will return a docking score against the current target.
         - mol: either a SMILES or an InChI string
-        - num_cpu: number of cpus that AutoDock Vina should use for the docking. By default,
+        - num_cpus: number of cpus that AutoDock Vina should use for the docking. By default,
           it will try to find all the cpus on the system, and failing that, it will use 1.
         - seed: integer random seed for reproducibility
 
@@ -126,7 +132,7 @@ class Target:
             convert_pdb_to_pdbqt(ligand_pdb, ligand_pdbqt, verbose=verbose)
 
             # Dock
-            self._dock_pdbqt(ligand_pdbqt, vina_logfile, vina_outfile, seed=seed, num_cpu=num_cpu, verbose=verbose)
+            self._dock_pdbqt(ligand_pdbqt, vina_logfile, vina_outfile, seed=seed, num_cpus=num_cpus, verbose=verbose)
 
             # Process docking output
             # If Vina does not find any appropriate poses, the output file will be empty
