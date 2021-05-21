@@ -11,7 +11,7 @@ from rdkit.Chem import AllChem as Chem
 from .utils import (DockingError, smiles_to_mol, embed_mol, refine_mol_with_ff, write_embedded_mol_to_pdb,
                     protonate_pdb, convert_pdbqt_to_pdb, convert_pdb_to_pdbqt, read_mol_from_pdb, parse_scores_from_pdb,
                     parse_search_box_conf, PathType, get_targets_dir, get_vina_path, get_resources_dir, check_mol,
-                    canonicalize_smiles)
+                    canonicalize_smiles, verify_docked_ligand)
 
 logging.basicConfig(format='%(message)s')
 
@@ -139,20 +139,18 @@ class Target:
                                  pdb_file=docked_ligand_pdb,
                                  disable_bonding=True,
                                  verbose=verbose)
-            raw_ligands = read_mol_from_pdb(docked_ligand_pdb)
-            ligands = Chem.AssignBondOrdersFromTemplate(refmol=prepared_mol, mol=raw_ligands)
+            raw_ligand = read_mol_from_pdb(docked_ligand_pdb)
+            ligand = Chem.AssignBondOrdersFromTemplate(refmol=prepared_mol, mol=raw_ligand)
 
             # Verify docked ligand
-            prepared_smiles = Chem.MolToSmiles(prepared_mol)
-            ligand_smiles = Chem.MolToSmiles(ligands)
-            if ligand_smiles != prepared_smiles:
-                raise DockingError(f'Cannot recover original molecule: {prepared_smiles} vs {ligand_smiles}')
+            verify_docked_ligand(ref=prepared_mol, ligand=ligand)
 
+            # Parse scores
             scores = parse_scores_from_pdb(docked_ligand_pdb)
-            assert len(scores) == ligands.GetNumConformers()
+            assert len(scores) == ligand.GetNumConformers()
 
             return scores[0], {
-                'ligands': ligands,
+                'ligand': ligand,
                 'scores': scores,
             }
 

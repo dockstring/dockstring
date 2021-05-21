@@ -213,6 +213,13 @@ def write_mol_to_pdb(mol: Chem.Mol, pdb_file: PathType):
     Chem.MolToPDBFile(mol, filename=str(pdb_file))
 
 
+def verify_docked_ligand(ref: Chem.Mol, ligand: Chem.Mol):
+    ref_smiles = Chem.MolToSmiles(ref)
+    ligand_smiles = Chem.MolToSmiles(ligand)
+    if ligand_smiles != ref_smiles:
+        raise DockingError(f'Cannot recover original ligand: {ref_smiles} != {ligand_smiles}')
+
+
 real_number_pattern = r'[-+]?[0-9]*\.?[0-9]+(e[-+]?[0-9]+)?'
 score_re = re.compile(rf'REMARK VINA RESULT:\s*(?P<score>{real_number_pattern})')
 

@@ -106,7 +106,7 @@ class TestDocking:
         energy, aux = target.dock(smiles)
         assert math.isclose(energy, -4.7)
 
-        charge = sum(atom.GetFormalCharge() for atom in aux['ligands'].GetAtoms())
+        charge = sum(atom.GetFormalCharge() for atom in aux['ligand'].GetAtoms())
         assert charge == 1
 
     def test_pdbqt_to_pdb_error(self):
