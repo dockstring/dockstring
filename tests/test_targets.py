@@ -6,7 +6,7 @@ import rdkit.Chem as Chem
 
 from dockstring import list_all_target_names, load_target, DockingError
 from dockstring.utils import (smiles_or_inchi_to_mol, write_embedded_mol_to_pdb, embed_mol, read_mol_from_pdb,
-                              protonate_pdb, convert_pdb_to_pdbqt, convert_pdbqt_to_pdb)
+                              protonate_pdb)
 
 
 class TestLoader:
@@ -22,6 +22,8 @@ class TestLoader:
 
 
 lysine_smiles = 'C(CCN)C[C@@H](C(=O)O)N'
+aspartic_acid_smiles = 'C([C@@H](C(=O)O)N)C(=O)O'
+alanine_smiles = 'CC(C(=O)O)N'
 
 
 class TestConversions:
@@ -56,23 +58,22 @@ class TestConversions:
         # Hs are gone
         assert Chem.MolToSmiles(mol) == Chem.MolToSmiles(read_mol)
 
-    def test_protonation(self):
-        mol = smiles_or_inchi_to_mol(lysine_smiles)
+    @pytest.mark.parametrize('smiles,charge_ph7', [
+        (lysine_smiles, 1),
+        (alanine_smiles, 0),
+        (aspartic_acid_smiles, -1),
+    ])
+    def test_protonation(self, smiles, charge_ph7):
+        mol = smiles_or_inchi_to_mol(smiles)
         embedded_mol = embed_mol(mol, seed=1)
 
         with tempfile.NamedTemporaryFile(suffix='.pdb') as pdb_file:
             write_embedded_mol_to_pdb(embedded_mol, ligand_pdb=pdb_file.name)
             protonate_pdb(pdb_file.name)
-
-            # Check that conversion to PDBQT doesn't break anything
-            with tempfile.NamedTemporaryFile(suffix='.pdbqt') as pdbqt_file:
-                convert_pdb_to_pdbqt(pdb_file.name, pdbqt_file.name)
-                convert_pdbqt_to_pdb(pdbqt_file.name, pdb_file.name)
-
             read_mol = read_mol_from_pdb(pdb_file.name)
 
         charges = tuple(sum(atom.GetFormalCharge() for atom in m.GetAtoms()) for m in (mol, read_mol))
-        assert charges == (0, 2)
+        assert charges == (0, charge_ph7)
 
 
 class TestRefinement:
