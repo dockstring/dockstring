@@ -140,7 +140,7 @@ class Target:
                                  disable_bonding=True,
                                  verbose=verbose)
             raw_ligands = read_mol_from_pdb(docked_ligand_pdb)
-            ligands = Chem.AssignBondOrdersFromTemplate(prepared_mol, raw_ligands)
+            ligands = Chem.AssignBondOrdersFromTemplate(refmol=prepared_mol, mol=raw_ligands)
 
             # Verify docked ligand
             prepared_smiles = Chem.MolToSmiles(prepared_mol)
