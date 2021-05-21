@@ -95,10 +95,12 @@ class TestDocking:
         energy_2, _ = target.dock(smiles_2)
         assert math.isclose(energy_2, -1.8)
 
-    def test_charged(self):
+    # Test different SMILES representations of lysine
+    @pytest.mark.parametrize('smiles', [lysine_smiles, 'NCCCC[C@H](N)C(=O)O'])
+    def test_charged(self, smiles):
         target = load_target('CYP3A4')
-        energy, aux = target.dock(lysine_smiles)
-        assert math.isclose(energy, -4.6)
+        energy, aux = target.dock(smiles)
+        assert math.isclose(energy, -4.7)
 
         charge = sum(atom.GetFormalCharge() for atom in aux['ligands'].GetAtoms())
         assert charge == 2
