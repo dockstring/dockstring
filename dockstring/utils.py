@@ -77,6 +77,11 @@ def check_mol(mol: Chem.Mol):
     if not no_charges:
         raise DockingError("Some of the molecule's atoms are charged")
 
+    no_hs = all(atom.GetAtomicNum() != 0 for atom in mol.GetAtoms())
+
+    if not no_hs:
+        raise DockingError("Cannot process molecule: hydrogen atoms couldn't be removed")
+
 
 def embed_mol(mol, seed: int, max_num_attempts: int = 10):
     """Will attempt to find 3D coordinates <max_num_attempts> times with different random seeds"""
