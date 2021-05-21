@@ -3,8 +3,9 @@ import os
 import platform
 import re
 import subprocess
+from dataclasses import dataclass
 from pathlib import Path
-from typing import List, Union, Dict
+from typing import List, Union, Dict, Tuple
 
 import pkg_resources
 from rdkit import rdBase
@@ -208,3 +209,21 @@ def parse_search_box_conf(conf_file: PathType) -> Dict[str, float]:
 
         assert len(d) == 6
         return d
+
+
+@dataclass
+class PDBQTAtom:
+    symbol: str
+    positions: Tuple[float, float, float]
+
+
+atom_re = re.compile(r'ATOM\s+\d+\s+(?P<symbol>[a-zA-Z]+)\d+\s+\w+\s+\d+\s+'
+                     fr'(?P<x>{real_number_pattern})\s+(?P<y>{real_number_pattern})\s+(?P<z>{real_number_pattern})')
+
+
+def parse_single_pdbqt(string: str) -> List[PDBQTAtom]:
+    return [
+        PDBQTAtom(symbol=match.group('symbol'),
+                  positions=(float(match.group('x')), float(match.group('y')), float(match.group('z'))))
+        for match in atom_re.finditer(string)
+    ]
