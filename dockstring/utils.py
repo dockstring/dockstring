@@ -55,17 +55,27 @@ def get_vina_path() -> Path:
     return path
 
 
-def smiles_or_inchi_to_mol(smiles_or_inchi, verbose=False):
+def smiles_or_inchi_to_mol(smiles_or_inchi, verbose=False) -> Chem.Mol:
+    # Read smiles or
     if not verbose:
         rdBase.DisableLog('rdApp.error')
-    mol = Chem.MolFromSmiles(smiles_or_inchi)
+    mol = Chem.MolFromSmiles(smiles_or_inchi, sanitize=True)
     if mol is None:
-        mol = Chem.MolFromInchi(smiles_or_inchi)
+        mol = Chem.MolFromInchi(smiles_or_inchi, sanitize=True)
         if mol is None:
             raise DockingError('Could not parse SMILES or InChI string')
     if not verbose:
         rdBase.EnableLog('rdApp.error')
+
     return mol
+
+
+def check_mol(mol: Chem.Mol):
+    # Verify that none of the atoms are charged
+    no_charges = all(atom.GetFormalCharge() == 0 for atom in mol.GetAtoms())
+
+    if not no_charges:
+        raise DockingError("Some of the molecule's atoms are charged")
 
 
 def embed_mol(mol, seed: int, max_num_attempts: int = 10):

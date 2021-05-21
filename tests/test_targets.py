@@ -32,6 +32,10 @@ class TestConversions:
         with pytest.raises(DockingError):
             smiles_or_inchi_to_mol('not_a_mol')
 
+    def test_charged_mol(self):
+        with pytest.raises(DockingError):
+            smiles_or_inchi_to_mol('CCC(=O)O{-1}')
+
     def test_read_fail(self):
         mol = smiles_or_inchi_to_mol(lysine_smiles)
         with tempfile.NamedTemporaryFile(suffix='.pdb') as f:
