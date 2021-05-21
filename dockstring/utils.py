@@ -213,6 +213,12 @@ def write_mol_to_pdb(mol: Chem.Mol, pdb_file: PathType):
     Chem.MolToPDBFile(mol, filename=str(pdb_file))
 
 
+def check_vina_output(output_file: Path):
+    # If Vina does not find any appropriate poses, the output file will be empty
+    if os.stat(output_file).st_size == 0:
+        raise DockingError('AutoDock Vina could not find any appropriate pose.')
+
+
 def verify_docked_ligand(ref: Chem.Mol, ligand: Chem.Mol):
     ref_smiles = Chem.MolToSmiles(ref)
     ligand_smiles = Chem.MolToSmiles(ligand)

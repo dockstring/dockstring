@@ -11,7 +11,7 @@ from rdkit.Chem import AllChem as Chem
 from .utils import (DockingError, smiles_to_mol, embed_mol, refine_mol_with_ff, write_embedded_mol_to_pdb,
                     protonate_pdb, convert_pdbqt_to_pdb, convert_pdb_to_pdbqt, read_mol_from_pdb, parse_scores_from_pdb,
                     parse_search_box_conf, PathType, get_targets_dir, get_vina_path, get_resources_dir, check_mol,
-                    canonicalize_smiles, verify_docked_ligand)
+                    canonicalize_smiles, verify_docked_ligand, check_vina_output)
 
 logging.basicConfig(format='%(message)s')
 
@@ -131,10 +131,7 @@ class Target:
             self._dock_pdbqt(ligand_pdbqt, vina_logfile, vina_outfile, seed=seed, num_cpus=num_cpus, verbose=verbose)
 
             # Process docking output
-            # If Vina does not find any appropriate poses, the output file will be empty
-            if os.stat(vina_outfile).st_size == 0:
-                raise DockingError('AutoDock Vina could not find any appropriate pose.')
-
+            check_vina_output(vina_outfile)
             convert_pdbqt_to_pdb(pdbqt_file=vina_outfile,
                                  pdb_file=docked_ligand_pdb,
                                  disable_bonding=True,
