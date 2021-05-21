@@ -1,11 +1,14 @@
 import math
+import os
 import tempfile
+from pathlib import Path
 
 import pytest
 import rdkit.Chem as Chem
 
 from dockstring import list_all_target_names, load_target, DockingError
-from dockstring.utils import (smiles_to_mol, write_embedded_mol_to_pdb, embed_mol, read_mol_from_pdb, protonate_pdb)
+from dockstring.utils import (smiles_to_mol, write_embedded_mol_to_pdb, embed_mol, read_mol_from_pdb, protonate_pdb,
+                              check_vina_output, parse_scores_from_output)
 
 
 class TestLoader:
@@ -79,6 +82,20 @@ class TestConversions:
         assert charges == (0, charge_ph7)
 
 
+resources_dir = Path(os.path.dirname(os.path.realpath(__file__))) / 'resources'
+
+
+class TestParser:
+    def test_score_parser(self):
+        vina_output = resources_dir / 'vina.out'
+        assert check_vina_output(vina_output) is None
+
+        scores = parse_scores_from_output(vina_output)
+        expected = [-4.7, -4.6, -4.5, -4.5, -4.4, -4.4, -4.4, -4.3, -4.3]
+        assert len(scores) == len(expected)
+        assert all(math.isclose(a, b) for a, b in zip(scores, expected))
+
+
 class TestRefinement:
     def test_successful_refinement(self):
         pass
@@ -114,4 +131,5 @@ class TestDocking:
         score, aux = target.dock('O=C1N(C=2N=C(OC)N=CC2N=C1C=3C=CC=CC3)C4CC4')
         scores = [-9.1, -8.5, -8.2, -8.2, -8.0, -7.9, -7.8, -7.8, -7.7]
         assert aux['ligand'].GetNumConformers() == 9
+        assert len(aux['scores']) == len(scores)
         assert all(math.isclose(a, b) for a, b in zip(aux['scores'], scores))

@@ -230,8 +230,8 @@ real_number_pattern = r'[-+]?[0-9]*\.?[0-9]+(e[-+]?[0-9]+)?'
 score_re = re.compile(rf'REMARK VINA RESULT:\s*(?P<score>{real_number_pattern})')
 
 
-def parse_scores_from_pdb(pdb_file: PathType) -> List[float]:
-    with open(pdb_file, mode='r') as f:
+def parse_scores_from_output(output_file: PathType) -> List[float]:
+    with open(output_file, mode='r') as f:
         content = f.read()
     return [float(match.group('score')) for match in score_re.finditer(content)]
 

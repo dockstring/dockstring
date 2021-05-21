@@ -1,0 +1,432 @@
+MODEL 1
+REMARK VINA RESULT:      -4.7      0.000      0.000
+REMARK  Name = /home/gregor/.config/JetBrains/PyCharm2021.1/scratches/vina_tmp_1/ligand.pdb
+REMARK  7 active torsions:
+REMARK  status: ('A' for Active; 'I' for Inactive)
+REMARK    1  A    between atoms: NZ_1  and  CE_2
+REMARK    2  A    between atoms: CE_2  and  CD_3
+REMARK    3  A    between atoms: CD_3  and  CG_4
+REMARK    4  A    between atoms: CG_4  and  CB_5
+REMARK    5  A    between atoms: CB_5  and  CA_6
+REMARK    6  A    between atoms: CA_6  and  N_7
+REMARK    7  A    between atoms: CA_6  and  C_8
+REMARK                            x       y       z     vdW  Elec       q    Type
+REMARK                         _______ _______ _______ _____ _____    ______ ____
+ROOT
+ATOM      1  CB  LYS A   1      33.760 -21.153  31.561  0.00  0.00    -0.005 C 
+ENDROOT
+BRANCH   1   2
+ATOM      2  CG  LYS A   1      33.276 -19.908  32.314  0.00  0.00    -0.003 C 
+BRANCH   2   3
+ATOM      3  CD  LYS A   1      33.704 -18.625  31.592  0.00  0.00    -0.020 C 
+BRANCH   3   4
+ATOM      4  CE  LYS A   1      33.953 -17.455  32.546  0.00  0.00    -0.086 C 
+BRANCH   4   5
+ATOM      5  NZ  LYS A   1      32.801 -17.199  33.402  0.00  0.00    +0.378 N 
+ATOM      6  H   LYS A   1      32.842 -16.241  33.750  0.00  0.00    -0.090 HD
+ATOM      7  H   LYS A   1      32.813 -17.848  34.190  0.00  0.00    -0.090 HD
+ATOM      8  H   LYS A   1      31.944 -17.330  32.866  0.00  0.00    -0.090 HD
+ENDBRANCH   4   5
+ENDBRANCH   3   4
+ENDBRANCH   2   3
+ENDBRANCH   1   2
+BRANCH   1   9
+ATOM      9  CA  LYS A   1      33.181 -22.453  32.134  0.00  0.00    +0.040 C 
+BRANCH   9  10
+ATOM     10  N   LYS A   1      32.317 -22.155  33.298  0.00  0.00    +0.387 N 
+ATOM     11  H   LYS A   1      32.350 -22.934  33.956  0.00  0.00    -0.089 HD
+ATOM     12  H   LYS A   1      31.356 -22.018  32.982  0.00  0.00    -0.089 HD
+ATOM     13  H   LYS A   1      32.647 -21.307  33.759  0.00  0.00    -0.089 HD
+ENDBRANCH   9  10
+BRANCH   9  14
+ATOM     14  C   LYS A   1      34.308 -23.390  32.585  0.00  0.00    +0.342 C 
+ATOM     15  O   LYS A   1      34.280 -24.147  33.545  0.00  0.00    -0.248 OA
+ATOM     16  OXT LYS A   1      35.413 -23.297  31.817  0.00  0.00    -0.248 OA
+ENDBRANCH   9  14
+ENDBRANCH   1   9
+TORSDOF 7
+ENDMDL
+MODEL 2
+REMARK VINA RESULT:      -4.6      3.178      4.650
+REMARK  Name = /home/gregor/.config/JetBrains/PyCharm2021.1/scratches/vina_tmp_1/ligand.pdb
+REMARK  7 active torsions:
+REMARK  status: ('A' for Active; 'I' for Inactive)
+REMARK    1  A    between atoms: NZ_1  and  CE_2
+REMARK    2  A    between atoms: CE_2  and  CD_3
+REMARK    3  A    between atoms: CD_3  and  CG_4
+REMARK    4  A    between atoms: CG_4  and  CB_5
+REMARK    5  A    between atoms: CB_5  and  CA_6
+REMARK    6  A    between atoms: CA_6  and  N_7
+REMARK    7  A    between atoms: CA_6  and  C_8
+REMARK                            x       y       z     vdW  Elec       q    Type
+REMARK                         _______ _______ _______ _____ _____    ______ ____
+ROOT
+ATOM      1  CB  LYS A   1      34.695 -21.514  31.186  0.00  0.00    -0.005 C 
+ENDROOT
+BRANCH   1   2
+ATOM      2  CG  LYS A   1      33.399 -21.182  31.937  0.00  0.00    -0.003 C 
+BRANCH   2   3
+ATOM      3  CD  LYS A   1      33.148 -22.179  33.074  0.00  0.00    -0.020 C 
+BRANCH   3   4
+ATOM      4  CE  LYS A   1      34.146 -23.339  33.085  0.00  0.00    -0.086 C 
+BRANCH   4   5
+ATOM      5  NZ  LYS A   1      34.325 -23.887  34.423  0.00  0.00    +0.378 N 
+ATOM      6  H   LYS A   1      34.416 -23.123  35.093  0.00  0.00    -0.090 HD
+ATOM      7  H   LYS A   1      35.168 -24.461  34.445  0.00  0.00    -0.090 HD
+ATOM      8  H   LYS A   1      33.517 -24.459  34.667  0.00  0.00    -0.090 HD
+ENDBRANCH   4   5
+ENDBRANCH   3   4
+ENDBRANCH   2   3
+ENDBRANCH   1   2
+BRANCH   1   9
+ATOM      9  CA  LYS A   1      35.315 -20.287  30.505  0.00  0.00    +0.040 C 
+BRANCH   9  10
+ATOM     10  N   LYS A   1      34.458 -19.099  30.718  0.00  0.00    +0.387 N 
+ATOM     11  H   LYS A   1      34.792 -18.580  31.530  0.00  0.00    -0.089 HD
+ATOM     12  H   LYS A   1      33.496 -19.399  30.878  0.00  0.00    -0.089 HD
+ATOM     13  H   LYS A   1      34.495 -18.501  29.892  0.00  0.00    -0.089 HD
+ENDBRANCH   9  10
+BRANCH   9  14
+ATOM     14  C   LYS A   1      35.463 -20.525  28.998  0.00  0.00    +0.342 C 
+ATOM     15  O   LYS A   1      34.657 -21.090  28.273  0.00  0.00    -0.248 OA
+ATOM     16  OXT LYS A   1      36.628 -20.065  28.501  0.00  0.00    -0.248 OA
+ENDBRANCH   9  14
+ENDBRANCH   1   9
+TORSDOF 7
+ENDMDL
+MODEL 3
+REMARK VINA RESULT:      -4.5      3.448      4.227
+REMARK  Name = /home/gregor/.config/JetBrains/PyCharm2021.1/scratches/vina_tmp_1/ligand.pdb
+REMARK  7 active torsions:
+REMARK  status: ('A' for Active; 'I' for Inactive)
+REMARK    1  A    between atoms: NZ_1  and  CE_2
+REMARK    2  A    between atoms: CE_2  and  CD_3
+REMARK    3  A    between atoms: CD_3  and  CG_4
+REMARK    4  A    between atoms: CG_4  and  CB_5
+REMARK    5  A    between atoms: CB_5  and  CA_6
+REMARK    6  A    between atoms: CA_6  and  N_7
+REMARK    7  A    between atoms: CA_6  and  C_8
+REMARK                            x       y       z     vdW  Elec       q    Type
+REMARK                         _______ _______ _______ _____ _____    ______ ____
+ROOT
+ATOM      1  CB  LYS A   1      34.970 -20.627  30.516  0.00  0.00    -0.005 C 
+ENDROOT
+BRANCH   1   2
+ATOM      2  CG  LYS A   1      34.731 -20.481  29.008  0.00  0.00    -0.003 C 
+BRANCH   2   3
+ATOM      3  CD  LYS A   1      36.008 -20.782  28.214  0.00  0.00    -0.020 C 
+BRANCH   3   4
+ATOM      4  CE  LYS A   1      35.733 -21.152  26.755  0.00  0.00    -0.086 C 
+BRANCH   4   5
+ATOM      5  NZ  LYS A   1      34.498 -21.914  26.613  0.00  0.00    +0.378 N 
+ATOM      6  H   LYS A   1      34.695 -22.907  26.738  0.00  0.00    -0.090 HD
+ATOM      7  H   LYS A   1      34.108 -21.758  25.684  0.00  0.00    -0.090 HD
+ATOM      8  H   LYS A   1      33.828 -21.609  27.319  0.00  0.00    -0.090 HD
+ENDBRANCH   4   5
+ENDBRANCH   3   4
+ENDBRANCH   2   3
+ENDBRANCH   1   2
+BRANCH   1   9
+ATOM      9  CA  LYS A   1      33.687 -20.958  31.290  0.00  0.00    +0.040 C 
+BRANCH   9  10
+ATOM     10  N   LYS A   1      33.147 -19.734  31.924  0.00  0.00    +0.387 N 
+ATOM     11  H   LYS A   1      33.640 -18.918  31.562  0.00  0.00    -0.089 HD
+ATOM     12  H   LYS A   1      33.278 -19.789  32.934  0.00  0.00    -0.089 HD
+ATOM     13  H   LYS A   1      32.152 -19.652  31.713  0.00  0.00    -0.089 HD
+ENDBRANCH   9  10
+BRANCH   9  14
+ATOM     14  C   LYS A   1      33.969 -21.996  32.381  0.00  0.00    +0.342 C 
+ATOM     15  O   LYS A   1      33.562 -21.963  33.534  0.00  0.00    -0.248 OA
+ATOM     16  OXT LYS A   1      34.772 -22.996  31.966  0.00  0.00    -0.248 OA
+ENDBRANCH   9  14
+ENDBRANCH   1   9
+TORSDOF 7
+ENDMDL
+MODEL 4
+REMARK VINA RESULT:      -4.5     12.278     13.213
+REMARK  Name = /home/gregor/.config/JetBrains/PyCharm2021.1/scratches/vina_tmp_1/ligand.pdb
+REMARK  7 active torsions:
+REMARK  status: ('A' for Active; 'I' for Inactive)
+REMARK    1  A    between atoms: NZ_1  and  CE_2
+REMARK    2  A    between atoms: CE_2  and  CD_3
+REMARK    3  A    between atoms: CD_3  and  CG_4
+REMARK    4  A    between atoms: CG_4  and  CB_5
+REMARK    5  A    between atoms: CB_5  and  CA_6
+REMARK    6  A    between atoms: CA_6  and  N_7
+REMARK    7  A    between atoms: CA_6  and  C_8
+REMARK                            x       y       z     vdW  Elec       q    Type
+REMARK                         _______ _______ _______ _____ _____    ______ ____
+ROOT
+ATOM      1  CB  LYS A   1      36.809  -9.752  35.600  0.00  0.00    -0.005 C 
+ENDROOT
+BRANCH   1   2
+ATOM      2  CG  LYS A   1      37.970  -8.752  35.607  0.00  0.00    -0.003 C 
+BRANCH   2   3
+ATOM      3  CD  LYS A   1      38.826  -8.889  34.342  0.00  0.00    -0.020 C 
+BRANCH   3   4
+ATOM      4  CE  LYS A   1      39.955  -7.858  34.268  0.00  0.00    -0.086 C 
+BRANCH   4   5
+ATOM      5  NZ  LYS A   1      41.196  -8.373  34.831  0.00  0.00    +0.378 N 
+ATOM      6  H   LYS A   1      41.017  -8.749  35.763  0.00  0.00    -0.090 HD
+ATOM      7  H   LYS A   1      41.880  -7.619  34.894  0.00  0.00    -0.090 HD
+ATOM      8  H   LYS A   1      41.560  -9.113  34.231  0.00  0.00    -0.090 HD
+ENDBRANCH   4   5
+ENDBRANCH   3   4
+ENDBRANCH   2   3
+ENDBRANCH   1   2
+BRANCH   1   9
+ATOM      9  CA  LYS A   1      35.437  -9.068  35.674  0.00  0.00    +0.040 C 
+BRANCH   9  10
+ATOM     10  N   LYS A   1      34.532  -9.840  36.555  0.00  0.00    +0.387 N 
+ATOM     11  H   LYS A   1      33.582  -9.477  36.469  0.00  0.00    -0.089 HD
+ATOM     12  H   LYS A   1      34.842  -9.751  37.523  0.00  0.00    -0.089 HD
+ATOM     13  H   LYS A   1      34.547 -10.822  36.282  0.00  0.00    -0.089 HD
+ENDBRANCH   9  10
+BRANCH   9  14
+ATOM     14  C   LYS A   1      34.807  -8.974  34.281  0.00  0.00    +0.342 C 
+ATOM     15  O   LYS A   1      35.369  -8.617  33.255  0.00  0.00    -0.248 OA
+ATOM     16  OXT LYS A   1      33.500  -9.305  34.267  0.00  0.00    -0.248 OA
+ENDBRANCH   9  14
+ENDBRANCH   1   9
+TORSDOF 7
+ENDMDL
+MODEL 5
+REMARK VINA RESULT:      -4.4      6.583      7.190
+REMARK  Name = /home/gregor/.config/JetBrains/PyCharm2021.1/scratches/vina_tmp_1/ligand.pdb
+REMARK  7 active torsions:
+REMARK  status: ('A' for Active; 'I' for Inactive)
+REMARK    1  A    between atoms: NZ_1  and  CE_2
+REMARK    2  A    between atoms: CE_2  and  CD_3
+REMARK    3  A    between atoms: CD_3  and  CG_4
+REMARK    4  A    between atoms: CG_4  and  CB_5
+REMARK    5  A    between atoms: CB_5  and  CA_6
+REMARK    6  A    between atoms: CA_6  and  N_7
+REMARK    7  A    between atoms: CA_6  and  C_8
+REMARK                            x       y       z     vdW  Elec       q    Type
+REMARK                         _______ _______ _______ _____ _____    ______ ____
+ROOT
+ATOM      1  CB  LYS A   1      36.717 -20.290  24.978  0.00  0.00    -0.005 C 
+ENDROOT
+BRANCH   1   2
+ATOM      2  CG  LYS A   1      37.796 -19.354  25.534  0.00  0.00    -0.003 C 
+BRANCH   2   3
+ATOM      3  CD  LYS A   1      38.840 -20.132  26.343  0.00  0.00    -0.020 C 
+BRANCH   3   4
+ATOM      4  CE  LYS A   1      39.180 -19.468  27.680  0.00  0.00    -0.086 C 
+BRANCH   4   5
+ATOM      5  NZ  LYS A   1      38.003 -19.319  28.525  0.00  0.00    +0.378 N 
+ATOM      6  H   LYS A   1      38.182 -19.744  29.435  0.00  0.00    -0.090 HD
+ATOM      7  H   LYS A   1      37.207 -19.782  28.085  0.00  0.00    -0.090 HD
+ATOM      8  H   LYS A   1      37.795 -18.328  28.648  0.00  0.00    -0.090 HD
+ENDBRANCH   4   5
+ENDBRANCH   3   4
+ENDBRANCH   2   3
+ENDBRANCH   1   2
+BRANCH   1   9
+ATOM      9  CA  LYS A   1      35.388 -20.180  25.737  0.00  0.00    +0.040 C 
+BRANCH   9  10
+ATOM     10  N   LYS A   1      35.298 -18.868  26.415  0.00  0.00    +0.387 N 
+ATOM     11  H   LYS A   1      34.557 -18.313  25.985  0.00  0.00    -0.089 HD
+ATOM     12  H   LYS A   1      36.187 -18.376  26.324  0.00  0.00    -0.089 HD
+ATOM     13  H   LYS A   1      35.087 -19.009  27.403  0.00  0.00    -0.089 HD
+ENDBRANCH   9  10
+BRANCH   9  14
+ATOM     14  C   LYS A   1      35.278 -21.288  26.790  0.00  0.00    +0.342 C 
+ATOM     15  O   LYS A   1      35.905 -21.357  27.837  0.00  0.00    -0.248 OA
+ATOM     16  OXT LYS A   1      34.407 -22.259  26.448  0.00  0.00    -0.248 OA
+ENDBRANCH   9  14
+ENDBRANCH   1   9
+TORSDOF 7
+ENDMDL
+MODEL 6
+REMARK VINA RESULT:      -4.4     10.564     12.312
+REMARK  Name = /home/gregor/.config/JetBrains/PyCharm2021.1/scratches/vina_tmp_1/ligand.pdb
+REMARK  7 active torsions:
+REMARK  status: ('A' for Active; 'I' for Inactive)
+REMARK    1  A    between atoms: NZ_1  and  CE_2
+REMARK    2  A    between atoms: CE_2  and  CD_3
+REMARK    3  A    between atoms: CD_3  and  CG_4
+REMARK    4  A    between atoms: CG_4  and  CB_5
+REMARK    5  A    between atoms: CB_5  and  CA_6
+REMARK    6  A    between atoms: CA_6  and  N_7
+REMARK    7  A    between atoms: CA_6  and  C_8
+REMARK                            x       y       z     vdW  Elec       q    Type
+REMARK                         _______ _______ _______ _____ _____    ______ ____
+ROOT
+ATOM      1  CB  LYS A   1      36.521 -10.202  34.641  0.00  0.00    -0.005 C 
+ENDROOT
+BRANCH   1   2
+ATOM      2  CG  LYS A   1      36.620 -10.862  36.022  0.00  0.00    -0.003 C 
+BRANCH   2   3
+ATOM      3  CD  LYS A   1      36.177 -12.329  35.967  0.00  0.00    -0.020 C 
+BRANCH   3   4
+ATOM      4  CE  LYS A   1      37.040 -13.180  35.033  0.00  0.00    -0.086 C 
+BRANCH   4   5
+ATOM      5  NZ  LYS A   1      36.230 -14.042  34.182  0.00  0.00    +0.378 N 
+ATOM      6  H   LYS A   1      35.489 -14.469  34.738  0.00  0.00    -0.090 HD
+ATOM      7  H   LYS A   1      36.818 -14.772  33.779  0.00  0.00    -0.090 HD
+ATOM      8  H   LYS A   1      35.815 -13.487  33.433  0.00  0.00    -0.090 HD
+ENDBRANCH   4   5
+ENDBRANCH   3   4
+ENDBRANCH   2   3
+ENDBRANCH   1   2
+BRANCH   1   9
+ATOM      9  CA  LYS A   1      35.256  -9.348  34.482  0.00  0.00    +0.040 C 
+BRANCH   9  10
+ATOM     10  N   LYS A   1      35.057  -8.997  33.058  0.00  0.00    +0.387 N 
+ATOM     11  H   LYS A   1      34.591  -8.092  32.993  0.00  0.00    -0.089 HD
+ATOM     12  H   LYS A   1      34.479  -9.709  32.610  0.00  0.00    -0.089 HD
+ATOM     13  H   LYS A   1      35.962  -8.949  32.589  0.00  0.00    -0.089 HD
+ENDBRANCH   9  10
+BRANCH   9  14
+ATOM     14  C   LYS A   1      35.374  -8.055  35.297  0.00  0.00    +0.342 C 
+ATOM     15  O   LYS A   1      34.464  -7.479  35.875  0.00  0.00    -0.248 OA
+ATOM     16  OXT LYS A   1      36.624  -7.550  35.310  0.00  0.00    -0.248 OA
+ENDBRANCH   9  14
+ENDBRANCH   1   9
+TORSDOF 7
+ENDMDL
+MODEL 7
+REMARK VINA RESULT:      -4.4      4.064      5.355
+REMARK  Name = /home/gregor/.config/JetBrains/PyCharm2021.1/scratches/vina_tmp_1/ligand.pdb
+REMARK  7 active torsions:
+REMARK  status: ('A' for Active; 'I' for Inactive)
+REMARK    1  A    between atoms: NZ_1  and  CE_2
+REMARK    2  A    between atoms: CE_2  and  CD_3
+REMARK    3  A    between atoms: CD_3  and  CG_4
+REMARK    4  A    between atoms: CG_4  and  CB_5
+REMARK    5  A    between atoms: CB_5  and  CA_6
+REMARK    6  A    between atoms: CA_6  and  N_7
+REMARK    7  A    between atoms: CA_6  and  C_8
+REMARK                            x       y       z     vdW  Elec       q    Type
+REMARK                         _______ _______ _______ _____ _____    ______ ____
+ROOT
+ATOM      1  CB  LYS A   1      35.123 -20.687  30.272  0.00  0.00    -0.005 C 
+ENDROOT
+BRANCH   1   2
+ATOM      2  CG  LYS A   1      33.980 -21.142  31.187  0.00  0.00    -0.003 C 
+BRANCH   2   3
+ATOM      3  CD  LYS A   1      34.356 -22.420  31.947  0.00  0.00    -0.020 C 
+BRANCH   3   4
+ATOM      4  CE  LYS A   1      33.433 -22.703  33.134  0.00  0.00    -0.086 C 
+BRANCH   4   5
+ATOM      5  NZ  LYS A   1      33.995 -23.706  34.030  0.00  0.00    +0.378 N 
+ATOM      6  H   LYS A   1      33.428 -24.553  33.990  0.00  0.00    -0.090 HD
+ATOM      7  H   LYS A   1      34.001 -23.345  34.984  0.00  0.00    -0.090 HD
+ATOM      8  H   LYS A   1      34.949 -23.922  33.742  0.00  0.00    -0.090 HD
+ENDBRANCH   4   5
+ENDBRANCH   3   4
+ENDBRANCH   2   3
+ENDBRANCH   1   2
+BRANCH   1   9
+ATOM      9  CA  LYS A   1      34.725 -20.671  28.790  0.00  0.00    +0.040 C 
+BRANCH   9  10
+ATOM     10  N   LYS A   1      35.783 -21.307  27.973  0.00  0.00    +0.387 N 
+ATOM     11  H   LYS A   1      35.792 -20.888  27.043  0.00  0.00    -0.089 HD
+ATOM     12  H   LYS A   1      35.595 -22.307  27.894  0.00  0.00    -0.089 HD
+ATOM     13  H   LYS A   1      36.689 -21.165  28.420  0.00  0.00    -0.089 HD
+ENDBRANCH   9  10
+BRANCH   9  14
+ATOM     14  C   LYS A   1      34.524 -19.232  28.303  0.00  0.00    +0.342 C 
+ATOM     15  O   LYS A   1      33.880 -18.882  27.325  0.00  0.00    -0.248 OA
+ATOM     16  OXT LYS A   1      35.173 -18.322  29.058  0.00  0.00    -0.248 OA
+ENDBRANCH   9  14
+ENDBRANCH   1   9
+TORSDOF 7
+ENDMDL
+MODEL 8
+REMARK VINA RESULT:      -4.3      6.894      7.621
+REMARK  Name = /home/gregor/.config/JetBrains/PyCharm2021.1/scratches/vina_tmp_1/ligand.pdb
+REMARK  7 active torsions:
+REMARK  status: ('A' for Active; 'I' for Inactive)
+REMARK    1  A    between atoms: NZ_1  and  CE_2
+REMARK    2  A    between atoms: CE_2  and  CD_3
+REMARK    3  A    between atoms: CD_3  and  CG_4
+REMARK    4  A    between atoms: CG_4  and  CB_5
+REMARK    5  A    between atoms: CB_5  and  CA_6
+REMARK    6  A    between atoms: CA_6  and  N_7
+REMARK    7  A    between atoms: CA_6  and  C_8
+REMARK                            x       y       z     vdW  Elec       q    Type
+REMARK                         _______ _______ _______ _____ _____    ______ ____
+ROOT
+ATOM      1  CB  LYS A   1      36.358 -21.203  26.775  0.00  0.00    -0.005 C 
+ENDROOT
+BRANCH   1   2
+ATOM      2  CG  LYS A   1      34.966 -21.525  26.218  0.00  0.00    -0.003 C 
+BRANCH   2   3
+ATOM      3  CD  LYS A   1      33.884 -20.700  26.925  0.00  0.00    -0.020 C 
+BRANCH   3   4
+ATOM      4  CE  LYS A   1      34.448 -19.501  27.689  0.00  0.00    -0.086 C 
+BRANCH   4   5
+ATOM      5  NZ  LYS A   1      34.275 -18.257  26.950  0.00  0.00    +0.378 N 
+ATOM      6  H   LYS A   1      34.312 -18.449  25.949  0.00  0.00    -0.090 HD
+ATOM      7  H   LYS A   1      35.020 -17.607  27.200  0.00  0.00    -0.090 HD
+ATOM      8  H   LYS A   1      33.371 -17.846  27.184  0.00  0.00    -0.090 HD
+ENDBRANCH   4   5
+ENDBRANCH   3   4
+ENDBRANCH   2   3
+ENDBRANCH   1   2
+BRANCH   1   9
+ATOM      9  CA  LYS A   1      37.389 -20.933  25.671  0.00  0.00    +0.040 C 
+BRANCH   9  10
+ATOM     10  N   LYS A   1      38.715 -21.450  26.078  0.00  0.00    +0.387 N 
+ATOM     11  H   LYS A   1      38.608 -22.381  26.481  0.00  0.00    -0.089 HD
+ATOM     12  H   LYS A   1      39.126 -20.824  26.771  0.00  0.00    -0.089 HD
+ATOM     13  H   LYS A   1      39.325 -21.501  25.261  0.00  0.00    -0.089 HD
+ENDBRANCH   9  10
+BRANCH   9  14
+ATOM     14  C   LYS A   1      37.507 -19.429  25.401  0.00  0.00    +0.342 C 
+ATOM     15  O   LYS A   1      36.626 -18.700  24.968  0.00  0.00    -0.248 OA
+ATOM     16  OXT LYS A   1      38.735 -18.939  25.664  0.00  0.00    -0.248 OA
+ENDBRANCH   9  14
+ENDBRANCH   1   9
+TORSDOF 7
+ENDMDL
+MODEL 9
+REMARK VINA RESULT:      -4.3      6.548      7.132
+REMARK  Name = /home/gregor/.config/JetBrains/PyCharm2021.1/scratches/vina_tmp_1/ligand.pdb
+REMARK  7 active torsions:
+REMARK  status: ('A' for Active; 'I' for Inactive)
+REMARK    1  A    between atoms: NZ_1  and  CE_2
+REMARK    2  A    between atoms: CE_2  and  CD_3
+REMARK    3  A    between atoms: CD_3  and  CG_4
+REMARK    4  A    between atoms: CG_4  and  CB_5
+REMARK    5  A    between atoms: CB_5  and  CA_6
+REMARK    6  A    between atoms: CA_6  and  N_7
+REMARK    7  A    between atoms: CA_6  and  C_8
+REMARK                            x       y       z     vdW  Elec       q    Type
+REMARK                         _______ _______ _______ _____ _____    ______ ____
+ROOT
+ATOM      1  CB  LYS A   1      35.556 -20.081  25.741  0.00  0.00    -0.005 C 
+ENDROOT
+BRANCH   1   2
+ATOM      2  CG  LYS A   1      36.837 -20.177  24.904  0.00  0.00    -0.003 C 
+BRANCH   2   3
+ATOM      3  CD  LYS A   1      37.938 -19.275  25.472  0.00  0.00    -0.020 C 
+BRANCH   3   4
+ATOM      4  CE  LYS A   1      38.849 -19.996  26.469  0.00  0.00    -0.086 C 
+BRANCH   4   5
+ATOM      5  NZ  LYS A   1      38.997 -21.409  26.143  0.00  0.00    +0.378 N 
+ATOM      6  H   LYS A   1      38.092 -21.791  25.866  0.00  0.00    -0.090 HD
+ATOM      7  H   LYS A   1      39.343 -21.912  26.961  0.00  0.00    -0.090 HD
+ATOM      8  H   LYS A   1      39.659 -21.512  25.374  0.00  0.00    -0.090 HD
+ENDBRANCH   4   5
+ENDBRANCH   3   4
+ENDBRANCH   2   3
+ENDBRANCH   1   2
+BRANCH   1   9
+ATOM      9  CA  LYS A   1      35.464 -21.178  26.811  0.00  0.00    +0.040 C 
+BRANCH   9  10
+ATOM     10  N   LYS A   1      34.320 -22.072  26.523  0.00  0.00    +0.387 N 
+ATOM     11  H   LYS A   1      33.614 -21.967  27.253  0.00  0.00    -0.089 HD
+ATOM     12  H   LYS A   1      34.643 -23.040  26.500  0.00  0.00    -0.089 HD
+ATOM     13  H   LYS A   1      33.915 -21.827  25.620  0.00  0.00    -0.089 HD
+ENDBRANCH   9  10
+BRANCH   9  14
+ATOM     14  C   LYS A   1      35.270 -20.560  28.200  0.00  0.00    +0.342 C 
+ATOM     15  O   LYS A   1      34.887 -21.142  29.204  0.00  0.00    -0.248 OA
+ATOM     16  OXT LYS A   1      35.540 -19.239  28.234  0.00  0.00    -0.248 OA
+ENDBRANCH   9  14
+ENDBRANCH   1   9
+TORSDOF 7
+ENDMDL
