@@ -5,8 +5,7 @@ import pytest
 import rdkit.Chem as Chem
 
 from dockstring import list_all_target_names, load_target, DockingError
-from dockstring.utils import (smiles_to_mol, write_embedded_mol_to_pdb, embed_mol, read_mol_from_pdb, protonate_pdb,
-                              convert_pdb_to_pdbqt, convert_pdbqt_to_pdb)
+from dockstring.utils import (smiles_to_mol, write_embedded_mol_to_pdb, embed_mol, read_mol_from_pdb, protonate_pdb)
 
 
 class TestLoader:
@@ -22,6 +21,8 @@ class TestLoader:
 
 
 lysine_smiles = 'C(CCN)C[C@@H](C(=O)O)N'
+aspartic_acid_smiles = 'C([C@@H](C(=O)O)N)C(=O)O'
+alanine_smiles = 'CC(C(=O)O)N'
 
 
 class TestConversions:
@@ -36,14 +37,18 @@ class TestConversions:
         with pytest.raises(DockingError):
             smiles_to_mol('CCC(=O)O{-1}')
 
-    def test_read_fail(self):
+    def test_write_fail(self):
         mol = smiles_to_mol(lysine_smiles)
         with tempfile.NamedTemporaryFile(suffix='.pdb') as f:
             with pytest.raises(DockingError):
                 write_embedded_mol_to_pdb(mol, ligand_pdb=f.name)
 
-    def test_read_write_pdb(self):
-        mol = smiles_to_mol(lysine_smiles)
+    @pytest.mark.parametrize('smiles', [
+        lysine_smiles,
+        'O=C1N(C=2N=C(OC)N=CC2N=C1C=3C=CC=CC3)C4CC4',
+    ])
+    def test_read_write_pdb(self, smiles):
+        mol = smiles_to_mol(smiles)
         embedded_mol = embed_mol(mol, seed=1)
 
         # Added Hs
@@ -56,23 +61,22 @@ class TestConversions:
         # Hs are gone
         assert Chem.MolToSmiles(mol) == Chem.MolToSmiles(read_mol)
 
-    def test_protonation(self):
-        mol = smiles_to_mol(lysine_smiles)
+    @pytest.mark.parametrize('smiles,charge_ph7', [
+        (lysine_smiles, 1),
+        (alanine_smiles, 0),
+        (aspartic_acid_smiles, -1),
+    ])
+    def test_protonation(self, smiles, charge_ph7):
+        mol = smiles_to_mol(smiles)
         embedded_mol = embed_mol(mol, seed=1)
 
         with tempfile.NamedTemporaryFile(suffix='.pdb') as pdb_file:
             write_embedded_mol_to_pdb(embedded_mol, ligand_pdb=pdb_file.name)
             protonate_pdb(pdb_file.name)
-
-            # Check that conversion to PDBQT doesn't break anything
-            with tempfile.NamedTemporaryFile(suffix='.pdbqt') as pdbqt_file:
-                convert_pdb_to_pdbqt(pdb_file.name, pdbqt_file.name)
-                convert_pdbqt_to_pdb(pdbqt_file.name, pdb_file.name)
-
             read_mol = read_mol_from_pdb(pdb_file.name)
 
         charges = tuple(sum(atom.GetFormalCharge() for atom in m.GetAtoms()) for m in (mol, read_mol))
-        assert charges == (0, 2)
+        assert charges == (0, charge_ph7)
 
 
 class TestRefinement:
@@ -105,7 +109,7 @@ class TestDocking:
         charge = sum(atom.GetFormalCharge() for atom in aux['ligands'].GetAtoms())
         assert charge == 1
 
-    def test_challenging(self):
+    def test_pdbqt_to_pdb_error(self):
         target = load_target('CYP3A4')
         score, aux = target.dock('O=C1N(C=2N=C(OC)N=CC2N=C1C=3C=CC=CC3)C4CC4')
         assert math.isclose(score, -9.1)
