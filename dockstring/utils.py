@@ -85,6 +85,10 @@ def check_mol(mol: Chem.Mol):
     if not no_hs:
         raise DockingError("Cannot process molecule: hydrogen atoms couldn't be removed")
 
+    fragments = Chem.GetMolFrags(mol)
+    if len(fragments) != 1:
+        raise DockingError(f'Incorrect number of molecular fragments ({len(fragments)})')
+
 
 def embed_mol(mol, seed: int, max_num_attempts: int = 10):
     """Will attempt to find 3D coordinates <max_num_attempts> times with different random seeds"""

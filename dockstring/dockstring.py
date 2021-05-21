@@ -153,7 +153,7 @@ class Target:
 
         except DockingError as error:
             logging.error(f"An error occurred for ligand '{smiles}': {error}")
-            return (None, None)
+            raise
 
         # TODO Include Mac and Windows binaries in the repository
         # TODO Put all the calculated scores (and maybe the poses too?) under "data". What should be the format?

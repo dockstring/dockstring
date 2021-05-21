@@ -133,3 +133,10 @@ class TestDocking:
         assert aux['ligand'].GetNumConformers() == 9
         assert len(aux['scores']) == len(scores)
         assert all(math.isclose(a, b) for a, b in zip(aux['scores'], scores))
+
+    def test_multiple_molecules(self):
+        target = load_target('ABL1')
+        with pytest.raises(DockingError):
+            target.dock('C.C')
+        with pytest.raises(DockingError):
+            target.dock('C.CO')
