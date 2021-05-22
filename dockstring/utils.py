@@ -90,11 +90,11 @@ def check_mol(mol: Chem.Mol):
         raise DockingError(f'Incorrect number of molecular fragments ({len(fragments)})')
 
 
-def embed_mol(mol, seed: int, max_num_attempts: int = 10):
-    """Will attempt to find 3D coordinates <max_num_attempts> times with different random seeds"""
+def embed_mol(mol, seed: int, attempt_factor=10):
     # Add hydrogen atoms in order to get a sensible 3D structure
     mol = Chem.AddHs(mol)
-    Chem.EmbedMolecule(mol, randomSeed=seed, maxAttempts=max_num_attempts)
+    # RDKit default for maxAttempts: 10 x number of atoms
+    Chem.EmbedMolecule(mol, randomSeed=seed, maxAttempts=attempt_factor * mol.GetNumAtoms())
     # If not a single conformation is obtained in all the attempts, raise an error
     if mol.GetNumConformers() == 0:
         raise DockingError('Generation of ligand conformation failed')

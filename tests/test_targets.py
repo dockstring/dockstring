@@ -8,7 +8,7 @@ import rdkit.Chem as Chem
 
 from dockstring import list_all_target_names, load_target, DockingError
 from dockstring.utils import (smiles_to_mol, write_embedded_mol_to_pdb, embed_mol, read_mol_from_pdb, protonate_pdb,
-                              check_vina_output, parse_scores_from_output)
+                              check_vina_output, parse_scores_from_output, canonicalize_smiles)
 
 
 class TestLoader:
@@ -94,6 +94,29 @@ class TestParser:
         expected = [-4.7, -4.6, -4.5, -4.5, -4.4, -4.4, -4.4, -4.3, -4.3]
         assert len(scores) == len(expected)
         assert all(math.isclose(a, b) for a, b in zip(scores, expected))
+
+
+class TestEmbedding:
+    @pytest.mark.parametrize('smiles', [
+        'S(C=1C=2NCC(CC2C=C(C1)C(=O)OCC)(C)C)(N[C@H](C(N3CCC(CC3)CCF)=O)CC4=NC=5C=CC=CC5S4)(=O)=O',
+        'N1(C([C@@H](C2=CSC=C2)NC(OC(C)(C)C)=O)=O)[C@H](C(N[C@H](C=O)CCCN=C(N)N)=O)CCC1',
+        'P(OC1=CC=C(C[C@@H](C(N[C@H](C(=O)NCCC=2C=CC=CC2)CCC(O)=O)=O)NC(=O)C)C=C1)(=O)(O)O',
+        r'OC1=C(C=CC(=CC/C=C(/CC/C=C(/CCC=C(C)C)\C)\C)C)C(=C(O)C=2C1=CC=CC2)C',
+    ])
+    def test_difficult(self, smiles: str):
+        canonical_smiles = canonicalize_smiles(smiles)
+        mol = smiles_to_mol(canonical_smiles)
+        embedded_mol = embed_mol(mol, seed=1)
+        assert embedded_mol.GetNumConformers() == 1
+
+    @pytest.mark.parametrize('smiles', [
+        'OC=1N(C(O)=C2C1C3=C4C(=C2CC3O)C=CC=C4)CC5=CC=CC=C5',
+    ])
+    def test_impossible(self, smiles: str):
+        canonical_smiles = canonicalize_smiles(smiles)
+        mol = smiles_to_mol(canonical_smiles)
+        with pytest.raises(DockingError):
+            embed_mol(mol, seed=1)
 
 
 class TestRefinement:
