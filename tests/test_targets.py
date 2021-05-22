@@ -120,8 +120,21 @@ class TestEmbedding:
 
 
 class TestRefinement:
-    def test_successful_refinement(self):
-        pass
+    @pytest.mark.parametrize('smiles', [
+        'C(NC=1C=CC=CC1)(C2=CC=C(C=C2)C3=CC=C(C(NC=4C=CC=CC4)=O)C=C3)=O',
+        'C=1(C=CC(=CC1)NC(=O)C2CCN(CC2)C(=O)C3=CC=C(C=C3)F)C=4C=CC(=CC4)NC(=O)C5CCN(CC5)C(C6=CC=C(C=C6)F)=O',
+    ])
+    def test_successful_refinement(self, smiles):
+        canonical_smiles = canonicalize_smiles(smiles)
+        mol = smiles_to_mol(canonical_smiles)
+        embedded_mol = embed_mol(mol, seed=1)
+
+        props = Chem.MMFFGetMoleculeProperties(embedded_mol)
+        initial_energy = Chem.MMFFGetMoleculeForceField(embedded_mol, props).CalcEnergy()
+        refine_mol_with_ff(embedded_mol)
+        final_energy = Chem.MMFFGetMoleculeForceField(embedded_mol, props).CalcEnergy()
+
+        assert final_energy < initial_energy
 
     @pytest.mark.parametrize('smiles', [
         'S(O)(O)(N=C(C(N1CCN(CC1)C)C=2SC=CC2)C)=CC',
