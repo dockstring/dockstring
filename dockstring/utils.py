@@ -105,6 +105,8 @@ def refine_mol_with_ff(mol, max_iters=1000):
     """
     Will attempt to refine the embedded coordinates.
     """
+    if not Chem.MMFFHasAllMoleculeParams(mol):
+        raise DockingError("Structure refinement of ligand failed: MMFF doesn't have all parameters")
     try:
         opt_failed = Chem.MMFFOptimizeMolecule(mol, mmffVariant='MMFF94', maxIters=max_iters)
     except Chem.rdchem.KekulizeException as exception:

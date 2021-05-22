@@ -123,8 +123,16 @@ class TestRefinement:
     def test_successful_refinement(self):
         pass
 
-    def test_no_ff_parameters(self):
-        pass
+    @pytest.mark.parametrize('smiles', [
+        'S(O)(O)(N=C(C(N1CCN(CC1)C)C=2SC=CC2)C)=CC',
+        'S(N1[C@@H](C(O)=NO)CC(C1)=NS(O)(=O)C)(C2=CC=C(C=C2)OC)(=O)=O',
+    ])
+    def test_no_ff_parameters(self, smiles):
+        canonical_smiles = canonicalize_smiles(smiles)
+        mol = smiles_to_mol(canonical_smiles)
+        embedded_mol = embed_mol(mol, seed=1)
+        with pytest.raises(DockingError):
+            refine_mol_with_ff(embedded_mol)
 
     @pytest.mark.parametrize('smiles', [
         'S=1(O)(O)=CC=2C(=NN(C2NC(=O)C=3OC=4C(C3)=CC=CC4)C5=CC=C(C=C5)C)C1',
