@@ -108,9 +108,7 @@ def refine_mol_with_ff(mol, max_iters=1000):
     try:
         opt_failed = Chem.MMFFOptimizeMolecule(mol, mmffVariant='MMFF94', maxIters=max_iters)
     except Chem.rdchem.KekulizeException as exception:
-        raise DockingError('Structure refinement of ligand failed because the ligand could not be kekulized.\n'
-                           'Message by RDKit:\n'
-                           f'{exception}')
+        raise DockingError(f'Structure refinement of ligand failed: {exception}')
     if opt_failed != 0:
         raise DockingError('Structure refinement of ligand failed')
 

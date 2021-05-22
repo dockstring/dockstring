@@ -4,11 +4,11 @@ import tempfile
 from pathlib import Path
 
 import pytest
-import rdkit.Chem as Chem
+from rdkit.Chem import AllChem as Chem
 
 from dockstring import list_all_target_names, load_target, DockingError
 from dockstring.utils import (smiles_to_mol, write_embedded_mol_to_pdb, embed_mol, read_mol_from_pdb, protonate_pdb,
-                              check_vina_output, parse_scores_from_output, canonicalize_smiles)
+                              check_vina_output, parse_scores_from_output, canonicalize_smiles, refine_mol_with_ff)
 
 
 class TestLoader:
@@ -125,6 +125,17 @@ class TestRefinement:
 
     def test_no_ff_parameters(self):
         pass
+
+    @pytest.mark.parametrize('smiles', [
+        'S=1(O)(O)=CC=2C(=NN(C2NC(=O)C=3OC=4C(C3)=CC=CC4)C5=CC=C(C=C5)C)C1',
+        'ClC1=CC=C(N2N=C3C(C=S(O)(O)=C3)=C2NC(=O)C4CC4)C=C1',
+    ])
+    def test_kekulization_error(self, smiles):
+        canonical_smiles = canonicalize_smiles(smiles)
+        mol = smiles_to_mol(canonical_smiles)
+        embedded_mol = embed_mol(mol, seed=1)
+        with pytest.raises(DockingError):
+            refine_mol_with_ff(embedded_mol)
 
 
 class TestDocking:
