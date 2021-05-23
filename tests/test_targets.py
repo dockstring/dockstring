@@ -195,3 +195,17 @@ class TestDocking:
             target.dock('C.C')
         with pytest.raises(DockingError):
             target.dock('C.CO')
+
+    # Commented out because test takes too long
+    """
+    @pytest.mark.parametrize(
+        'target, ligand',
+        [
+            ('PTPN1', 'O=S(=O)(C1=CC=C(N(C(C2=CC=C(C=C2)NC(C3=CC=C(C=C3)C#N)=O)=O)C)C=C1)NC4=NC=CS4'),
+        ],
+    )
+    def test_docking_failure(self, target, ligand):
+        target = load_target(target)
+        with pytest.raises(DockingError):
+            target.dock(ligand)
+    """
