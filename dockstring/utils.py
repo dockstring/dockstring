@@ -74,17 +74,13 @@ def smiles_to_mol(smiles, verbose=False) -> Chem.Mol:
 
 
 def check_mol(mol: Chem.Mol):
-    # Verify that none of the atoms are charged
-    no_charges = all(atom.GetFormalCharge() == 0 for atom in mol.GetAtoms())
-
-    if not no_charges:
-        raise DockingError("Some of the molecule's atoms are charged")
-
+    # Note: charged species are allowed
+    # Check that there aren't any hydrogen atoms left in the RDKit.Mol
     no_hs = all(atom.GetAtomicNum() != 0 for atom in mol.GetAtoms())
-
     if not no_hs:
         raise DockingError("Cannot process molecule: hydrogen atoms couldn't be removed")
 
+    # Check that the molecule consists of only one fragment
     fragments = Chem.GetMolFrags(mol)
     if len(fragments) != 1:
         raise DockingError(f'Incorrect number of molecular fragments ({len(fragments)})')

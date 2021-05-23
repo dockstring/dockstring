@@ -37,8 +37,8 @@ class TestConversions:
             smiles_to_mol('not_a_mol')
 
     def test_charged_mol(self):
-        with pytest.raises(DockingError):
-            smiles_to_mol('CCC(=O)O{-1}')
+        smiles_to_mol('CCC(=O)[O-]')
+        smiles_to_mol('CC(C)(C)CC(C)(C)C1=CC=C(C=C1)OCCOCC[N+](C)(C)CC2=CC=CC=C2')
 
     def test_write_fail(self):
         mol = smiles_to_mol(lysine_smiles)
