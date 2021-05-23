@@ -1,3 +1,4 @@
+import copy
 import logging
 import os
 import platform
@@ -97,18 +98,39 @@ def embed_mol(mol, seed: int, attempt_factor=10):
     return mol
 
 
-def refine_mol_with_ff(mol, max_iters=1000):
-    """
-    Will attempt to refine the embedded coordinates.
-    """
-    if not Chem.MMFFHasAllMoleculeParams(mol):
-        raise DockingError("Structure refinement of ligand failed: MMFF doesn't have all parameters")
-    try:
-        opt_failed = Chem.MMFFOptimizeMolecule(mol, mmffVariant='MMFF94', maxIters=max_iters)
-    except Chem.rdchem.KekulizeException as exception:
-        raise DockingError(f'Structure refinement of ligand failed: {exception}')
-    if opt_failed != 0:
-        raise DockingError('Structure refinement of ligand failed')
+def run_mmff94_opt(mol: Chem.Mol, max_iters: int) -> Chem.Mol:
+    opt_mol = copy.copy(mol)
+    Chem.MMFFSanitizeMolecule(opt_mol)
+    opt_result = Chem.MMFFOptimizeMolecule(opt_mol, mmffVariant='MMFF94', maxIters=max_iters)
+    if opt_result != 0:
+        raise DockingError('MMFF optimization of ligand failed')
+
+    return opt_mol
+
+
+def run_uff_opt(mol: Chem.Mol, max_iters: int) -> Chem.Mol:
+    opt_mol = copy.copy(mol)
+    opt_result = Chem.UFFOptimizeMolecule(opt_mol, maxIters=max_iters)
+    if opt_result != 0:
+        raise DockingError('UFF optimization of ligand failed')
+
+    return opt_mol
+
+
+def refine_mol_with_ff(mol, max_iters=1000) -> Chem.Mol:
+    if Chem.MMFFHasAllMoleculeParams(mol):
+        try:
+            opt_mol = run_mmff94_opt(mol, max_iters=max_iters)
+        except Chem.rdchem.KekulizeException as exception:
+            logging.info(f'Ligand optimization with MMFF94 failed: {exception}, trying UFF')
+            opt_mol = run_uff_opt(mol, max_iters=max_iters)
+    elif Chem.UFFHasAllMoleculeParams(mol):
+        opt_mol = run_uff_opt(mol, max_iters=max_iters)
+
+    else:
+        raise DockingError('Cannot optimize ligand: parameters not available')
+
+    return opt_mol
 
 
 def write_embedded_mol_to_pdb(mol, ligand_pdb):

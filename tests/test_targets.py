@@ -131,8 +131,8 @@ class TestRefinement:
 
         props = Chem.MMFFGetMoleculeProperties(embedded_mol)
         initial_energy = Chem.MMFFGetMoleculeForceField(embedded_mol, props).CalcEnergy()
-        refine_mol_with_ff(embedded_mol)
-        final_energy = Chem.MMFFGetMoleculeForceField(embedded_mol, props).CalcEnergy()
+        refined_mol = refine_mol_with_ff(embedded_mol)
+        final_energy = Chem.MMFFGetMoleculeForceField(refined_mol, props).CalcEnergy()
 
         assert final_energy < initial_energy
 
@@ -150,13 +150,15 @@ class TestRefinement:
     @pytest.mark.parametrize('smiles', [
         'S=1(O)(O)=CC=2C(=NN(C2NC(=O)C=3OC=4C(C3)=CC=CC4)C5=CC=C(C=C5)C)C1',
         'ClC1=CC=C(N2N=C3C(C=S(O)(O)=C3)=C2NC(=O)C4CC4)C=C1',
+        'S=1(O)(O)=CC2=C(N(N=C2C1)C3=CC=C(F)C=C3)NC(=O)C45CC6CC(C4)CC(C5)C6',
+        'S=1(O)(O)=CC=2C(=NN(C2NC(=O)C=3OC=4C(C3)=CC=CC4)C5=CC=C(C=C5)C)C1',
     ])
-    def test_kekulization_error(self, smiles):
+    def test_kekulization(self, smiles):
+        # With UFF these molecules can be optimized, not with MMFF though (raises KekulizationError)
         canonical_smiles = canonicalize_smiles(smiles)
         mol = smiles_to_mol(canonical_smiles)
         embedded_mol = embed_mol(mol, seed=1)
-        with pytest.raises(DockingError):
-            refine_mol_with_ff(embedded_mol)
+        assert refine_mol_with_ff(embedded_mol)
 
 
 class TestDocking:

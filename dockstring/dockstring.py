@@ -121,8 +121,8 @@ class Target:
 
             # Prepare ligand
             embedded_mol = embed_mol(mol, seed=seed)
-            refine_mol_with_ff(embedded_mol)
-            write_embedded_mol_to_pdb(embedded_mol, ligand_pdb)
+            refined_mol = refine_mol_with_ff(embedded_mol)
+            write_embedded_mol_to_pdb(refined_mol, ligand_pdb)
             protonate_pdb(ligand_pdb, verbose=verbose)
             prepared_mol = read_mol_from_pdb(ligand_pdb)
             convert_pdb_to_pdbqt(ligand_pdb, ligand_pdbqt, verbose=verbose)
