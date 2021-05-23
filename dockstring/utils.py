@@ -163,7 +163,7 @@ def protonate_pdb(pdb_file: PathType, verbose=False):
         logging.info(output)
 
     if cmd_return.returncode != 0:
-        raise DockingError('Protonation of ligand failed.')
+        raise DockingError('Protonation of ligand failed')
 
     # Add hydrogen atoms for pH 7
     # yapf: disable
@@ -220,7 +220,7 @@ def write_mol_to_pdb(mol: Chem.Mol, pdb_file: PathType):
 def check_vina_output(output_file: Path):
     # If Vina does not find any appropriate poses, the output file will be empty
     if os.stat(output_file).st_size == 0:
-        raise DockingError('AutoDock Vina could not find any appropriate pose.')
+        raise DockingError('AutoDock Vina could not find any appropriate pose')
 
 
 def verify_docked_ligand(ref: Chem.Mol, ligand: Chem.Mol):
