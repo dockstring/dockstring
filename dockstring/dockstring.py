@@ -8,9 +8,10 @@ from typing import Optional, List
 
 from rdkit.Chem import AllChem as Chem
 
-from .utils import (DockingError, smiles_or_inchi_to_mol, embed_mol, refine_mol_with_ff, write_embedded_mol_to_pdb,
-                    protonate_pdb, convert_pdbqt_to_pdb, convert_pdb_to_pdbqt, read_mol_from_pdb, parse_scores_from_pdb,
-                    parse_search_box_conf, PathType, get_targets_dir, get_vina_path, get_resources_dir)
+from .utils import (DockingError, smiles_to_mol, embed_mol, refine_mol_with_ff, write_embedded_mol_to_pdb,
+                    protonate_pdb, convert_pdbqt_to_pdb, convert_pdb_to_pdbqt, read_mol_from_pdb,
+                    parse_scores_from_output, parse_search_box_conf, PathType, get_targets_dir, get_vina_path,
+                    get_resources_dir, check_mol, canonicalize_smiles, verify_docked_ligand, check_vina_output)
 
 logging.basicConfig(format='%(message)s')
 
@@ -96,24 +97,16 @@ class Target:
         if cmd_return.returncode != 0:
             raise DockingError('Docking with Vina failed')
 
-    def dock(self, string: str, num_cpus: Optional[int] = None, seed=974528263, verbose=False):
+    def dock(self, smiles: str, num_cpus: Optional[int] = None, seed=974528263, verbose=False):
         """
         Given a molecule, this method will return a docking score against the current target.
-        - mol: either a SMILES or an InChI string
+        - smiles: SMILES string
         - num_cpus: number of cpus that AutoDock Vina should use for the docking. By default,
           it will try to find all the cpus on the system, and failing that, it will use 1.
         - seed: integer random seed for reproducibility
-
-        The process is the following:
-        1. Obtain RDKit molecule object
-        2. Embed molecule to 3D conformation
-        3. Refine embedding with a force field.
-        4. Prepare ligand
-        6. Dock
-        8. Parse docking results from the output
         """
 
-        # Docking with Vina is performed in a temporary directory
+        # Auxiliary files
         ligand_pdb = self._tmp_dir / 'ligand.pdb'
         ligand_pdbqt = self._tmp_dir / 'ligand.pdbqt'
         vina_logfile = self._tmp_dir / 'vina.log'
@@ -121,39 +114,46 @@ class Target:
         docked_ligand_pdb = self._tmp_dir / 'docked_ligand.pdb'
 
         try:
-            # Prepare ligand
-            mol = smiles_or_inchi_to_mol(string, verbose=verbose)
-            embedded_mol = embed_mol(mol, seed=seed)
-            refine_mol_with_ff(embedded_mol)
+            # Read and check input
+            canonical_smiles = canonicalize_smiles(smiles)
+            mol = smiles_to_mol(canonical_smiles, verbose=verbose)
+            check_mol(mol)
 
-            # Prepare ligand files
-            write_embedded_mol_to_pdb(embedded_mol, ligand_pdb)
+            # Prepare ligand
+            embedded_mol = embed_mol(mol, seed=seed)
+            refined_mol = refine_mol_with_ff(embedded_mol)
+            write_embedded_mol_to_pdb(refined_mol, ligand_pdb)
             protonate_pdb(ligand_pdb, verbose=verbose)
+            prepared_mol = read_mol_from_pdb(ligand_pdb)
             convert_pdb_to_pdbqt(ligand_pdb, ligand_pdbqt, verbose=verbose)
 
             # Dock
             self._dock_pdbqt(ligand_pdbqt, vina_logfile, vina_outfile, seed=seed, num_cpus=num_cpus, verbose=verbose)
 
             # Process docking output
-            # If Vina does not find any appropriate poses, the output file will be empty
-            if os.stat(vina_outfile).st_size == 0:
-                raise DockingError('AutoDock Vina could not find any appropriate pose.')
+            check_vina_output(vina_outfile)
+            convert_pdbqt_to_pdb(pdbqt_file=vina_outfile,
+                                 pdb_file=docked_ligand_pdb,
+                                 disable_bonding=True,
+                                 verbose=verbose)
+            raw_ligand = read_mol_from_pdb(docked_ligand_pdb)
+            ligand = Chem.AssignBondOrdersFromTemplate(refmol=prepared_mol, mol=raw_ligand)
 
-            convert_pdbqt_to_pdb(pdbqt_file=vina_outfile, pdb_file=docked_ligand_pdb, verbose=verbose)
-            ligands = read_mol_from_pdb(docked_ligand_pdb)
-            scores = parse_scores_from_pdb(docked_ligand_pdb)
+            # Verify docked ligand
+            verify_docked_ligand(ref=prepared_mol, ligand=ligand)
 
-            if ligands is not None:
-                assert len(scores) == ligands.GetNumConformers()
+            # Parse scores
+            scores = parse_scores_from_output(docked_ligand_pdb)
+            assert len(scores) == ligand.GetNumConformers()
 
             return scores[0], {
-                'ligands': ligands,
+                'ligand': ligand,
                 'scores': scores,
             }
 
         except DockingError as error:
-            logging.error(f"An error occurred for ligand '{string}': {error}")
-            return (None, None)
+            logging.error(f"An error occurred for ligand '{smiles}': {error}")
+            raise
 
         # TODO Include Mac and Windows binaries in the repository
         # TODO Put all the calculated scores (and maybe the poses too?) under "data". What should be the format?
