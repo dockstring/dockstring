@@ -241,6 +241,15 @@ def check_vina_output(output_file: Path):
         raise DockingError('AutoDock Vina could not find any appropriate pose')
 
 
+def assign_bond_orders(subject: Chem.Mol, ref: Chem.Mol) -> Chem.Mol:
+    return Chem.AssignBondOrdersFromTemplate(refmol=ref, mol=subject)
+
+
+def assign_stereochemistry(mol: Chem.Mol):
+    Chem.AssignStereochemistryFrom3D(mol)
+    Chem.AssignStereochemistry(mol, cleanIt=True)
+
+
 def verify_docked_ligand(ref: Chem.Mol, ligand: Chem.Mol):
     ref_smiles = Chem.MolToSmiles(ref)
     ligand_smiles = Chem.MolToSmiles(ligand)
