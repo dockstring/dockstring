@@ -43,18 +43,24 @@ class Target:
         self._custom_working_dir = working_dir
         self._tmp_dir_handle: Optional[tempfile.TemporaryDirectory] = None
 
-        # Set PDB, PDBQT, and conf files
-        targets_dir = get_targets_dir()
-        self.pdb_path = targets_dir / (self.name + '_target.pdb')
-        self.pdbqt_path = targets_dir / (self.name + '_target.pdbqt')
-        self.conf_path = targets_dir / (self.name + '_conf.txt')
-
-        # Ensure files exist
+        # Ensure input files exist
         if not all(p.exists() for p in [self.pdb_path, self.pdbqt_path, self.conf_path]):
             raise DockingError(f"'{self.name}' is not a supported target")
 
     def __repr__(self):
         return f"Target(name='{self.name}', working_dir='{self.working_dir}')"
+
+    @property
+    def pdb_path(self) -> Path:
+        return get_targets_dir() / (self.name + '_target.pdb')
+
+    @property
+    def pdbqt_path(self) -> Path:
+        return get_targets_dir() / (self.name + '_target.pdbqt')
+
+    @property
+    def conf_path(self) -> Path:
+        return get_targets_dir() / (self.name + '_conf.txt')
 
     @property
     def working_dir(self) -> Path:
