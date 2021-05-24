@@ -252,6 +252,7 @@ class TestDocking:
         with pytest.raises(DockingError):
             target.dock('C.CO')
 
+    # Commented out because takes too long
     # @pytest.mark.parametrize('target_name, ligand', [
     #     ('ABL1', 'S(=O)(=O)(N(C[C@@H]1OCCCC[C@@H](OC=2C(C(=O)N(C[C@H]1C)[C@@H](CO)C)=CC(NC(=O)NC=3C=CC(F)=CC3)=CC2)C)C)C=4SC=CC4'),
     # ])
