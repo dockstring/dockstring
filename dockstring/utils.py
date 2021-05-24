@@ -270,7 +270,8 @@ def verify_docked_ligand(ref: Chem.Mol, ligand: Chem.Mol):
     Chem.AssignStereochemistryFrom3D(ligand)
     Chem.AssignStereochemistry(ligand, cleanIt=True)
     if ligand_smiles != ref_smiles:
-        raise DockingError(f'Cannot recover original ligand: {ref_smiles} (original ligand) != {ligand_smiles} (docked ligand)')
+        raise DockingError(
+            f'Cannot recover original ligand: {ref_smiles} (original ligand) != {ligand_smiles} (docked ligand)')
 
 
 real_number_pattern = r'[-+]?[0-9]*\.?[0-9]+(e[-+]?[0-9]+)?'
