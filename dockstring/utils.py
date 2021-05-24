@@ -10,6 +10,7 @@ from typing import List, Union, Dict
 import pkg_resources
 from rdkit import rdBase
 from rdkit.Chem import AllChem as Chem
+from rdkit.Chem.MolStandardize.rdMolStandardize import Uncharger
 
 PathType = Union[str, os.PathLike]
 
@@ -71,6 +72,17 @@ def smiles_to_mol(smiles, verbose=False) -> Chem.Mol:
     if not verbose:
         rdBase.EnableLog('rdApp.error')
 
+    return mol
+
+
+def sanitize_mol(mol: Chem.Mol, verbose=False) -> Chem.Mol:
+    # Ensure the charges are "standardized"
+    uncharger = Uncharger()
+    if not verbose:
+        rdBase.DisableLog('rdApp.info')
+    mol = uncharger.uncharge(mol)
+    if not verbose:
+        rdBase.EnableLog('rdApp.info')
     return mol
 
 
@@ -169,7 +181,8 @@ def protonate_pdb(pdb_file: PathType, verbose=False):
     # yapf: disable
     cmd_list = [
         'obabel',
-        pdb_file,
+        '-ipdb', pdb_file,
+        '-opdb',
         '-O', pdb_file,
         '-d',  # delete hydrogen atoms
     ]
@@ -187,7 +200,8 @@ def protonate_pdb(pdb_file: PathType, verbose=False):
     # yapf: disable
     cmd_list = [
         'obabel',
-        pdb_file,
+        '-ipdb', pdb_file,
+        '-opdb',
         '-O', pdb_file,
         '-p', '7.0',  # add hydrogen atoms
     ]

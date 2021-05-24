@@ -12,7 +12,7 @@ from .utils import (DockingError, smiles_to_mol, embed_mol, refine_mol_with_ff, 
                     protonate_pdb, convert_pdbqt_to_pdb, convert_pdb_to_pdbqt, read_mol_from_pdb,
                     parse_scores_from_output, parse_search_box_conf, PathType, get_targets_dir, get_vina_path,
                     get_resources_dir, check_mol, canonicalize_smiles, verify_docked_ligand, check_vina_output,
-                    assign_stereochemistry, assign_bond_orders)
+                    assign_stereochemistry, assign_bond_orders, sanitize_mol)
 
 logging.basicConfig(format='%(message)s')
 
@@ -118,6 +118,7 @@ class Target:
             # Read and check input
             canonical_smiles = canonicalize_smiles(smiles)
             mol = smiles_to_mol(canonical_smiles, verbose=verbose)
+            mol = sanitize_mol(mol, verbose=verbose)
             check_mol(mol)
 
             # Prepare ligand

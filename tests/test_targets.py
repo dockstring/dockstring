@@ -183,6 +183,22 @@ class TestDocking:
         charge = sum(atom.GetFormalCharge() for atom in aux['ligand'].GetAtoms())
         assert charge == 1
 
+    @pytest.mark.parametrize(
+        'smiles, charge, energy',
+        [
+            ('[H][N+]1=CC=CC=C1', 0, -4.1),  # pyridinium
+            ('N1=CC=CC=C1', 0, -4.1),  # pyridine
+            ('C[N+]1=CC=CC=C1', 1, -4.3),
+            ('CC(O)=O', -1, -3.1),  # acetic acid
+            ('CC([O-])=O', -1, -3.1),  # acetic acid
+        ])
+    def test_different_charges(self, smiles, charge, energy):
+        target = load_target('CYP3A4')
+        docking_energy, aux = target.dock(smiles)
+        total_charge = sum(atom.GetFormalCharge() for atom in aux['ligand'].GetAtoms())
+        assert total_charge == charge
+        assert math.isclose(energy, docking_energy)
+
     def test_pdbqt_to_pdb_error(self):
         target = load_target('CYP3A4')
         score, aux = target.dock('O=C1N(C=2N=C(OC)N=CC2N=C1C=3C=CC=CC3)C4CC4')
