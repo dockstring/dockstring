@@ -239,6 +239,7 @@ class TestDocking:
     @pytest.mark.parametrize('target_name, ligand', [
         ('MAPK1', 'C1=CC=C2C3=C(NC2=C1)[C@H](N4C(=O)CN(C(=O)[C@H]4C3)C)C5=CC=C6OCOC6=C5'),
         ('MAOB', 'C1(=CC(=C(C=C1)N2CCOCC2)F)N3C[C@H](CNC(C)=O)OC3=O'),
+        ('ABL1', 'S(=O)(=O)(N(CC)CC)C1=C(SC)C=CC(=C1)C'),
     ])
     def test_additional_chiral_ligands(self, target_name: str, ligand: str):
         target = load_target(target_name)
@@ -250,6 +251,14 @@ class TestDocking:
             target.dock('C.C')
         with pytest.raises(DockingError):
             target.dock('C.CO')
+
+    # Commented out because takes too long
+    # @pytest.mark.parametrize('target_name, ligand', [
+    #     ('ABL1', 'S(=O)(=O)(N(C[C@@H]1OCCCC[C@@H](OC=2C(C(=O)N(C[C@H]1C)[C@@H](CO)C)=CC(NC(=O)NC=3C=CC(F)=CC3)=CC2)C)C)C=4SC=CC4'),
+    # ])
+    # def test_atom_valence_exception(self, target_name: str, ligand: str):
+    #     target = load_target(target_name, working_dir='/home/gregor/.config/JetBrains/PyCharm2021.1/scratches/failure')
+    #     assert target.dock(ligand)
 
     # Commented out because test takes too long
     """
