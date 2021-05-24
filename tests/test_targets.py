@@ -236,6 +236,14 @@ class TestDocking:
         assert math.isclose(score, -3.5)
         assert aux['ligand'].GetBondWithIdx(1).GetStereo() == Chem.BondStereo.STEREOZ
 
+    @pytest.mark.parametrize('target_name, ligand', [
+        ('MAPK1', 'C1=CC=C2C3=C(NC2=C1)[C@H](N4C(=O)CN(C(=O)[C@H]4C3)C)C5=CC=C6OCOC6=C5'),
+        ('MAOB', 'C1(=CC(=C(C=C1)N2CCOCC2)F)N3C[C@H](CNC(C)=O)OC3=O'),
+    ])
+    def test_additional_chiral_ligands(self, target_name: str, ligand: str):
+        target = load_target(target_name)
+        assert target.dock(ligand)
+
     def test_multiple_molecules(self):
         target = load_target('ABL1')
         with pytest.raises(DockingError):
