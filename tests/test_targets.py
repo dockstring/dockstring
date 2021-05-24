@@ -207,6 +207,43 @@ class TestDocking:
         assert len(aux['scores']) == len(scores)
         assert all(math.isclose(a, b) for a, b in zip(aux['scores'], scores))
 
+    def test_chiral_centers(self):
+        target = load_target('CYP3A4')
+
+        score, aux = target.dock('[H]C(C)(F)Cl')
+        assert math.isclose(score, -3.1)
+        assert Chem.MolToSmiles(aux['ligand']) == 'C[C@H](F)Cl'
+
+        score, aux = target.dock('C[C@H](F)Cl')
+        assert math.isclose(score, -3.1)
+        assert Chem.MolToSmiles(aux['ligand']) == 'C[C@H](F)Cl'
+
+    def test_bond_stereo(self):
+        target = load_target('CYP3A4')
+
+        smiles = r'C\C=C\C'  # E
+        score, aux = target.dock(smiles)
+        assert math.isclose(score, -3.4)
+        assert aux['ligand'].GetBondWithIdx(1).GetStereo() == Chem.BondStereo.STEREOE
+
+        smiles = r'C/C=C\C'  # Z
+        score, aux = target.dock(smiles)
+        assert math.isclose(score, -3.5)
+        assert aux['ligand'].GetBondWithIdx(1).GetStereo() == Chem.BondStereo.STEREOZ
+
+        smiles = 'CC=CC'  # unspecified
+        score, aux = target.dock(smiles)
+        assert math.isclose(score, -3.5)
+        assert aux['ligand'].GetBondWithIdx(1).GetStereo() == Chem.BondStereo.STEREOZ
+
+    @pytest.mark.parametrize('target_name, ligand', [
+        ('MAPK1', 'C1=CC=C2C3=C(NC2=C1)[C@H](N4C(=O)CN(C(=O)[C@H]4C3)C)C5=CC=C6OCOC6=C5'),
+        ('MAOB', 'C1(=CC(=C(C=C1)N2CCOCC2)F)N3C[C@H](CNC(C)=O)OC3=O'),
+    ])
+    def test_additional_chiral_ligands(self, target_name: str, ligand: str):
+        target = load_target(target_name)
+        assert target.dock(ligand)
+
     def test_multiple_molecules(self):
         target = load_target('ABL1')
         with pytest.raises(DockingError):
