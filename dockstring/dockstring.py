@@ -4,7 +4,7 @@ import re
 import subprocess
 import tempfile
 from pathlib import Path
-from typing import Optional, List
+from typing import Optional, List, Union
 
 from rdkit.Chem import AllChem as Chem
 
@@ -178,7 +178,7 @@ class Target:
         """
         Start pymol and view the receptor and the search box.
         """
-        commands = ['pymol', self.pdb_path]
+        commands: List[Union[str, PathType]] = ['pymol', self.pdb_path]
 
         if search_box:
             pymol_script = get_resources_dir() / 'view_search_box.py'
