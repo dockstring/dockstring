@@ -181,7 +181,8 @@ def protonate_pdb(pdb_file: PathType, verbose=False):
     # yapf: disable
     cmd_list = [
         'obabel',
-        pdb_file,
+        '-ipdb', pdb_file,
+        '-opdb',
         '-O', pdb_file,
         '-d',  # delete hydrogen atoms
     ]
@@ -199,7 +200,8 @@ def protonate_pdb(pdb_file: PathType, verbose=False):
     # yapf: disable
     cmd_list = [
         'obabel',
-        pdb_file,
+        '-ipdb', pdb_file,
+        '-opdb',
         '-O', pdb_file,
         '-p', '7.0',  # add hydrogen atoms
     ]
