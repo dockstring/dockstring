@@ -196,14 +196,14 @@ def protonate_pdb(pdb_file: PathType, verbose=False):
     if cmd_return.returncode != 0:
         raise DockingError('Protonation of ligand failed')
 
-    # Add hydrogen atoms for pH 7
+    # Add hydrogen atoms for pH 7.4
     # yapf: disable
     cmd_list = [
         'obabel',
         '-ipdb', pdb_file,
         '-opdb',
         '-O', pdb_file,
-        '-p', '7.0',  # add hydrogen atoms
+        '-p', '7.4',  # add hydrogen atoms
     ]
     # yapf: enable
     cmd_return = subprocess.run(cmd_list, stdout=subprocess.PIPE, stderr=subprocess.STDOUT)
