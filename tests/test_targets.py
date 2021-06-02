@@ -252,6 +252,17 @@ class TestDocking:
         with pytest.raises(DockingError):
             target.dock('C.CO')
 
+    @pytest.mark.parametrize(
+        'target_name, ligand_smiles',
+        [
+            ('ABL1', 'BrC12CC3(CC(C1)CC(C3)C2)CC(=O)NCC4=CC=CC=C4'),  # too many bonds
+            ('ABL1', 'BrC1=CC(P(OCC)(OCC)=O)(NS(=O)(=O)C2=CC=CC=C2)C3=C(C1=O)C=CC=C3'),  # multiple fragments
+        ])
+    def test_bond_assignment_fails(self, target_name: str, ligand_smiles: str):
+        target = load_target('ABL1')
+        with pytest.raises(DockingError):
+            target.dock(ligand_smiles)
+
     # Commented out because takes too long
     # @pytest.mark.parametrize('target_name, ligand', [
     #     ('ABL1', 'S(=O)(=O)(N(C[C@@H]1OCCCC[C@@H](OC=2C(C(=O)N(C[C@H]1C)[C@@H](CO)C)=CC(NC(=O)NC=3C=CC(F)=CC3)=CC2)C)C)C=4SC=CC4'),

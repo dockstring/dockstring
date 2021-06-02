@@ -260,7 +260,7 @@ def assign_bond_orders(subject: Chem.Mol, ref: Chem.Mol, verbose=False) -> Chem.
         rdBase.DisableLog('rdApp.warning')
     try:
         mol = Chem.AssignBondOrdersFromTemplate(refmol=ref, mol=subject)
-    except Chem.AtomValenceException as exception:
+    except (ValueError, Chem.AtomValenceException) as exception:
         raise DockingError(f'Could not assign bond orders: {exception}')
     if not verbose:
         rdBase.EnableLog('rdApp.warning')
