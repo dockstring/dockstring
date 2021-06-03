@@ -165,12 +165,6 @@ class Target:
             logging.error(f"An error occurred for ligand '{smiles}': {error}")
             raise
 
-    def info(self):
-        """
-        Print some info about the target.
-        """
-        pass
-
     def view(self, mols: List[Chem.Mol] = None, search_box=True):
         """
         Start pymol and view the receptor and the search box.
