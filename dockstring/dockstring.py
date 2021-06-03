@@ -165,11 +165,6 @@ class Target:
             logging.error(f"An error occurred for ligand '{smiles}': {error}")
             raise
 
-        # TODO Include Mac and Windows binaries in the repository
-        # TODO Put all the calculated scores (and maybe the poses too?) under "data". What should be the format?
-        # - Plain text for the scores and smiles?
-        # - What format for the poses?
-
     def info(self):
         """
         Print some info about the target.
