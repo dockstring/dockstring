@@ -207,12 +207,69 @@ class TestDocking:
         assert len(aux['scores']) == len(scores)
         assert all(math.isclose(a, b) for a, b in zip(aux['scores'], scores))
 
+    def test_chiral_centers(self):
+        target = load_target('CYP3A4')
+
+        score, aux = target.dock('[H]C(C)(F)Cl')
+        assert math.isclose(score, -3.1)
+        assert Chem.MolToSmiles(aux['ligand']) == 'C[C@H](F)Cl'
+
+        score, aux = target.dock('C[C@H](F)Cl')
+        assert math.isclose(score, -3.1)
+        assert Chem.MolToSmiles(aux['ligand']) == 'C[C@H](F)Cl'
+
+    def test_bond_stereo(self):
+        target = load_target('CYP3A4')
+
+        smiles = r'C\C=C\C'  # E
+        score, aux = target.dock(smiles)
+        assert math.isclose(score, -3.4)
+        assert aux['ligand'].GetBondWithIdx(1).GetStereo() == Chem.BondStereo.STEREOE
+
+        smiles = r'C/C=C\C'  # Z
+        score, aux = target.dock(smiles)
+        assert math.isclose(score, -3.5)
+        assert aux['ligand'].GetBondWithIdx(1).GetStereo() == Chem.BondStereo.STEREOZ
+
+        smiles = 'CC=CC'  # unspecified
+        score, aux = target.dock(smiles)
+        assert math.isclose(score, -3.5)
+        assert aux['ligand'].GetBondWithIdx(1).GetStereo() == Chem.BondStereo.STEREOZ
+
+    @pytest.mark.parametrize('target_name, ligand', [
+        ('MAPK1', 'C1=CC=C2C3=C(NC2=C1)[C@H](N4C(=O)CN(C(=O)[C@H]4C3)C)C5=CC=C6OCOC6=C5'),
+        ('MAOB', 'C1(=CC(=C(C=C1)N2CCOCC2)F)N3C[C@H](CNC(C)=O)OC3=O'),
+        ('ABL1', 'S(=O)(=O)(N(CC)CC)C1=C(SC)C=CC(=C1)C'),
+    ])
+    def test_additional_chiral_ligands(self, target_name: str, ligand: str):
+        target = load_target(target_name)
+        assert target.dock(ligand)
+
     def test_multiple_molecules(self):
         target = load_target('ABL1')
         with pytest.raises(DockingError):
             target.dock('C.C')
         with pytest.raises(DockingError):
             target.dock('C.CO')
+
+    @pytest.mark.parametrize(
+        'target_name, ligand_smiles',
+        [
+            ('ABL1', 'BrC12CC3(CC(C1)CC(C3)C2)CC(=O)NCC4=CC=CC=C4'),  # too many bonds
+            ('ABL1', 'BrC1=CC(P(OCC)(OCC)=O)(NS(=O)(=O)C2=CC=CC=C2)C3=C(C1=O)C=CC=C3'),  # multiple fragments
+        ])
+    def test_bond_assignment_fails(self, target_name: str, ligand_smiles: str):
+        target = load_target('ABL1')
+        with pytest.raises(DockingError):
+            target.dock(ligand_smiles)
+
+    # Commented out because takes too long
+    # @pytest.mark.parametrize('target_name, ligand', [
+    #     ('ABL1', 'S(=O)(=O)(N(C[C@@H]1OCCCC[C@@H](OC=2C(C(=O)N(C[C@H]1C)[C@@H](CO)C)=CC(NC(=O)NC=3C=CC(F)=CC3)=CC2)C)C)C=4SC=CC4'),
+    # ])
+    # def test_atom_valence_exception(self, target_name: str, ligand: str):
+    #     target = load_target(target_name, working_dir='/home/gregor/.config/JetBrains/PyCharm2021.1/scratches/failure')
+    #     assert target.dock(ligand)
 
     # Commented out because test takes too long
     """

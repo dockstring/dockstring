@@ -196,14 +196,14 @@ def protonate_pdb(pdb_file: PathType, verbose=False):
     if cmd_return.returncode != 0:
         raise DockingError('Protonation of ligand failed')
 
-    # Add hydrogen atoms for pH 7
+    # Add hydrogen atoms for pH 7.4
     # yapf: disable
     cmd_list = [
         'obabel',
         '-ipdb', pdb_file,
         '-opdb',
         '-O', pdb_file,
-        '-p', '7.0',  # add hydrogen atoms
+        '-p', '7.4',  # add hydrogen atoms
     ]
     # yapf: enable
     cmd_return = subprocess.run(cmd_list, stdout=subprocess.PIPE, stderr=subprocess.STDOUT)
@@ -253,6 +253,23 @@ def check_vina_output(output_file: Path):
     # If Vina does not find any appropriate poses, the output file will be empty
     if os.stat(output_file).st_size == 0:
         raise DockingError('AutoDock Vina could not find any appropriate pose')
+
+
+def assign_bond_orders(subject: Chem.Mol, ref: Chem.Mol, verbose=False) -> Chem.Mol:
+    if not verbose:
+        rdBase.DisableLog('rdApp.warning')
+    try:
+        mol = Chem.AssignBondOrdersFromTemplate(refmol=ref, mol=subject)
+    except (ValueError, Chem.AtomValenceException) as exception:
+        raise DockingError(f'Could not assign bond orders: {exception}')
+    if not verbose:
+        rdBase.EnableLog('rdApp.warning')
+    return mol
+
+
+def assign_stereochemistry(mol: Chem.Mol):
+    Chem.AssignStereochemistryFrom3D(mol)
+    Chem.AssignStereochemistry(mol, cleanIt=True)
 
 
 def verify_docked_ligand(ref: Chem.Mol, ligand: Chem.Mol):
