@@ -4,7 +4,7 @@ import re
 import subprocess
 import tempfile
 from pathlib import Path
-from typing import Optional, List
+from typing import Optional, List, Union
 
 from rdkit.Chem import AllChem as Chem
 
@@ -41,21 +41,27 @@ class Target:
         self._custom_working_dir = working_dir
         self._tmp_dir_handle: Optional[tempfile.TemporaryDirectory] = None
 
-        # Set PDB, PDBQT, and conf files
-        targets_dir = get_targets_dir()
-        self._pdb = targets_dir / (self.name + '_target.pdb')
-        self._pdbqt = targets_dir / (self.name + '_target.pdbqt')
-        self._conf = targets_dir / (self.name + '_conf.txt')
-
-        # Ensure files exist
-        if not all(p.exists() for p in [self._pdb, self._pdbqt, self._conf]):
-            raise DockingError(f"'{self.name}' is not a target we support")
+        # Ensure input files exist
+        if not all(p.exists() for p in [self.pdb_path, self.pdbqt_path, self.conf_path]):
+            raise DockingError(f"'{self.name}' is not a supported target")
 
     def __repr__(self):
-        return f"dockstring.Target(name='{self.name}', dir='{self._tmp_dir}')"
+        return f"Target(name='{self.name}', working_dir='{self.working_dir}')"
 
     @property
-    def _tmp_dir(self) -> Path:
+    def pdb_path(self) -> Path:
+        return get_targets_dir() / (self.name + '_target.pdb')
+
+    @property
+    def pdbqt_path(self) -> Path:
+        return get_targets_dir() / (self.name + '_target.pdbqt')
+
+    @property
+    def conf_path(self) -> Path:
+        return get_targets_dir() / (self.name + '_conf.txt')
+
+    @property
+    def working_dir(self) -> Path:
         if self._custom_working_dir:
             return Path(self._custom_working_dir).resolve()
 
@@ -75,8 +81,8 @@ class Target:
         # yapf: disable
         cmd_list = [
             get_vina_path(),
-            '--receptor', self._pdbqt,
-            '--config', self._conf,
+            '--receptor', self.pdbqt_path,
+            '--config', self.conf_path,
             '--ligand', ligand_pdbqt,
             '--log', vina_logfile,
             '--out', vina_outfile,
@@ -106,11 +112,11 @@ class Target:
         """
 
         # Auxiliary files
-        ligand_pdb = self._tmp_dir / 'ligand.pdb'
-        ligand_pdbqt = self._tmp_dir / 'ligand.pdbqt'
-        vina_logfile = self._tmp_dir / 'vina.log'
-        vina_outfile = self._tmp_dir / 'vina.out'
-        docked_ligand_pdb = self._tmp_dir / 'docked_ligand.pdb'
+        ligand_pdb = self.working_dir / 'ligand.pdb'
+        ligand_pdbqt = self.working_dir / 'ligand.pdbqt'
+        vina_logfile = self.working_dir / 'vina.log'
+        vina_outfile = self.working_dir / 'vina.out'
+        docked_ligand_pdb = self.working_dir / 'docked_ligand.pdb'
 
         try:
             # Read and check input
@@ -157,26 +163,15 @@ class Target:
             logging.error(f"An error occurred for ligand '{smiles}': {error}")
             raise
 
-        # TODO Include Mac and Windows binaries in the repository
-        # TODO Put all the calculated scores (and maybe the poses too?) under "data". What should be the format?
-        # - Plain text for the scores and smiles?
-        # - What format for the poses?
-
-    def info(self):
-        """
-        Print some info about the target.
-        """
-        pass
-
     def view(self, mols: List[Chem.Mol] = None, search_box=True):
         """
         Start pymol and view the receptor and the search box.
         """
-        commands = ['pymol', self._pdb]
+        commands: List[Union[str, PathType]] = ['pymol', self.pdb_path]
 
         if search_box:
             pymol_script = get_resources_dir() / 'view_search_box.py'
-            conf = parse_search_box_conf(self._conf)
+            conf = parse_search_box_conf(self.conf_path)
             # yapf: disable
             commands += [
                 pymol_script,
