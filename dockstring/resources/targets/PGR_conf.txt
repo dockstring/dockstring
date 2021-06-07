@@ -1,7 +1,7 @@
-center_x = -2.532
-center_y = -8.387
-center_z = 25.099
+center_x = 15.568
+center_y = -2.532
+center_z = -8.387
 
-size_x = 21.472
-size_y = 23.360
-size_z = 27.073
+size_x = 20.000
+size_y = 21.472
+size_z = 23.360
