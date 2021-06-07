@@ -4,8 +4,9 @@ import os
 import platform
 import re
 import subprocess
+import sys
 from pathlib import Path
-from typing import List, Union, Dict
+from typing import List, Union, Dict, Optional
 
 import pkg_resources
 from rdkit import rdBase
@@ -13,6 +14,22 @@ from rdkit.Chem import AllChem as Chem
 from rdkit.Chem.MolStandardize.rdMolStandardize import Uncharger
 
 PathType = Union[str, os.PathLike]
+
+
+def setup_logger(level: Union[int, str] = logging.INFO, path: Optional[str] = None):
+    logger = logging.getLogger()
+    logger.setLevel(level)
+
+    formatter = logging.Formatter('%(asctime)s.%(msecs)03d %(levelname)s: %(message)s', datefmt='%Y-%m-%d %H:%M:%S')
+
+    ch = logging.StreamHandler(stream=sys.stdout)
+    ch.setFormatter(formatter)
+    logger.addHandler(ch)
+
+    if path is not None:
+        fh = logging.FileHandler(path)
+        fh.setFormatter(formatter)
+        logger.addHandler(fh)
 
 
 class DockingError(Exception):

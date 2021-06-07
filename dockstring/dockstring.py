@@ -14,8 +14,6 @@ from .utils import (DockingError, smiles_to_mol, embed_mol, refine_mol_with_ff, 
                     get_resources_dir, check_mol, canonicalize_smiles, verify_docked_ligand, check_vina_output,
                     assign_stereochemistry, assign_bond_orders, sanitize_mol)
 
-logging.basicConfig(format='%(message)s')
-
 
 def load_target(name: str, *args, **kwargs):
     return Target(name, *args, **kwargs)
