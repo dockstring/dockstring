@@ -11,8 +11,8 @@ from rdkit.Chem import AllChem as Chem
 from .utils import (DockingError, smiles_to_mol, embed_mol, refine_mol_with_ff, convert_pdbqt_to_pdb, read_mol_from_pdb,
                     parse_scores_from_output, parse_search_box_conf, PathType, get_targets_dir, get_vina_path,
                     get_resources_dir, check_mol, canonicalize_smiles, verify_docked_ligand, check_vina_output,
-                    assign_stereochemistry, assign_bond_orders, sanitize_mol, protonate_mol, write_mol_to_pdb,
-                    convert_pdb_to_pdbqt)
+                    assign_stereochemistry, assign_bond_orders, sanitize_mol, protonate_mol, write_mol_to_mol_file,
+                    convert_mol_file_to_pdbqt)
 
 
 def load_target(name: str, *args, **kwargs):
@@ -112,7 +112,7 @@ class Target:
         """
 
         # Auxiliary files
-        ligand_pdb = self.working_dir / 'ligand.pdb'
+        ligand_mol_file = self.working_dir / 'ligand.mol'
         ligand_pdbqt = self.working_dir / 'ligand.pdbqt'
         vina_logfile = self.working_dir / 'vina.log'
         vina_outfile = self.working_dir / 'vina.out'
@@ -137,8 +137,8 @@ class Target:
             assign_stereochemistry(refined_mol)
 
             # Dock
-            write_mol_to_pdb(refined_mol, ligand_pdb)
-            convert_pdb_to_pdbqt(ligand_pdb, ligand_pdbqt, verbose=verbose)
+            write_mol_to_mol_file(refined_mol, ligand_mol_file)
+            convert_mol_file_to_pdbqt(ligand_mol_file, ligand_pdbqt, verbose=verbose)
             self._dock_pdbqt(ligand_pdbqt, vina_logfile, vina_outfile, seed=seed, num_cpus=num_cpus, verbose=verbose)
 
             # Process docking output
@@ -192,8 +192,8 @@ class Target:
             tmp_dir = Path(tmp_dir_handle.name).resolve()
 
             for index, mol in enumerate(mols):
-                mol_pdb_file = tmp_dir / f'ligand_{index}.pdb'
-                write_mol_to_pdb(mol, mol_pdb_file)
-                commands += [str(mol_pdb_file)]
+                mol_file = tmp_dir / f'ligand_{index}.mol'
+                write_mol_to_mol_file(mol, mol_file)
+                commands += [str(mol_file)]
 
         return subprocess.run(commands)

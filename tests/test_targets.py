@@ -7,8 +7,8 @@ import pytest
 from rdkit.Chem import AllChem as Chem
 
 from dockstring import list_all_target_names, load_target, DockingError
-from dockstring.utils import (smiles_to_mol, write_embedded_mol_to_pdb, embed_mol, read_mol_from_pdb, check_vina_output,
-                              parse_scores_from_output, canonicalize_smiles, refine_mol_with_ff, protonate_mol)
+from dockstring.utils import (smiles_to_mol, embed_mol, check_vina_output, parse_scores_from_output,
+                              canonicalize_smiles, refine_mol_with_ff, protonate_mol, write_mol_to_mol_file)
 
 
 class TestLoader:
@@ -42,27 +42,9 @@ class TestConversions:
 
     def test_write_fail(self):
         mol = smiles_to_mol(lysine_smiles)
-        with tempfile.NamedTemporaryFile(suffix='.pdb') as f:
+        with tempfile.NamedTemporaryFile(suffix='.mol') as f:
             with pytest.raises(DockingError):
-                write_embedded_mol_to_pdb(mol, ligand_pdb=f.name)
-
-    @pytest.mark.parametrize('smiles', [
-        lysine_smiles,
-        'O=C1N(C=2N=C(OC)N=CC2N=C1C=3C=CC=CC3)C4CC4',
-    ])
-    def test_read_write_pdb(self, smiles):
-        mol = smiles_to_mol(smiles)
-        embedded_mol = embed_mol(mol, seed=1)
-
-        # Added Hs
-        assert Chem.MolToSmiles(embedded_mol) != Chem.MolToSmiles(mol)
-
-        with tempfile.NamedTemporaryFile(suffix='.pdb') as f:
-            write_embedded_mol_to_pdb(embedded_mol, ligand_pdb=f.name)
-            read_mol = read_mol_from_pdb(f.name)
-
-        # Hs are gone
-        assert Chem.MolToSmiles(mol) == Chem.MolToSmiles(read_mol)
+                write_mol_to_mol_file(mol, mol_file=f.name)
 
     @pytest.mark.parametrize('smiles,charge_ph7', [
         (lysine_smiles, 1),
@@ -172,7 +154,7 @@ class TestDocking:
     def test_charged(self, smiles):
         target = load_target('CYP3A4')
         energy, aux = target.dock(smiles)
-        assert math.isclose(energy, -4.7)
+        assert math.isclose(energy, -4.6)
 
         charge = sum(atom.GetFormalCharge() for atom in aux['ligand'].GetAtoms())
         assert charge == 1
@@ -196,7 +178,7 @@ class TestDocking:
     def test_pdbqt_to_pdb_error(self):
         target = load_target('CYP3A4')
         score, aux = target.dock('O=C1N(C=2N=C(OC)N=CC2N=C1C=3C=CC=CC3)C4CC4')
-        scores = [-9.1, -8.8, -8.4, -8.4, -8.4, -8.3, -8.0, -7.7, -7.6]
+        scores = [-9.0, -8.9, -8.3, -8.3, -8.3, -8.0, -7.8, -7.7, -7.6]
         assert aux['ligand'].GetNumConformers() == 9
         assert len(aux['scores']) == len(scores)
         assert all(math.isclose(a, b) for a, b in zip(aux['scores'], scores))

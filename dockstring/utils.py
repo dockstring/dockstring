@@ -217,11 +217,11 @@ def protonate_smiles(smiles: str, verbose=False) -> str:
     return output.strip()
 
 
-def convert_pdb_to_pdbqt(pdb_file: PathType, pdbqt_file: PathType, verbose=False):
+def convert_mol_file_to_pdbqt(mol_file: PathType, pdbqt_file: PathType, verbose=False):
     # yapf: disable
     cmd_list = [
         'obabel',
-        '-ipdb', pdb_file,
+        '-imol', mol_file,
         '-opdbqt',
         '-O', pdbqt_file,
         '--partialcharge', 'gasteiger'
@@ -244,10 +244,10 @@ def read_mol_from_pdb(pdb_file: PathType) -> Chem.Mol:
     return mol
 
 
-def write_mol_to_pdb(mol: Chem.Mol, pdb_file: PathType):
+def write_mol_to_mol_file(mol: Chem.Mol, mol_file: PathType):
     if mol.GetNumConformers() < 1:
-        raise DockingError('For conversion to PDB a conformer is required')
-    Chem.MolToPDBFile(mol, filename=str(pdb_file))
+        raise DockingError('For conversion to MDL MOL format a conformer is required')
+    Chem.MolToMolFile(mol, filename=str(mol_file))
 
 
 def check_vina_output(output_file: Path):
