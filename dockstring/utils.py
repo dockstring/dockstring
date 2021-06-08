@@ -198,13 +198,9 @@ def protonate_mol(mol: Chem.Mol, verbose=False) -> Chem.Mol:
 
 
 def protonate_smiles(smiles: str, verbose=False) -> str:
-    # Protonate SMILES with OpenBabel
+    # Protonate SMILES with OpenBabel at given pH
     # cmd list format raises errors, therefore one string
-    cmd = 'obabel ' \
-          f'-:"{smiles}" ' \
-          '-ismi ' \
-          '-ocan ' \
-          '-p7.4'  # protonate at given pH
+    cmd = f'obabel -:"{smiles}" -ismi -ocan -p7.4'
     cmd_return = subprocess.run(cmd, capture_output=True, shell=True)
     output = cmd_return.stdout.decode('utf-8')
 
