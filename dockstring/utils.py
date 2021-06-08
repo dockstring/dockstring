@@ -193,44 +193,34 @@ def convert_pdbqt_to_pdb(pdbqt_file: PathType, pdb_file: PathType, disable_bondi
         raise DockingError('Conversion from PDBQT to PDB failed')
 
 
-def protonate_pdb(pdb_file: PathType, verbose=False):
-    # Remove all hydrogen atoms
-    # yapf: disable
-    cmd_list = [
-        'obabel',
-        '-ipdb', pdb_file,
-        '-opdb',
-        '-O', pdb_file,
-        '-d',  # delete hydrogen atoms
-    ]
-    # yapf: enable
-    cmd_return = subprocess.run(cmd_list, stdout=subprocess.PIPE, stderr=subprocess.STDOUT)
+def protonate_mol(mol: Chem.Mol, verbose=False) -> Chem.Mol:
+    smiles = Chem.MolToSmiles(mol)
+    protonated_smiles = protonate_smiles(smiles, verbose=verbose)
+    mol = Chem.MolFromSmiles(protonated_smiles)
+    if not mol:
+        raise DockingError('Cannot read protonated SMILES')
+
+    return mol
+
+
+def protonate_smiles(smiles: str, verbose=False) -> str:
+    # Protonate SMILES with OpenBabel
+    # cmd list format raises errors, therefore one string
+    cmd = 'obabel ' \
+          f'-:"{smiles}" ' \
+          '-ismi ' \
+          '-ocan ' \
+          '-p7.4'  # protonate at given pH
+    cmd_return = subprocess.run(cmd, capture_output=True, shell=True)
     output = cmd_return.stdout.decode('utf-8')
 
     if verbose:
         logging.info(output)
 
     if cmd_return.returncode != 0:
-        raise DockingError('Protonation of ligand failed')
+        raise DockingError('Ligand protonation failed')
 
-    # Add hydrogen atoms for pH 7.4
-    # yapf: disable
-    cmd_list = [
-        'obabel',
-        '-ipdb', pdb_file,
-        '-opdb',
-        '-O', pdb_file,
-        '-p', '7.4',  # add hydrogen atoms
-    ]
-    # yapf: enable
-    cmd_return = subprocess.run(cmd_list, stdout=subprocess.PIPE, stderr=subprocess.STDOUT)
-    output = cmd_return.stdout.decode('utf-8')
-
-    if verbose:
-        logging.info(output)
-
-    if cmd_return.returncode != 0:
-        raise DockingError('Protonation of ligand failed.')
+    return output.strip()
 
 
 def convert_pdb_to_pdbqt(pdb_file: PathType, pdbqt_file: PathType, verbose=False):
