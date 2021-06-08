@@ -162,12 +162,6 @@ def refine_mol_with_ff(mol, max_iters=1000) -> Chem.Mol:
     return opt_mol
 
 
-def write_embedded_mol_to_pdb(mol, ligand_pdb):
-    if mol.GetNumConformers() < 1:
-        raise DockingError('For conversion to PDB a conformer is required')
-    Chem.MolToPDBFile(mol, filename=str(ligand_pdb))
-
-
 def convert_pdbqt_to_pdb(pdbqt_file: PathType, pdb_file: PathType, disable_bonding=False, verbose=False) -> None:
     # yapf: disable
     cmd_args = [
