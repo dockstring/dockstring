@@ -192,7 +192,7 @@ def protonate_mol(mol: Chem.Mol, verbose=False) -> Chem.Mol:
     protonated_smiles = protonate_smiles(smiles, verbose=verbose)
     mol = Chem.MolFromSmiles(protonated_smiles)
     if not mol:
-        raise DockingError('Cannot read protonated SMILES')
+        raise DockingError(f'Cannot read protonated SMILES: {protonated_smiles}')
 
     return mol
 
