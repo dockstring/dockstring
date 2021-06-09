@@ -8,11 +8,11 @@ from typing import Optional, List, Union
 
 from rdkit.Chem import AllChem as Chem
 
-from .utils import (DockingError, smiles_to_mol, embed_mol, refine_mol_with_ff, write_embedded_mol_to_pdb,
-                    protonate_pdb, convert_pdbqt_to_pdb, convert_pdb_to_pdbqt, read_mol_from_pdb,
+from .utils import (DockingError, smiles_to_mol, embed_mol, refine_mol_with_ff, convert_pdbqt_to_pdb, read_mol_from_pdb,
                     parse_scores_from_output, parse_search_box_conf, PathType, get_targets_dir, get_vina_path,
                     get_resources_dir, check_mol, canonicalize_smiles, verify_docked_ligand, check_vina_output,
-                    assign_stereochemistry, assign_bond_orders, sanitize_mol)
+                    assign_stereochemistry, assign_bond_orders, sanitize_mol, protonate_mol, write_mol_to_mol_file,
+                    convert_mol_file_to_pdbqt)
 
 
 def load_target(name: str, *args, **kwargs):
@@ -112,29 +112,33 @@ class Target:
         """
 
         # Auxiliary files
-        ligand_pdb = self.working_dir / 'ligand.pdb'
+        ligand_mol_file = self.working_dir / 'ligand.mol'
         ligand_pdbqt = self.working_dir / 'ligand.pdbqt'
         vina_logfile = self.working_dir / 'vina.log'
         vina_outfile = self.working_dir / 'vina.out'
         docked_ligand_pdb = self.working_dir / 'docked_ligand.pdb'
 
         try:
-            # Read and check input
+            # Make sure user input is standardized
             canonical_smiles = canonicalize_smiles(smiles)
+
+            # Read and check input
             mol = smiles_to_mol(canonical_smiles, verbose=verbose)
             mol = sanitize_mol(mol, verbose=verbose)
             check_mol(mol)
 
-            # Prepare ligand
-            embedded_mol = embed_mol(mol, seed=seed)
+            # Protonate ligand
+            protonated_mol = protonate_mol(mol)
+            check_mol(protonated_mol)
+
+            # Embed ligand
+            embedded_mol = embed_mol(protonated_mol, seed=seed)
             refined_mol = refine_mol_with_ff(embedded_mol)
-            write_embedded_mol_to_pdb(refined_mol, ligand_pdb)
-            protonate_pdb(ligand_pdb, verbose=verbose)
-            prepared_mol = read_mol_from_pdb(ligand_pdb)
-            assign_stereochemistry(prepared_mol)
-            convert_pdb_to_pdbqt(ligand_pdb, ligand_pdbqt, verbose=verbose)
+            assign_stereochemistry(refined_mol)
 
             # Dock
+            write_mol_to_mol_file(refined_mol, ligand_mol_file)
+            convert_mol_file_to_pdbqt(ligand_mol_file, ligand_pdbqt, verbose=verbose)
             self._dock_pdbqt(ligand_pdbqt, vina_logfile, vina_outfile, seed=seed, num_cpus=num_cpus, verbose=verbose)
 
             # Process docking output
@@ -144,11 +148,14 @@ class Target:
                                  disable_bonding=True,
                                  verbose=verbose)
             raw_ligand = read_mol_from_pdb(docked_ligand_pdb)
-            ligand = assign_bond_orders(subject=raw_ligand, ref=prepared_mol)
+
+            # Assign bond orders and stereochemistry
+            refined_mol_no_hs = Chem.RemoveHs(refined_mol)  # remove Hs as they are not present in the PDBQT file
+            ligand = assign_bond_orders(subject=raw_ligand, ref=refined_mol_no_hs)
             assign_stereochemistry(ligand)
 
             # Verify docked ligand
-            verify_docked_ligand(ref=prepared_mol, ligand=ligand)
+            verify_docked_ligand(ref=refined_mol_no_hs, ligand=ligand)
 
             # Parse scores
             scores = parse_scores_from_output(docked_ligand_pdb)
@@ -185,8 +192,8 @@ class Target:
             tmp_dir = Path(tmp_dir_handle.name).resolve()
 
             for index, mol in enumerate(mols):
-                mol_pdb_file = tmp_dir / f'ligand_{index}.pdb'
-                write_embedded_mol_to_pdb(mol, mol_pdb_file)
-                commands += [str(mol_pdb_file)]
+                mol_file = tmp_dir / f'ligand_{index}.mol'
+                write_mol_to_mol_file(mol, mol_file)
+                commands += [str(mol_file)]
 
         return subprocess.run(commands)

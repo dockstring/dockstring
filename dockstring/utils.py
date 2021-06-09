@@ -162,12 +162,6 @@ def refine_mol_with_ff(mol, max_iters=1000) -> Chem.Mol:
     return opt_mol
 
 
-def write_embedded_mol_to_pdb(mol, ligand_pdb):
-    if mol.GetNumConformers() < 1:
-        raise DockingError('For conversion to PDB a conformer is required')
-    Chem.MolToPDBFile(mol, filename=str(ligand_pdb))
-
-
 def convert_pdbqt_to_pdb(pdbqt_file: PathType, pdb_file: PathType, disable_bonding=False, verbose=False) -> None:
     # yapf: disable
     cmd_args = [
@@ -193,51 +187,37 @@ def convert_pdbqt_to_pdb(pdbqt_file: PathType, pdb_file: PathType, disable_bondi
         raise DockingError('Conversion from PDBQT to PDB failed')
 
 
-def protonate_pdb(pdb_file: PathType, verbose=False):
-    # Remove all hydrogen atoms
-    # yapf: disable
-    cmd_list = [
-        'obabel',
-        '-ipdb', pdb_file,
-        '-opdb',
-        '-O', pdb_file,
-        '-d',  # delete hydrogen atoms
-    ]
-    # yapf: enable
-    cmd_return = subprocess.run(cmd_list, stdout=subprocess.PIPE, stderr=subprocess.STDOUT)
+def protonate_mol(mol: Chem.Mol, verbose=False) -> Chem.Mol:
+    smiles = Chem.MolToSmiles(mol)
+    protonated_smiles = protonate_smiles(smiles, verbose=verbose)
+    mol = Chem.MolFromSmiles(protonated_smiles)
+    if not mol:
+        raise DockingError('Cannot read protonated SMILES')
+
+    return mol
+
+
+def protonate_smiles(smiles: str, verbose=False) -> str:
+    # Protonate SMILES with OpenBabel at given pH
+    # cmd list format raises errors, therefore one string
+    cmd = f'obabel -:"{smiles}" -ismi -ocan -p7.4'
+    cmd_return = subprocess.run(cmd, capture_output=True, shell=True)
     output = cmd_return.stdout.decode('utf-8')
 
     if verbose:
         logging.info(output)
 
     if cmd_return.returncode != 0:
-        raise DockingError('Protonation of ligand failed')
+        raise DockingError('Ligand protonation failed')
 
-    # Add hydrogen atoms for pH 7.4
+    return output.strip()
+
+
+def convert_mol_file_to_pdbqt(mol_file: PathType, pdbqt_file: PathType, verbose=False):
     # yapf: disable
     cmd_list = [
         'obabel',
-        '-ipdb', pdb_file,
-        '-opdb',
-        '-O', pdb_file,
-        '-p', '7.4',  # add hydrogen atoms
-    ]
-    # yapf: enable
-    cmd_return = subprocess.run(cmd_list, stdout=subprocess.PIPE, stderr=subprocess.STDOUT)
-    output = cmd_return.stdout.decode('utf-8')
-
-    if verbose:
-        logging.info(output)
-
-    if cmd_return.returncode != 0:
-        raise DockingError('Protonation of ligand failed.')
-
-
-def convert_pdb_to_pdbqt(pdb_file: PathType, pdbqt_file: PathType, verbose=False):
-    # yapf: disable
-    cmd_list = [
-        'obabel',
-        '-ipdb', pdb_file,
+        '-imol', mol_file,
         '-opdbqt',
         '-O', pdbqt_file,
         '--partialcharge', 'gasteiger'
@@ -260,10 +240,10 @@ def read_mol_from_pdb(pdb_file: PathType) -> Chem.Mol:
     return mol
 
 
-def write_mol_to_pdb(mol: Chem.Mol, pdb_file: PathType):
+def write_mol_to_mol_file(mol: Chem.Mol, mol_file: PathType):
     if mol.GetNumConformers() < 1:
-        raise DockingError('For conversion to PDB a conformer is required')
-    Chem.MolToPDBFile(mol, filename=str(pdb_file))
+        raise DockingError('For conversion to MDL MOL format a conformer is required')
+    Chem.MolToMolFile(mol, filename=str(mol_file))
 
 
 def check_vina_output(output_file: Path):

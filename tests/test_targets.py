@@ -7,8 +7,8 @@ import pytest
 from rdkit.Chem import AllChem as Chem
 
 from dockstring import list_all_target_names, load_target, DockingError
-from dockstring.utils import (smiles_to_mol, write_embedded_mol_to_pdb, embed_mol, read_mol_from_pdb, protonate_pdb,
-                              check_vina_output, parse_scores_from_output, canonicalize_smiles, refine_mol_with_ff)
+from dockstring.utils import (smiles_to_mol, embed_mol, check_vina_output, parse_scores_from_output,
+                              canonicalize_smiles, refine_mol_with_ff, protonate_mol, write_mol_to_mol_file)
 
 
 class TestLoader:
@@ -42,27 +42,9 @@ class TestConversions:
 
     def test_write_fail(self):
         mol = smiles_to_mol(lysine_smiles)
-        with tempfile.NamedTemporaryFile(suffix='.pdb') as f:
+        with tempfile.NamedTemporaryFile(suffix='.mol') as f:
             with pytest.raises(DockingError):
-                write_embedded_mol_to_pdb(mol, ligand_pdb=f.name)
-
-    @pytest.mark.parametrize('smiles', [
-        lysine_smiles,
-        'O=C1N(C=2N=C(OC)N=CC2N=C1C=3C=CC=CC3)C4CC4',
-    ])
-    def test_read_write_pdb(self, smiles):
-        mol = smiles_to_mol(smiles)
-        embedded_mol = embed_mol(mol, seed=1)
-
-        # Added Hs
-        assert Chem.MolToSmiles(embedded_mol) != Chem.MolToSmiles(mol)
-
-        with tempfile.NamedTemporaryFile(suffix='.pdb') as f:
-            write_embedded_mol_to_pdb(embedded_mol, ligand_pdb=f.name)
-            read_mol = read_mol_from_pdb(f.name)
-
-        # Hs are gone
-        assert Chem.MolToSmiles(mol) == Chem.MolToSmiles(read_mol)
+                write_mol_to_mol_file(mol, mol_file=f.name)
 
     @pytest.mark.parametrize('smiles,charge_ph7', [
         (lysine_smiles, 1),
@@ -71,14 +53,8 @@ class TestConversions:
     ])
     def test_protonation(self, smiles, charge_ph7):
         mol = smiles_to_mol(smiles)
-        embedded_mol = embed_mol(mol, seed=1)
-
-        with tempfile.NamedTemporaryFile(suffix='.pdb') as pdb_file:
-            write_embedded_mol_to_pdb(embedded_mol, ligand_pdb=pdb_file.name)
-            protonate_pdb(pdb_file.name)
-            read_mol = read_mol_from_pdb(pdb_file.name)
-
-        charges = tuple(sum(atom.GetFormalCharge() for atom in m.GetAtoms()) for m in (mol, read_mol))
+        protonated_mol = protonate_mol(mol)
+        charges = tuple(sum(atom.GetFormalCharge() for atom in m.GetAtoms()) for m in (mol, protonated_mol))
         assert charges == (0, charge_ph7)
 
 
@@ -178,7 +154,7 @@ class TestDocking:
     def test_charged(self, smiles):
         target = load_target('CYP3A4')
         energy, aux = target.dock(smiles)
-        assert math.isclose(energy, -4.7)
+        assert math.isclose(energy, -4.6)
 
         charge = sum(atom.GetFormalCharge() for atom in aux['ligand'].GetAtoms())
         assert charge == 1
@@ -189,8 +165,8 @@ class TestDocking:
             ('[H][N+]1=CC=CC=C1', 0, -4.1),  # pyridinium
             ('N1=CC=CC=C1', 0, -4.1),  # pyridine
             ('C[N+]1=CC=CC=C1', 1, -4.3),
-            ('CC(O)=O', -1, -3.1),  # acetic acid
-            ('CC([O-])=O', -1, -3.1),  # acetic acid
+            ('CC(O)=O', -1, -3.0),  # acetic acid
+            ('CC([O-])=O', -1, -3.0),  # acetic acid
         ])
     def test_different_charges(self, smiles, charge, energy):
         target = load_target('CYP3A4')
@@ -202,7 +178,7 @@ class TestDocking:
     def test_pdbqt_to_pdb_error(self):
         target = load_target('CYP3A4')
         score, aux = target.dock('O=C1N(C=2N=C(OC)N=CC2N=C1C=3C=CC=CC3)C4CC4')
-        scores = [-9.1, -8.5, -8.2, -8.2, -8.0, -7.9, -7.8, -7.8, -7.7]
+        scores = [-9.0, -8.9, -8.3, -8.3, -8.3, -8.0, -7.8, -7.7, -7.6]
         assert aux['ligand'].GetNumConformers() == 9
         assert len(aux['scores']) == len(scores)
         assert all(math.isclose(a, b) for a, b in zip(aux['scores'], scores))
@@ -255,7 +231,7 @@ class TestDocking:
     @pytest.mark.parametrize(
         'target_name, ligand_smiles',
         [
-            ('ABL1', 'BrC12CC3(CC(C1)CC(C3)C2)CC(=O)NCC4=CC=CC=C4'),  # too many bonds
+            # ('ABL1', 'BrC12CC3(CC(C1)CC(C3)C2)CC(=O)NCC4=CC=CC=C4'),  # too many bonds
             ('ABL1', 'BrC1=CC(P(OCC)(OCC)=O)(NS(=O)(=O)C2=CC=CC=C2)C3=C(C1=O)C=CC=C3'),  # multiple fragments
         ])
     def test_bond_assignment_fails(self, target_name: str, ligand_smiles: str):
