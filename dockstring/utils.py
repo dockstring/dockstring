@@ -11,6 +11,7 @@ from typing import List, Union, Dict, Optional
 import pkg_resources
 from rdkit import rdBase
 from rdkit.Chem import AllChem as Chem
+from rdkit.Chem.Descriptors import NumRadicalElectrons
 from rdkit.Chem.MolStandardize.rdMolStandardize import Uncharger
 
 PathType = Union[str, os.PathLike]
@@ -109,6 +110,9 @@ def check_mol(mol: Chem.Mol):
     no_hs = all(atom.GetAtomicNum() != 0 for atom in mol.GetAtoms())
     if not no_hs:
         raise DockingError("Cannot process molecule: hydrogen atoms couldn't be removed")
+
+    if NumRadicalElectrons(mol) != 0:
+        raise DockingError('Molecule cannot contain radicals')
 
     # Check that the molecule consists of only one fragment
     fragments = Chem.GetMolFrags(mol)
