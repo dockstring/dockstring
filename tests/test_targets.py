@@ -228,6 +228,14 @@ class TestDocking:
         with pytest.raises(DockingError):
             target.dock('C.CO')
 
+    def test_radicals(self):
+        target = load_target('ABL1')
+        with pytest.raises(DockingError):
+            target.dock('C[CH2]')
+
+        with pytest.raises(DockingError):
+            target.dock('C[CH]')
+
     @pytest.mark.parametrize(
         'target_name, ligand_smiles',
         [
