@@ -2,7 +2,7 @@ name: dockstring
 channels:
   - conda-forge
 dependencies:
-  - rdkit=2021.03.*
-  - openbabel=3.1.*
-  - python=3.7.*
+  - rdkit=2021.03.3
+  - openbabel=3.1.1
+  - python=3.7.10
   - pytest
