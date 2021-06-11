@@ -12,7 +12,7 @@ from .utils import (DockingError, smiles_to_mol, embed_mol, refine_mol_with_ff, 
                     parse_scores_from_output, parse_search_box_conf, PathType, get_targets_dir, get_vina_path,
                     get_resources_dir, check_mol, canonicalize_smiles, verify_docked_ligand, check_vina_output,
                     assign_stereochemistry, assign_bond_orders, sanitize_mol, protonate_mol, write_mol_to_mol_file,
-                    convert_mol_file_to_pdbqt)
+                    convert_mol_file_to_pdbqt, check_charges)
 
 
 def load_target(name: str, *args, **kwargs):
@@ -126,6 +126,7 @@ class Target:
             mol = smiles_to_mol(canonical_smiles, verbose=verbose)
             mol = sanitize_mol(mol, verbose=verbose)
             check_mol(mol)
+            check_charges(mol)
 
             # Protonate ligand
             protonated_mol = protonate_mol(mol)
