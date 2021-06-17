@@ -1,49 +1,46 @@
-from dockstring.utils import get_resources_dir
+from typing import Sequence
+
 import pandas as pd
 import sklearn.metrics as metrics
 
-balanced_set = pd.read_csv(get_resources_dir() / 'data' / 'balanced_scores_1000_actives_1000_inactives.tsv', sep='\t')
-unbalanced_set = pd.read_csv(get_resources_dir() / 'data' / 'unbalanced_scores_200_actives_3800_inactives.tsv',
-                             sep='\t')
+from dockstring.utils import get_resources_dir
 
 
-def enrichment_factor(labels, scores, top_k):
-    data = pd.DataFrame([labels, scores]).transpose().sort_values(by='score', ascending=False)
+def enrichment_factor(labels: Sequence[bool], scores: Sequence[float], top_k: int) -> float:
+    data = pd.DataFrame({'label': labels, 'score': scores}).sort_values(by='score', ascending=False)
     num_actives_before = int(sum(data['label']))
-    num_actives_after = int(sum(data['label'].iloc[:top_k]))
+    num_actives_after = int(sum(data['label'][:top_k]))
     rate_before = num_actives_before / data.shape[0]
     rate_after = num_actives_after / top_k
-    ef = rate_after / rate_before
-    return ef
+    return rate_after / rate_before
 
 
-targets = balanced_set['target'].unique()
-quality_metrics = pd.DataFrame(index=targets, columns=['auc', 'ap', 'ef'])
+def prepare_dataset(dataset: pd.DataFrame) -> pd.DataFrame:
+    dataset['label'] = dataset['label'] == 'A'  # note: some entries don't have a label -> false
+    dataset = dataset[~dataset['score'].isna()].copy()  # discard entries without score
+    dataset['score'] = dataset['score'] * -1  # higher is better
+    return dataset
 
-for each_target in targets:
-    # Load balanced and unbalanced sets
-    # - make integer labels
-    # - make scores positive (so that higher is better)
-    # - remove missing values
-    each_balanced_set = balanced_set.loc[balanced_set['target'] == each_target]
-    each_balanced_set['label'] = (each_balanced_set['label'] == 'A').astype(int)
-    each_balanced_set['score'] = each_balanced_set['score'] * -1
-    each_balanced_set = each_balanced_set.loc[~each_balanced_set['score'].isnull()]
-    each_unbalanced_set = unbalanced_set.loc[unbalanced_set['target'] == each_target]
-    each_unbalanced_set['label'] = (each_unbalanced_set['label'] == 'A').astype(int)
-    each_unbalanced_set['score'] = each_unbalanced_set['score'] * -1
-    each_unbalanced_set = each_unbalanced_set.loc[~each_unbalanced_set['score'].isnull()]
-    # Compute area under a ROC curve and average precision
-    labels = each_balanced_set['label']
-    scores = each_balanced_set['score']
-    auc = metrics.roc_auc_score(labels, scores)
-    # Compute enrichment factor
-    labels = each_unbalanced_set['label']
-    scores = each_unbalanced_set['score']
-    ap = metrics.average_precision_score(labels, scores)
-    ef = enrichment_factor(labels=labels, scores=scores, top_k=200)
-    # Save to dataframe
-    quality_metrics.loc[each_target, ['auc', 'ap', 'ef']] = [auc, ap, ef]
 
-quality_metrics = quality_metrics.sort_values(by='auc', ascending=False)
-quality_metrics.to_csv(get_resources_dir() / 'data' / 'quality_metrics.tsv', sep='\t', header=True, index=True)
+def main():
+    balanced_path = get_resources_dir() / 'data' / 'balanced_scores_1000_actives_1000_inactives.tsv'
+    balanced_set = prepare_dataset(pd.read_csv(balanced_path, sep='\t'))
+
+    # Balanced: AUC
+    auc = balanced_set.groupby('target').apply(lambda g: metrics.roc_auc_score(g['label'], g['score']))
+
+    # Unbalanced: AP, EF
+    unbalanced_path = get_resources_dir() / 'data' / 'unbalanced_scores_200_actives_3800_inactives.tsv'
+    unbalanced_set = prepare_dataset(pd.read_csv(unbalanced_path, sep='\t'))
+
+    ap = unbalanced_set.groupby('target').apply(lambda g: metrics.average_precision_score(g['label'], g['score']))
+    ef = unbalanced_set.groupby('target').apply(
+        lambda g: enrichment_factor(labels=g['label'], scores=g['score'], top_k=200))
+
+    quality_metrics = pd.DataFrame({'auc': auc, 'ap': ap, 'ef': ef}).sort_values(by='auc', ascending=False)
+
+    quality_metrics.to_csv(get_resources_dir() / 'data' / 'quality_metrics.tsv', sep='\t', header=True, index=True)
+
+
+if __name__ == '__main__':
+    main()
