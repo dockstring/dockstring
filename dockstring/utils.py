@@ -104,8 +104,14 @@ def sanitize_mol(mol: Chem.Mol, verbose=False) -> Chem.Mol:
     return mol
 
 
+def check_charges(mol: Chem.Mol) -> None:
+    # Note: formal charges are allowed but they are usually on N or O
+    for atom in mol.GetAtoms():
+        if atom.GetFormalCharge() != 0 and atom.GetAtomicNum() != 7 and atom.GetAtomicNum() != 8:
+            logging.warning('Molecule contains charged atom that is not N or O - careful!')
+
+
 def check_mol(mol: Chem.Mol):
-    # Note: charged species are allowed
     # Check that there aren't any hydrogen atoms left in the RDKit.Mol
     no_hs = all(atom.GetAtomicNum() != 0 for atom in mol.GetAtoms())
     if not no_hs:
