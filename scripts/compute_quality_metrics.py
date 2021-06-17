@@ -23,10 +23,10 @@ def prepare_dataset(dataset: pd.DataFrame) -> pd.DataFrame:
 
 
 def main():
+    # Balanced: AUC
     balanced_path = get_resources_dir() / 'data' / 'balanced_scores_1000_actives_1000_inactives.tsv'
     balanced_set = prepare_dataset(pd.read_csv(balanced_path, sep='\t'))
 
-    # Balanced: AUC
     auc = balanced_set.groupby('target').apply(lambda g: metrics.roc_auc_score(g['label'], g['score']))
 
     # Unbalanced: AP, EF
