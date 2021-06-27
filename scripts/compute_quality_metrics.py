@@ -17,29 +17,34 @@ def enrichment_factor(labels: Sequence[bool], scores: Sequence[float], top_k: in
 
 def prepare_dataset(dataset: pd.DataFrame) -> pd.DataFrame:
     dataset['label'] = dataset['label'] == 'A'  # note: some entries don't have a label -> false
-    dataset = dataset[~dataset['score'].isna()].copy()  # discard entries without score
-    dataset['score'] = dataset['score'] * -1  # higher is better
+    dataset = dataset.dropna(axis=0).copy()  # discard rows without score
+    dataset['score'] = dataset['score'] * -1  # for the docking score, higher is better
     return dataset
 
 
 def main():
     # Balanced: AUC
-    balanced_path = get_resources_dir() / 'data' / 'balanced_scores_1000_actives_1000_inactives.tsv'
+    balanced_path = get_resources_dir() / 'data' / 'balanced_scores_1000_actives_1000_inactives_aug.tsv'
     balanced_set = prepare_dataset(pd.read_csv(balanced_path, sep='\t'))
 
-    auc = balanced_set.groupby('target').apply(lambda g: metrics.roc_auc_score(g['label'], g['score']))
-
     # Unbalanced: AP, EF
-    unbalanced_path = get_resources_dir() / 'data' / 'unbalanced_scores_200_actives_3800_inactives.tsv'
+    unbalanced_path = get_resources_dir() / 'data' / 'unbalanced_scores_200_actives_3800_inactives_aug.tsv'
     unbalanced_set = prepare_dataset(pd.read_csv(unbalanced_path, sep='\t'))
 
-    ap = unbalanced_set.groupby('target').apply(lambda g: metrics.average_precision_score(g['label'], g['score']))
-    ef = unbalanced_set.groupby('target').apply(
-        lambda g: enrichment_factor(labels=g['label'], scores=g['score'], top_k=200))
+    metrics_list = []
+    for prop in ['score', 'logp', 'qed']:
+        auc = balanced_set.groupby('target').apply(lambda g: metrics.roc_auc_score(g['label'], g[prop]))
+        ap = unbalanced_set.groupby('target').apply(lambda g: metrics.average_precision_score(g['label'], g[prop]))
+        ef = unbalanced_set.groupby('target').apply(
+            lambda g: enrichment_factor(labels=g['label'], scores=g[prop], top_k=200))
 
-    quality_metrics = pd.DataFrame({'auc': auc, 'ap': ap, 'ef': ef}).sort_values(by='auc', ascending=False)
+        score_metrics = pd.DataFrame({'auc': auc, 'ap': ap, 'ef': ef}).sort_values(by='auc', ascending=False)
+        score_metrics['prop'] = prop
+        metrics_list.append(score_metrics)
 
-    quality_metrics.to_csv(get_resources_dir() / 'data' / 'quality_metrics.tsv', sep='\t', header=True, index=True)
+    quality_metrics = pd.concat(metrics_list)
+    quality_metrics = quality_metrics.reset_index().set_index(['target', 'prop']).sort_index()
+    quality_metrics.to_csv(get_resources_dir() / 'data' / 'quality_metrics_aug.tsv', sep='\t', header=True, index=True)
 
 
 if __name__ == '__main__':
