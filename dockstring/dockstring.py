@@ -8,7 +8,8 @@ from typing import Optional, List, Union
 
 from rdkit.Chem import AllChem as Chem
 
-from .utils import (DockingError, smiles_to_mol, embed_mol, refine_mol_with_ff, convert_pdbqt_to_pdb, read_mol_from_pdb,
+from .errors import DockstringError, VinaError
+from .utils import (smiles_to_mol, embed_mol, refine_mol_with_ff, convert_pdbqt_to_pdb, read_mol_from_pdb,
                     parse_scores_from_output, parse_search_box_conf, PathType, get_targets_dir, get_vina_path,
                     get_resources_dir, check_mol, canonicalize_smiles, verify_docked_ligand, check_vina_output,
                     assign_stereochemistry, assign_bond_orders, sanitize_mol, protonate_mol, write_mol_to_mol_file,
@@ -43,7 +44,7 @@ class Target:
 
         # Ensure input files exist
         if not all(p.exists() for p in [self.pdb_path, self.pdbqt_path, self.conf_path]):
-            raise DockingError(f"'{self.name}' is not a supported target")
+            raise DockstringError(f"'{self.name}' is not a supported target")
 
     def __repr__(self):
         return f"Target(name='{self.name}', working_dir='{self.working_dir}')"
@@ -100,7 +101,7 @@ class Target:
 
         # If failure, raise DockingError
         if cmd_return.returncode != 0:
-            raise DockingError('Docking with Vina failed')
+            raise VinaError('Docking with Vina failed')
 
     def dock(self, smiles: str, num_cpus: Optional[int] = None, seed=974528263, verbose=False):
         """
@@ -118,58 +119,50 @@ class Target:
         vina_outfile = self.working_dir / 'vina.out'
         docked_ligand_pdb = self.working_dir / 'docked_ligand.pdb'
 
-        try:
-            # Make sure user input is standardized
-            canonical_smiles = canonicalize_smiles(smiles)
+        # Make sure user input is standardized
+        canonical_smiles = canonicalize_smiles(smiles)
 
-            # Read and check input
-            mol = smiles_to_mol(canonical_smiles, verbose=verbose)
-            mol = sanitize_mol(mol, verbose=verbose)
-            check_mol(mol)
-            check_charges(mol)
+        # Read and check input
+        mol = smiles_to_mol(canonical_smiles, verbose=verbose)
+        mol = sanitize_mol(mol, verbose=verbose)
+        check_mol(mol)
+        check_charges(mol)
 
-            # Protonate ligand
-            protonated_mol = protonate_mol(mol)
-            check_mol(protonated_mol)
+        # Protonate ligand
+        protonated_mol = protonate_mol(mol)
+        check_mol(protonated_mol)
 
-            # Embed ligand
-            embedded_mol = embed_mol(protonated_mol, seed=seed)
-            refined_mol = refine_mol_with_ff(embedded_mol)
-            assign_stereochemistry(refined_mol)
+        # Embed ligand
+        embedded_mol = embed_mol(protonated_mol, seed=seed)
+        refined_mol = refine_mol_with_ff(embedded_mol)
+        assign_stereochemistry(refined_mol)
 
-            # Dock
-            write_mol_to_mol_file(refined_mol, ligand_mol_file)
-            convert_mol_file_to_pdbqt(ligand_mol_file, ligand_pdbqt, verbose=verbose)
-            self._dock_pdbqt(ligand_pdbqt, vina_logfile, vina_outfile, seed=seed, num_cpus=num_cpus, verbose=verbose)
+        # Dock
+        write_mol_to_mol_file(refined_mol, ligand_mol_file)
+        convert_mol_file_to_pdbqt(ligand_mol_file, ligand_pdbqt, verbose=verbose)
+        self._dock_pdbqt(ligand_pdbqt, vina_logfile, vina_outfile, seed=seed, num_cpus=num_cpus, verbose=verbose)
 
-            # Process docking output
-            check_vina_output(vina_outfile)
-            convert_pdbqt_to_pdb(pdbqt_file=vina_outfile,
-                                 pdb_file=docked_ligand_pdb,
-                                 disable_bonding=True,
-                                 verbose=verbose)
-            raw_ligand = read_mol_from_pdb(docked_ligand_pdb)
+        # Process docking output
+        check_vina_output(vina_outfile)
+        convert_pdbqt_to_pdb(pdbqt_file=vina_outfile, pdb_file=docked_ligand_pdb, disable_bonding=True, verbose=verbose)
+        raw_ligand = read_mol_from_pdb(docked_ligand_pdb)
 
-            # Assign bond orders and stereochemistry
-            refined_mol_no_hs = Chem.RemoveHs(refined_mol)  # remove Hs as they are not present in the PDBQT file
-            ligand = assign_bond_orders(subject=raw_ligand, ref=refined_mol_no_hs)
-            assign_stereochemistry(ligand)
+        # Assign bond orders and stereochemistry
+        refined_mol_no_hs = Chem.RemoveHs(refined_mol)  # remove Hs as they are not present in the PDBQT file
+        ligand = assign_bond_orders(subject=raw_ligand, ref=refined_mol_no_hs)
+        assign_stereochemistry(ligand)
 
-            # Verify docked ligand
-            verify_docked_ligand(ref=refined_mol_no_hs, ligand=ligand)
+        # Verify docked ligand
+        verify_docked_ligand(ref=refined_mol_no_hs, ligand=ligand)
 
-            # Parse scores
-            scores = parse_scores_from_output(docked_ligand_pdb)
-            assert len(scores) == ligand.GetNumConformers()
+        # Parse scores
+        scores = parse_scores_from_output(docked_ligand_pdb)
+        assert len(scores) == ligand.GetNumConformers()
 
-            return scores[0], {
-                'ligand': ligand,
-                'scores': scores,
-            }
-
-        except DockingError as error:
-            logging.error(f"An error occurred for ligand '{smiles}': {error}")
-            raise
+        return scores[0], {
+            'ligand': ligand,
+            'scores': scores,
+        }
 
     def view(self, mols: List[Chem.Mol] = None, search_box=True):
         """

@@ -14,6 +14,10 @@ from rdkit.Chem import AllChem as Chem
 from rdkit.Chem.Descriptors import NumRadicalElectrons
 from rdkit.Chem.MolStandardize.rdMolStandardize import Uncharger
 
+from .errors import (DockstringError, CanonicalizationError, ParsingError, SanityError, EmbeddingError,
+                     StructureOptimizationError, FormatConversionError, ProtonationError, DockingError,
+                     PoseProcessingError, OutputError)
+
 PathType = Union[str, os.PathLike]
 
 
@@ -33,44 +37,39 @@ def setup_logger(level: Union[int, str] = logging.INFO, path: Optional[str] = No
         logger.addHandler(fh)
 
 
-class DockingError(Exception):
-    """Raised when Target.dock fails at any step"""
-    pass
-
-
 def get_vina_filename() -> str:
     system_name = platform.system()
     if system_name == 'Linux':
         return 'vina_linux'
     else:
-        raise DockingError(f"System '{system_name}' not yet supported")
+        raise DockstringError(f"System '{system_name}' not yet supported")
 
 
 def get_resources_dir() -> Path:
     path = Path(pkg_resources.resource_filename(__package__, 'resources'))
     if not path.is_dir():
-        raise DockingError("'resources' directory not found")
+        raise DockstringError("'resources' directory not found")
     return path
 
 
 def get_targets_dir() -> Path:
     path = get_resources_dir() / 'targets'
     if not path.is_dir():
-        raise DockingError("'targets' directory not found")
+        raise DockstringError("'targets' directory not found")
     return path
 
 
 def get_bin_dir() -> Path:
     path = get_resources_dir() / 'bin'
     if not path.is_dir():
-        raise DockingError("'bin' directory not found")
+        raise DockstringError("'bin' directory not found")
     return path
 
 
 def get_vina_path() -> Path:
     path = get_bin_dir() / get_vina_filename()
     if not path.is_file():
-        raise DockingError('AutoDock Vina executable not found')
+        raise DockstringError('AutoDock Vina executable not found')
     return path
 
 
@@ -78,7 +77,7 @@ def canonicalize_smiles(smiles: str) -> str:
     try:
         return Chem.CanonSmiles(smiles, useChiral=True)
     except Exception as e:
-        raise DockingError(f'Cannot canonicalize SMILES: {e}')
+        raise CanonicalizationError(f'Cannot canonicalize SMILES: {e}')
 
 
 def smiles_to_mol(smiles, verbose=False) -> Chem.Mol:
@@ -86,7 +85,7 @@ def smiles_to_mol(smiles, verbose=False) -> Chem.Mol:
         rdBase.DisableLog('rdApp.error')
     mol = Chem.MolFromSmiles(smiles, sanitize=True)
     if mol is None:
-        raise DockingError('Could not parse SMILES string')
+        raise ParsingError('Could not parse SMILES string')
     if not verbose:
         rdBase.EnableLog('rdApp.error')
 
@@ -115,15 +114,15 @@ def check_mol(mol: Chem.Mol):
     # Check that there aren't any hydrogen atoms left in the RDKit.Mol
     no_hs = all(atom.GetAtomicNum() != 0 for atom in mol.GetAtoms())
     if not no_hs:
-        raise DockingError("Cannot process molecule: hydrogen atoms couldn't be removed")
+        raise SanityError("Cannot process molecule: hydrogen atoms couldn't be removed")
 
     if NumRadicalElectrons(mol) != 0:
-        raise DockingError('Molecule cannot contain radicals')
+        raise SanityError('Molecule cannot contain radicals')
 
     # Check that the molecule consists of only one fragment
     fragments = Chem.GetMolFrags(mol)
     if len(fragments) != 1:
-        raise DockingError(f'Incorrect number of molecular fragments ({len(fragments)})')
+        raise SanityError(f'Incorrect number of molecular fragments ({len(fragments)})')
 
 
 def embed_mol(mol, seed: int, attempt_factor=10):
@@ -133,7 +132,7 @@ def embed_mol(mol, seed: int, attempt_factor=10):
     Chem.EmbedMolecule(mol, randomSeed=seed, maxAttempts=attempt_factor * mol.GetNumAtoms())
     # If not a single conformation is obtained in all the attempts, raise an error
     if mol.GetNumConformers() == 0:
-        raise DockingError('Generation of ligand conformation failed')
+        raise EmbeddingError('Generation of ligand conformation failed')
     return mol
 
 
@@ -142,7 +141,7 @@ def run_mmff94_opt(mol: Chem.Mol, max_iters: int) -> Chem.Mol:
     Chem.MMFFSanitizeMolecule(opt_mol)
     opt_result = Chem.MMFFOptimizeMolecule(opt_mol, mmffVariant='MMFF94', maxIters=max_iters)
     if opt_result != 0:
-        raise DockingError('MMFF optimization of ligand failed')
+        raise StructureOptimizationError('MMFF optimization of ligand failed')
 
     return opt_mol
 
@@ -151,7 +150,7 @@ def run_uff_opt(mol: Chem.Mol, max_iters: int) -> Chem.Mol:
     opt_mol = copy.copy(mol)
     opt_result = Chem.UFFOptimizeMolecule(opt_mol, maxIters=max_iters)
     if opt_result != 0:
-        raise DockingError('UFF optimization of ligand failed')
+        raise StructureOptimizationError('UFF optimization of ligand failed')
 
     return opt_mol
 
@@ -167,7 +166,7 @@ def refine_mol_with_ff(mol, max_iters=1000) -> Chem.Mol:
         opt_mol = run_uff_opt(mol, max_iters=max_iters)
 
     else:
-        raise DockingError('Cannot optimize ligand: parameters not available')
+        raise StructureOptimizationError('Cannot optimize ligand: parameters not available')
 
     return opt_mol
 
@@ -194,7 +193,7 @@ def convert_pdbqt_to_pdb(pdbqt_file: PathType, pdb_file: PathType, disable_bondi
         logging.info(stdout)
 
     if cmd_return.returncode != 0:
-        raise DockingError('Conversion from PDBQT to PDB failed')
+        raise FormatConversionError('Conversion from PDBQT to PDB failed')
 
 
 def protonate_mol(mol: Chem.Mol, verbose=False) -> Chem.Mol:
@@ -202,7 +201,7 @@ def protonate_mol(mol: Chem.Mol, verbose=False) -> Chem.Mol:
     protonated_smiles = protonate_smiles(smiles, verbose=verbose)
     mol = Chem.MolFromSmiles(protonated_smiles)
     if not mol:
-        raise DockingError(f'Cannot read protonated SMILES: {protonated_smiles}')
+        raise ProtonationError(f'Cannot read protonated SMILES: {protonated_smiles}')
 
     return mol
 
@@ -218,7 +217,7 @@ def protonate_smiles(smiles: str, verbose=False) -> str:
         logging.info(output)
 
     if cmd_return.returncode != 0:
-        raise DockingError('Ligand protonation failed')
+        raise ProtonationError('Ligand protonation with OpenBabel failed')
 
     return output.strip()
 
@@ -240,19 +239,19 @@ def convert_mol_file_to_pdbqt(mol_file: PathType, pdbqt_file: PathType, verbose=
         logging.info(output)
 
     if cmd_return.returncode != 0:
-        raise DockingError('Conversion from PDB to PDBQT failed')
+        raise FormatConversionError('Conversion from PDB to PDBQT failed')
 
 
 def read_mol_from_pdb(pdb_file: PathType) -> Chem.Mol:
     mol = Chem.MolFromPDBFile(str(pdb_file))
     if not mol or mol.GetNumConformers() == 0:
-        raise DockingError(f'Cannot read PDB file {pdb_file}')
+        raise ParsingError(f'Cannot read PDB file {pdb_file}')
     return mol
 
 
 def write_mol_to_mol_file(mol: Chem.Mol, mol_file: PathType):
     if mol.GetNumConformers() < 1:
-        raise DockingError('For conversion to MDL MOL format a conformer is required')
+        raise OutputError('For conversion to MDL MOL format a conformer is required')
     Chem.MolToMolFile(mol, filename=str(mol_file))
 
 
@@ -268,7 +267,7 @@ def assign_bond_orders(subject: Chem.Mol, ref: Chem.Mol, verbose=False) -> Chem.
     try:
         mol = Chem.AssignBondOrdersFromTemplate(refmol=ref, mol=subject)
     except (ValueError, Chem.AtomValenceException) as exception:
-        raise DockingError(f'Could not assign bond orders: {exception}')
+        raise PoseProcessingError(f'Could not assign bond orders: {exception}')
     if not verbose:
         rdBase.EnableLog('rdApp.warning')
     return mol
@@ -283,8 +282,8 @@ def verify_docked_ligand(ref: Chem.Mol, ligand: Chem.Mol):
     ref_smiles = Chem.MolToSmiles(ref)
     ligand_smiles = Chem.MolToSmiles(ligand)
     if ligand_smiles != ref_smiles:
-        raise DockingError(
-            f'Cannot recover original ligand: {ref_smiles} (original ligand) != {ligand_smiles} (docked ligand)')
+        raise PoseProcessingError(f'Cannot recover original ligand: '
+                                  f'{ref_smiles} (original) != {ligand_smiles} (docked)')
 
 
 real_number_pattern = r'[-+]?[0-9]*\.?[0-9]+(e[-+]?[0-9]+)?'

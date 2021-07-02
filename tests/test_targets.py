@@ -6,7 +6,9 @@ from pathlib import Path
 import pytest
 from rdkit.Chem import AllChem as Chem
 
-from dockstring import list_all_target_names, load_target, DockingError
+from dockstring import list_all_target_names, load_target
+from dockstring.errors import (DockstringError, EmbeddingError, StructureOptimizationError, SanityError,
+                               PoseProcessingError, ParsingError)
 from dockstring.utils import (smiles_to_mol, embed_mol, check_vina_output, parse_scores_from_output,
                               canonicalize_smiles, refine_mol_with_ff, protonate_mol, write_mol_to_mol_file)
 
@@ -19,7 +21,7 @@ class TestLoader:
         assert all(load_target(name) for name in names)
 
     def test_wrong_target(self):
-        with pytest.raises(DockingError):
+        with pytest.raises(DockstringError):
             load_target('does_not_exist')
 
 
@@ -33,7 +35,7 @@ class TestConversions:
         assert smiles_to_mol('C')
 
     def test_convert_string_fail(self):
-        with pytest.raises(DockingError):
+        with pytest.raises(ParsingError):
             smiles_to_mol('not_a_mol')
 
     def test_charged_mol(self):
@@ -43,7 +45,7 @@ class TestConversions:
     def test_write_fail(self):
         mol = smiles_to_mol(lysine_smiles)
         with tempfile.NamedTemporaryFile(suffix='.mol') as f:
-            with pytest.raises(DockingError):
+            with pytest.raises(DockstringError):
                 write_mol_to_mol_file(mol, mol_file=f.name)
 
     @pytest.mark.parametrize('smiles,charge_ph7', [
@@ -91,7 +93,7 @@ class TestEmbedding:
     def test_impossible(self, smiles: str):
         canonical_smiles = canonicalize_smiles(smiles)
         mol = smiles_to_mol(canonical_smiles)
-        with pytest.raises(DockingError):
+        with pytest.raises(EmbeddingError):
             embed_mol(mol, seed=1)
 
 
@@ -120,7 +122,7 @@ class TestRefinement:
         canonical_smiles = canonicalize_smiles(smiles)
         mol = smiles_to_mol(canonical_smiles)
         embedded_mol = embed_mol(mol, seed=1)
-        with pytest.raises(DockingError):
+        with pytest.raises(StructureOptimizationError):
             refine_mol_with_ff(embedded_mol)
 
     @pytest.mark.parametrize('smiles', [
@@ -223,17 +225,17 @@ class TestDocking:
 
     def test_multiple_molecules(self):
         target = load_target('ABL1')
-        with pytest.raises(DockingError):
+        with pytest.raises(SanityError):
             target.dock('C.C')
-        with pytest.raises(DockingError):
+        with pytest.raises(SanityError):
             target.dock('C.CO')
 
     def test_radicals(self):
         target = load_target('ABL1')
-        with pytest.raises(DockingError):
+        with pytest.raises(SanityError):
             target.dock('C[CH2]')
 
-        with pytest.raises(DockingError):
+        with pytest.raises(SanityError):
             target.dock('C[CH]')
 
     @pytest.mark.parametrize(
@@ -244,7 +246,7 @@ class TestDocking:
         ])
     def test_bond_assignment_fails(self, target_name: str, ligand_smiles: str):
         target = load_target('ABL1')
-        with pytest.raises(DockingError):
+        with pytest.raises(PoseProcessingError):
             target.dock(ligand_smiles)
 
     # Commented out because takes too long
