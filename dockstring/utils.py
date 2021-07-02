@@ -287,13 +287,13 @@ def verify_docked_ligand(ref: Chem.Mol, ligand: Chem.Mol):
 
 
 real_number_pattern = r'[-+]?[0-9]*\.?[0-9]+(e[-+]?[0-9]+)?'
-score_re = re.compile(rf'REMARK VINA RESULT:\s*(?P<score>{real_number_pattern})')
+score_re = re.compile(rf'REMARK VINA RESULT:\s*(?P<affinity>{real_number_pattern})')
 
 
-def parse_scores_from_output(output_file: PathType) -> List[float]:
+def parse_affinities_from_output(output_file: PathType) -> List[float]:
     with open(output_file, mode='r') as f:
         content = f.read()
-    return [float(match.group('score')) for match in score_re.finditer(content)]
+    return [float(match.group('affinity')) for match in score_re.finditer(content)]
 
 
 conf_re = re.compile(rf'^(?P<key>\w+)\s*=\s*(?P<value>{real_number_pattern})\s*\n$')

@@ -8,9 +8,9 @@ from typing import Optional, List, Union
 
 from rdkit.Chem import AllChem as Chem
 
-from .errors import DockstringError, VinaError
+from .errors import DockstringError, VinaError, DockingError
 from .utils import (smiles_to_mol, embed_mol, refine_mol_with_ff, convert_pdbqt_to_pdb, read_mol_from_pdb,
-                    parse_scores_from_output, parse_search_box_conf, PathType, get_targets_dir, get_vina_path,
+                    parse_affinities_from_output, parse_search_box_conf, PathType, get_targets_dir, get_vina_path,
                     get_resources_dir, check_mol, canonicalize_smiles, verify_docked_ligand, check_vina_output,
                     assign_stereochemistry, assign_bond_orders, sanitize_mol, protonate_mol, write_mol_to_mol_file,
                     convert_mol_file_to_pdbqt, check_charges)
@@ -143,7 +143,11 @@ class Target:
         self._dock_pdbqt(ligand_pdbqt, vina_logfile, vina_outfile, seed=seed, num_cpus=num_cpus, verbose=verbose)
 
         # Process docking output
-        check_vina_output(vina_outfile)
+        try:
+            check_vina_output(vina_outfile)
+        except DockingError:
+            return 0.0, {'success': False}
+
         convert_pdbqt_to_pdb(pdbqt_file=vina_outfile, pdb_file=docked_ligand_pdb, disable_bonding=True, verbose=verbose)
         raw_ligand = read_mol_from_pdb(docked_ligand_pdb)
 
@@ -156,12 +160,16 @@ class Target:
         verify_docked_ligand(ref=refined_mol_no_hs, ligand=ligand)
 
         # Parse scores
-        scores = parse_scores_from_output(docked_ligand_pdb)
-        assert len(scores) == ligand.GetNumConformers()
+        affinities = parse_affinities_from_output(docked_ligand_pdb)
+        assert len(affinities) == ligand.GetNumConformers()
 
-        return scores[0], {
+        # Docking score cannot be positive
+        score = min(affinities[0], 0.0)
+
+        return score, {
             'ligand': ligand,
-            'scores': scores,
+            'affinities': affinities,
+            'success': True,
         }
 
     def view(self, mols: List[Chem.Mol] = None, search_box=True):

@@ -9,7 +9,7 @@ from rdkit.Chem import AllChem as Chem
 from dockstring import list_all_target_names, load_target
 from dockstring.errors import (DockstringError, EmbeddingError, StructureOptimizationError, SanityError,
                                PoseProcessingError, ParsingError)
-from dockstring.utils import (smiles_to_mol, embed_mol, check_vina_output, parse_scores_from_output,
+from dockstring.utils import (smiles_to_mol, embed_mol, check_vina_output, parse_affinities_from_output,
                               canonicalize_smiles, refine_mol_with_ff, protonate_mol, write_mol_to_mol_file)
 
 
@@ -64,14 +64,14 @@ resources_dir = Path(os.path.dirname(os.path.realpath(__file__))) / 'resources'
 
 
 class TestParser:
-    def test_score_parser(self):
+    def test_affinities_parser(self):
         vina_output = resources_dir / 'vina.out'
         assert check_vina_output(vina_output) is None
 
-        scores = parse_scores_from_output(vina_output)
+        affinities = parse_affinities_from_output(vina_output)
         expected = [-4.7, -4.6, -4.5, -4.5, -4.4, -4.4, -4.4, -4.3, -4.3]
-        assert len(scores) == len(expected)
-        assert all(math.isclose(a, b) for a, b in zip(scores, expected))
+        assert len(affinities) == len(expected)
+        assert all(math.isclose(a, b) for a, b in zip(affinities, expected))
 
 
 class TestEmbedding:
@@ -180,10 +180,10 @@ class TestDocking:
     def test_pdbqt_to_pdb_error(self):
         target = load_target('CYP3A4')
         score, aux = target.dock('O=C1N(C=2N=C(OC)N=CC2N=C1C=3C=CC=CC3)C4CC4')
-        scores = [-9.0, -8.9, -8.3, -8.3, -8.3, -8.0, -7.8, -7.7, -7.6]
+        affinities = [-9.0, -8.9, -8.3, -8.3, -8.3, -8.0, -7.8, -7.7, -7.6]
         assert aux['ligand'].GetNumConformers() == 9
-        assert len(aux['scores']) == len(scores)
-        assert all(math.isclose(a, b) for a, b in zip(aux['scores'], scores))
+        assert len(aux['affinities']) == len(affinities)
+        assert all(math.isclose(a, b) for a, b in zip(aux['affinities'], affinities))
 
     def test_chiral_centers(self):
         target = load_target('CYP3A4')
