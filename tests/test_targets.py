@@ -177,6 +177,12 @@ class TestDocking:
         assert total_charge == charge
         assert math.isclose(energy, docking_energy)
 
+    def test_positive_score(self):
+        target = load_target('PPARD')
+        smiles = 'C1(=C(C=CC(=C1)C=2C=C(NN2)NC(C3=CC=C(C=C3)N4CCN(CC4)C)=O)NC(NC=5C=C(ON5)C)=O)C'
+        score, aux = target.dock(smiles)
+        assert score >= 0.0
+
     def test_pdbqt_to_pdb_error(self):
         target = load_target('CYP3A4')
         score, aux = target.dock('O=C1N(C=2N=C(OC)N=CC2N=C1C=3C=CC=CC3)C4CC4')
