@@ -183,6 +183,12 @@ class TestDocking:
         score, aux = target.dock(smiles)
         assert score >= 0.0
 
+    def test_vina_pose_error(self):
+        target = load_target('PPARD')
+        smiles = r'O=C1CCC(C(=C1C)/C=C/C(/C)=C/C=C/C(=C/C=C/C=C(/C=C/C=C(/C=C/C=2C(CCC(=O)C2C)(C)C)\C)\C)/C)(C)C'
+        score, aux = target.dock(smiles)
+        assert not aux['success']
+
     def test_pdbqt_to_pdb_error(self):
         target = load_target('CYP3A4')
         score, aux = target.dock('O=C1N(C=2N=C(OC)N=CC2N=C1C=3C=CC=CC3)C4CC4')
