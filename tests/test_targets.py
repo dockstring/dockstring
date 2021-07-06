@@ -162,8 +162,8 @@ class TestDocking:
     @pytest.mark.parametrize(
         'smiles, charge, energy',
         [
-            ('[H][N+]1=CC=CC=C1', 0, -4.1),  # pyridinium
-            ('N1=CC=CC=C1', 0, -4.1),  # pyridine
+            ('[H][N+]1=CC=CC=C1', 0, -4.2),  # pyridinium
+            ('N1=CC=CC=C1', 0, -4.2),  # pyridine
             ('C[N+]1=CC=CC=C1', 1, -4.3),
             ('CC(O)=O', -1, -3.0),  # acetic acid
             ('CC([O-])=O', -1, -3.0),  # acetic acid
@@ -178,7 +178,7 @@ class TestDocking:
     def test_pdbqt_to_pdb_error(self):
         target = load_target('CYP3A4')
         score, aux = target.dock('O=C1N(C=2N=C(OC)N=CC2N=C1C=3C=CC=CC3)C4CC4')
-        scores = [-9.0, -8.9, -8.3, -8.3, -8.3, -8.0, -7.8, -7.7, -7.6]
+        scores = [-9.0, -8.8, -8.4, -8.3, -8.3, -7.9, -7.7, -7.7, -7.6]
         assert aux['ligand'].GetNumConformers() == 9
         assert len(aux['scores']) == len(scores)
         assert all(math.isclose(a, b) for a, b in zip(aux['scores'], scores))
