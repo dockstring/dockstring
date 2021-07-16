@@ -52,6 +52,7 @@ def main() -> None:
 
     for ax, targets in zip(axes, (targets_1, targets_2)):
         data = [sorted(dataset.loc[dataset['target'] == target, 'score']) for target in targets]
+        # parts = ax.violinplot(data, showextrema=False, showmedians=True, quantiles=[[0.25, 0.75]] * len(targets))
         parts = ax.violinplot(data, showextrema=False, showmedians=True)
 
         for body in parts['bodies']:
