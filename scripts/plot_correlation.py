@@ -74,7 +74,6 @@ def main() -> None:
         print(f'Correlation coefficient {target_a}, {target_b}: {pearson_rs[(target_a, target_b)]}')
 
     fig.savefig('correlation.pdf')
-    fig.savefig('correlation.png')
 
 
 if __name__ == '__main__':
