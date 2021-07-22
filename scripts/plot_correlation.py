@@ -9,8 +9,8 @@ plt.rcParams.update({'font.size': 6})
 
 
 def convert_dataset(dataset: pd.DataFrame) -> pd.DataFrame:
+    dataset = dataset.drop(labels=['inchikey', 'cluster', 'split', 'fp', 'label'], axis='columns')
     dataset = dataset.dropna(axis='index')  # drop rows which contain missing values
-    dataset = dataset.drop(labels=['inchikey', 'cluster', 'split', 'fp', 'label'], axis='columns').copy()
     dataset = dataset.set_index('smiles')
 
     # print('Warning: dropping rows with positive scores')
@@ -74,6 +74,7 @@ def main() -> None:
         print(f'Correlation coefficient {target_a}, {target_b}: {pearson_rs[(target_a, target_b)]}')
 
     fig.savefig('correlation.pdf')
+    fig.savefig('correlation.png')
 
 
 if __name__ == '__main__':
