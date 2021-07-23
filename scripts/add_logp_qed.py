@@ -33,8 +33,8 @@ def compute_qed(mol: Optional[AllChem.Mol]) -> Optional[float]:
 def main():
     args = parse_args()
 
-    print(f'Reading file: {args.input}')
-    df = pd.read_csv(args.input, sep='\t')
+    print(f'Reading file: {args.dataset}')
+    df = pd.read_csv(args.dataset, sep='\t')
 
     df['mols'] = df['smiles'].apply(parse_smiles)
     df['logp'] = df['mols'].apply(compute_logp)
