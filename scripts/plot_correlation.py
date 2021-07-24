@@ -51,7 +51,7 @@ def main() -> None:
     with pd.option_context('display.max_rows', None):
         print(pd.Series(pearson_rs, name='pearson_r').sort_values())
 
-    pairs = [('ADRB1', 'ADRB2'), ('CYP3A4', 'logp')]
+    pairs = [('ADRB1', 'ADRB2'), ('MAOB', 'CYP3A4')]
     offset = 0.75
 
     subfig_width = 2.5
@@ -66,7 +66,7 @@ def main() -> None:
         hb = ax.hexbin(
             df[target_a],
             df[target_b],
-            gridsize=(15, 15),
+            gridsize=25,
             extent=(lower - 2 * offset, upper + 2 * offset, lower - 2 * offset, upper + 2 * offset),
             bins='log',
             cmap='Blues',
