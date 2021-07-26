@@ -1,14 +1,8 @@
+import argparse
+
 import numpy as np
 import pandas as pd
 from matplotlib import pyplot as plt
-
-from dockstring.utils import get_resources_dir
-
-
-def prepare_dataset(dataset: pd.DataFrame) -> pd.DataFrame:
-    dataset = dataset.dropna(axis=0)  # discard rows without score
-    return dataset[dataset['score'] < 0.0]
-
 
 plt.rcParams.update({'font.size': 6})
 
@@ -39,13 +33,25 @@ targets_2 = [
 # yapf: enable
 
 
+def parse_args(args=None) -> argparse.Namespace:
+    parser = argparse.ArgumentParser()
+    parser.add_argument('--dataset', help='path to TSV file', required=True)
+    return parser.parse_args(args=args)
+
+
+def prepare_dataset(dataset: pd.DataFrame) -> pd.DataFrame:
+    dataset['label'] = dataset['label'] == 'A'  # note: some entries don't have a label -> false
+    dataset = dataset.dropna(axis=0)  # discard rows without score
+    return dataset[dataset['score'] < 0.0]
+
+
 def main() -> None:
-    path = get_resources_dir() / 'data' / 'unbalanced_scores_200_actives_3800_inactives.tsv'
-    dataset = prepare_dataset(pd.read_csv(path, sep='\t'))
+    args = parse_args()
+    dataset = prepare_dataset(pd.read_csv(args.dataset, sep='\t'))
 
     assert len(set(targets_1 + targets_2)) == len(set(dataset['target'].unique()))
 
-    fig_width = 5.0
+    fig_width = 5.50107  # inches, NeurIPS template
     fig_height = 3.0
 
     fig, axes = plt.subplots(nrows=2, ncols=1, figsize=(fig_width, fig_height), constrained_layout=True)
