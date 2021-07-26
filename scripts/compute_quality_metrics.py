@@ -51,6 +51,8 @@ def main():
     quality_metrics = quality_metrics.reset_index().set_index(['target', 'prop']).sort_index()
     quality_metrics.to_csv('quality_metrics_aug.tsv', sep='\t', header=True, index=True)
 
+    quality_metrics.to_latex('table.tex', float_format='%.2f', sparsify=True, longtable=True)
+
 
 if __name__ == '__main__':
     main()
