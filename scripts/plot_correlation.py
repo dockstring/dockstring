@@ -54,9 +54,9 @@ def main() -> None:
     pairs = [('ADRB1', 'ADRB2'), ('MAOB', 'CYP3A4')]
     offset = 0.75
 
-    subfig_width = 2.5
+    fig_width = 5.50107  # inches, NeurIPS template
     num_cols = len(pairs)
-    fig, axes = plt.subplots(nrows=1, ncols=num_cols, figsize=(num_cols * subfig_width, 2.2), constrained_layout=True)
+    fig, axes = plt.subplots(nrows=1, ncols=num_cols, figsize=(fig_width, 2.2), constrained_layout=True)
 
     hb_ax_tuples = []
     for ax, (target_a, target_b) in zip(axes, pairs):
