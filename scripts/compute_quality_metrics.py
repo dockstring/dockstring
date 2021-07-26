@@ -1,9 +1,15 @@
+import argparse
 from typing import Sequence
 
 import pandas as pd
 import sklearn.metrics as metrics
 
-from dockstring.utils import get_resources_dir
+
+def parse_args(args=None) -> argparse.Namespace:
+    parser = argparse.ArgumentParser()
+    parser.add_argument('--balanced', help='path to balanced TSV file', required=True)
+    parser.add_argument('--unbalanced', help='path to unbalanced TSV file', required=True)
+    return parser.parse_args(args=args)
 
 
 def enrichment_factor(labels: Sequence[bool], scores: Sequence[float], top_k: int) -> float:
@@ -23,13 +29,12 @@ def prepare_dataset(dataset: pd.DataFrame) -> pd.DataFrame:
 
 
 def main():
-    # Balanced: AUC
-    balanced_path = get_resources_dir() / 'data' / 'balanced_scores_1000_actives_1000_inactives_aug.tsv'
-    balanced_set = prepare_dataset(pd.read_csv(balanced_path, sep='\t'))
+    args = parse_args()
 
+    # Balanced: AUC
+    balanced_set = prepare_dataset(pd.read_csv(args.balanced, sep='\t'))
     # Unbalanced: AP, EF
-    unbalanced_path = get_resources_dir() / 'data' / 'unbalanced_scores_200_actives_3800_inactives_aug.tsv'
-    unbalanced_set = prepare_dataset(pd.read_csv(unbalanced_path, sep='\t'))
+    unbalanced_set = prepare_dataset(pd.read_csv(args.unbalanced, sep='\t'))
 
     metrics_list = []
     for prop in ['score', 'logp', 'qed']:
@@ -44,7 +49,7 @@ def main():
 
     quality_metrics = pd.concat(metrics_list)
     quality_metrics = quality_metrics.reset_index().set_index(['target', 'prop']).sort_index()
-    quality_metrics.to_csv(get_resources_dir() / 'data' / 'quality_metrics_aug.tsv', sep='\t', header=True, index=True)
+    quality_metrics.to_csv('quality_metrics_aug.tsv', sep='\t', header=True, index=True)
 
 
 if __name__ == '__main__':
