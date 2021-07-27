@@ -1,8 +1,7 @@
-from typing import Optional
+import argparse
 
 import pandas as pd
 from matplotlib import pyplot as plt
-from rdkit.Chem import Descriptors, AllChem
 from sklearn.decomposition import PCA
 
 plt.rcParams.update({'font.size': 6})
@@ -21,59 +20,58 @@ colors = [
 ]
 
 
+def parse_args(args=None) -> argparse.Namespace:
+    parser = argparse.ArgumentParser()
+    parser.add_argument('--dataset', help='path to input TSV file', required=True)
+    return parser.parse_args(args=args)
+
+
 def convert_dataset(dataset: pd.DataFrame) -> pd.DataFrame:
     dataset = dataset.dropna(axis=0)  # discard columns without score
-    dataset = dataset.drop(labels=['inchikey', 'cluster', 'split', 'fp', 'label'], axis='columns').copy()
-    dataset[dataset.select_dtypes(include=['number']).columns] *= -1
+    dataset = dataset.drop(labels=['inchikey', 'smiles', 'cluster', 'split', 'fp', 'label'], axis='columns').copy()
     return dataset
 
 
-def parse_smiles(smiles: str) -> Optional[AllChem.Mol]:
-    mol = AllChem.MolFromSmiles(smiles)
-    if not mol:
-        print(f'Cannot parse {smiles}')
-    return mol
-
-
-def compute_logp(mol: Optional[AllChem.Mol]) -> Optional[float]:
-    return Descriptors.MolLogP(mol)
-
-
-def compute_qed(mol: Optional[AllChem.Mol]) -> Optional[float]:
-    return AllChem.QED.qed(mol)
-
-
 def main() -> None:
-    path = '/home/gregor/projects/cambridge/research/dockgym/downloads/big_dataset.tsv'
-    dataset = convert_dataset(pd.read_csv(path, sep='\t', low_memory=False))
-    dataset = dataset.loc[:10_000]
-    print(dataset.columns)
+    args = parse_args()
+    print(f'Reading file: {args.dataset}')
+    dataset = convert_dataset(pd.read_csv(args.dataset, sep='\t', low_memory=False))
 
-    # Add logp and qed
-    dataset['mol'] = dataset['smiles'].apply(parse_smiles)
-    dataset['logp'] = dataset['mol'].apply(compute_logp)
-    dataset['qed'] = dataset['mol'].apply(compute_qed)
-    dataset = dataset.drop(labels=['smiles', 'mol'], axis='columns')
-    print(dataset)
+    array = dataset.to_numpy(dtype=float).T  # [n_smiles, n_targets]
+
+    # Standardize data
+    array -= array.mean(axis=0)
+    array /= array.std(axis=0)
 
     # Compute PCA
-    array = dataset.to_numpy(dtype=float).T  # [n_smiles, n_targets]
-    print(array.shape)
-
     pca = PCA(n_components=2)
     pca.fit(array)
 
-    print(pca)
     projected = pca.transform(array)
 
     # Plot
-    fig_width = 5.0
-    fig_height = 3.0
-    fig, ax = plt.subplots(nrows=1, ncols=1, figsize=(fig_width, fig_height), constrained_layout=True)
+    fig_size = 5.50107 / 2  # inches, NeurIPS template
+    fig, ax = plt.subplots(nrows=1, ncols=1, figsize=(fig_size, fig_size), constrained_layout=True)
 
-    ax.scatter(projected[:, 0], projected[:, 1])
+    ax.scatter(projected[:, 0], projected[:, 1], s=7, color='black')
 
-    fig.show()
+    # for i, label in enumerate(dataset.columns):
+    #     plt.annotate(label, (projected[i, 0], projected[i, 1]))
+
+    ax.tick_params(
+        axis='both',
+        which='both',
+        left=False,
+        top=False,
+        right=False,
+        bottom=False,
+        labelbottom=False,
+        labelleft=False,
+    )
+    ax.set_xlabel('PC 1')
+    ax.set_ylabel('PC 2')
+
+    fig.savefig('pca.pdf')
 
 
 if __name__ == '__main__':
