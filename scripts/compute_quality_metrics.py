@@ -1,8 +1,25 @@
 import argparse
 from typing import Sequence
 
+import numpy as np
 import pandas as pd
 import sklearn.metrics as metrics
+from matplotlib import pyplot as plt
+
+plt.rcParams.update({'font.size': 6})
+
+colors = [
+    '#1f77b4',  # muted blue
+    '#d62728',  # brick red
+    '#ff7f0e',  # safety orange
+    '#2ca02c',  # cooked asparagus green
+    '#9467bd',  # muted purple
+    '#8c564b',  # chestnut brown
+    '#e377c2',  # raspberry yogurt pink
+    '#7f7f7f',  # middle gray
+    '#bcbd22',  # curry yellow-green
+    '#17becf',  # blue-teal
+]
 
 
 def parse_args(args=None) -> argparse.Namespace:
@@ -48,10 +65,36 @@ def main():
         metrics_list.append(score_metrics)
 
     quality_metrics = pd.concat(metrics_list)
-    quality_metrics = quality_metrics.reset_index().set_index(['target', 'prop']).sort_index()
-    quality_metrics.to_csv('quality_metrics_aug.tsv', sep='\t', header=True, index=True)
 
-    quality_metrics.to_latex('table.tex', float_format='%.2f', sparsify=True, longtable=True)
+    # quality_metrics = quality_metrics.reset_index().set_index(['target', 'prop']).sort_index()
+    # quality_metrics.to_csv('quality_metrics_aug.tsv', sep='\t', header=True, index=True)
+    # quality_metrics.to_latex('table.tex', float_format='%.2f', sparsify=True, longtable=True)
+
+    prop_label_dict = {
+        'ef': 'EF',
+        'auc': 'AUC',
+        'ap': 'AP',
+    }
+
+    for prop in ['ef', 'auc', 'ap']:
+        fig_width = 5.50107  # inches, NeurIPS template
+        fig, ax = plt.subplots(nrows=1, ncols=1, figsize=(fig_width, 2.2), constrained_layout=True)
+
+        data = quality_metrics.pivot(columns='prop', values=prop)
+        positions = np.arange(len(data.index))
+        width = 0.2
+
+        for i, (offset, column) in enumerate(zip([-1, 0, 1], ['qed', 'logp', 'score'])):
+            ax.bar(positions + offset * width, data[column], width, color=colors[i], label=column, align='center')
+
+        ax.set_xticks(positions)
+        ax.set_xticklabels(data.index, rotation=90)
+
+        ax.set_ylabel(prop_label_dict[prop])
+
+        ax.legend(loc='best')
+
+        fig.savefig(f'quality_metrics_{prop}.pdf')
 
 
 if __name__ == '__main__':
