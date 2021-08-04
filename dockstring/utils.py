@@ -18,7 +18,7 @@ PathType = Union[str, os.PathLike]
 
 
 def setup_logger(level: Union[int, str] = logging.INFO, path: Optional[str] = None):
-    logger = logging.getLogger()
+    logger = logging.getLogger("dockstring")
     logger.setLevel(level)
 
     formatter = logging.Formatter('%(asctime)s.%(msecs)03d %(levelname)s: %(message)s', datefmt='%Y-%m-%d %H:%M:%S')
