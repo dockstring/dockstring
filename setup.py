@@ -22,7 +22,7 @@ setup(
     python_requires='>=3.7',
     packages=find_packages(),
     include_package_data=True,
-    package_data={'dockstring': ['resources/*', 'resources/**/*']},
+    package_data={'dockstring': ['resources/targets/*', 'resources/bin/*']},
     install_requires=[],
     zip_safe=False,
     test_suite='pytest',
