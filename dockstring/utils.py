@@ -22,7 +22,7 @@ PathType = Union[str, os.PathLike]
 
 
 def setup_logger(level: Union[int, str] = logging.INFO, path: Optional[str] = None):
-    logger = logging.getLogger()
+    logger = logging.getLogger("dockstring")
     logger.setLevel(level)
 
     formatter = logging.Formatter('%(asctime)s.%(msecs)03d %(levelname)s: %(message)s', datefmt='%Y-%m-%d %H:%M:%S')
@@ -169,6 +169,18 @@ def refine_mol_with_ff(mol, max_iters=1000) -> Chem.Mol:
         raise StructureOptimizationError('Cannot optimize ligand: parameters not available')
 
     return opt_mol
+
+
+def check_obabel_install():
+    """ Check that openbabel is installed correctly / is the correct version """
+    cmd_args = ["obabel", "-V"]
+    cmd_return = subprocess.run(cmd_args, stdout=subprocess.PIPE, stderr=subprocess.STDOUT)
+    stdout = cmd_return.stdout.decode('utf-8').strip()
+    obabel_version_match = stdout == "Open Babel 3.1.0 -- Oct 12 2020 -- 14:17:21"
+    if cmd_return.returncode != 0:
+        raise DockingError(f"The test command `{' '.join(cmd_args)}` failed!")
+    elif not obabel_version_match:
+        raise DockingError("The obabel test command succeeded but the version doesn't seem to match.")
 
 
 def convert_pdbqt_to_pdb(pdbqt_file: PathType, pdb_file: PathType, disable_bonding=False, verbose=False) -> None:

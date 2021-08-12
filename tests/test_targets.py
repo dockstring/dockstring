@@ -161,6 +161,15 @@ class TestDocking:
         charge = sum(atom.GetFormalCharge() for atom in aux['ligand'].GetAtoms())
         assert charge == 1
 
+    @pytest.mark.parametrize('seed, score', [(0, -4.6), (1, -4.6), (2, -4.7)])
+    def test_seeds(self, seed: int, score: float):
+        target = load_target('CYP3A4')
+        energy, aux = target.dock(lysine_smiles, seed=seed)
+        assert math.isclose(energy, score)
+
+        charge = sum(atom.GetFormalCharge() for atom in aux['ligand'].GetAtoms())
+        assert charge == 1
+
     @pytest.mark.parametrize(
         'smiles, charge, energy',
         [
