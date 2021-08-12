@@ -196,7 +196,7 @@ class TestDocking:
         target = load_target('PPARD')
         smiles = r'O=C1CCC(C(=C1C)/C=C/C(/C)=C/C=C/C(=C/C=C/C=C(/C=C/C=C(/C=C/C=2C(CCC(=O)C2C)(C)C)\C)\C)/C)(C)C'
         score, aux = target.dock(smiles)
-        assert not aux['success']
+        assert score is None
 
     def test_pdbqt_to_pdb_error(self):
         target = load_target('CYP3A4')

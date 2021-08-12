@@ -4,7 +4,7 @@ import re
 import subprocess
 import tempfile
 from pathlib import Path
-from typing import Optional, List, Union
+from typing import Optional, List, Union, Tuple, Dict, Any
 
 from rdkit.Chem import AllChem as Chem
 
@@ -103,7 +103,13 @@ class Target:
         if cmd_return.returncode != 0:
             raise VinaError('Docking with Vina failed')
 
-    def dock(self, smiles: str, num_cpus: Optional[int] = None, seed=974528263, verbose=False):
+    def dock(
+        self,
+        smiles: str,
+        num_cpus: Optional[int] = None,
+        seed=974528263,
+        verbose=False,
+    ) -> Tuple[Optional[float], Dict[str, Any]]:
         """
         Given a molecule, this method will return a docking score against the current target.
         - smiles: SMILES string
@@ -149,7 +155,7 @@ class Target:
         try:
             check_vina_output(vina_outfile)
         except DockingError:
-            return 0.0, {'success': False}
+            return None, {}
 
         convert_pdbqt_to_pdb(pdbqt_file=vina_outfile, pdb_file=docked_ligand_pdb, disable_bonding=True, verbose=verbose)
         raw_ligand = read_mol_from_pdb(docked_ligand_pdb)
@@ -165,14 +171,11 @@ class Target:
         # Parse scores
         affinities = parse_affinities_from_output(docked_ligand_pdb)
         assert len(affinities) == ligand.GetNumConformers()
-
-        # Docking score cannot be positive
-        score = min(affinities[0], 0.0)
+        score = affinities[0]
 
         return score, {
             'ligand': ligand,
             'affinities': affinities,
-            'success': True,
         }
 
     def view(self, mols: List[Chem.Mol] = None, search_box=True):
