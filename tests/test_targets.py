@@ -8,7 +8,7 @@ from rdkit.Chem import AllChem as Chem
 
 from dockstring import list_all_target_names, load_target
 from dockstring.errors import (DockstringError, EmbeddingError, StructureOptimizationError, SanityError,
-                               PoseProcessingError, ParsingError)
+                               PoseProcessingError, ParsingError, FormatConversionError)
 from dockstring.utils import (smiles_to_mol, embed_mol, check_vina_output, parse_affinities_from_output,
                               canonicalize_smiles, refine_mol_with_ff, protonate_mol, write_mol_to_mol_file)
 
@@ -197,6 +197,13 @@ class TestDocking:
         smiles = r'O=C1CCC(C(=C1C)/C=C/C(/C)=C/C=C/C(=C/C=C/C=C(/C=C/C=C(/C=C/C=2C(CCC(=O)C2C)(C)C)\C)\C)/C)(C)C'
         score, aux = target.dock(smiles)
         assert score is None
+
+    def test_mol_to_pdbqt_error(self):
+        # works for any target actually
+        target = load_target('CYP3A4')
+        with pytest.raises(FormatConversionError):
+            target.dock(
+                'S(=O)(=O)(N1C=C(C2(C[C@H](NC(OC(C)(C)C)=O)C(OC)=O)C3=C(NC2=O)C=CC=C3)C=4C1=CC=CC4)CC[Si](C)(C)C')
 
     def test_pdbqt_to_pdb_error(self):
         target = load_target('CYP3A4')
