@@ -254,7 +254,7 @@ def convert_mol_file_to_pdbqt(mol_file: PathType, pdbqt_file: PathType, verbose=
     if verbose:
         logging.info(output)
 
-    if cmd_return.returncode != 0:
+    if cmd_return.returncode != 0 or is_file_empty(pdbqt_file):
         raise FormatConversionError('Conversion from MOL to PDBQT failed')
 
 
