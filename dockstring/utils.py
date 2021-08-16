@@ -251,7 +251,7 @@ def convert_mol_file_to_pdbqt(mol_file: PathType, pdbqt_file: PathType, verbose=
         logging.info(output)
 
     if cmd_return.returncode != 0:
-        raise FormatConversionError('Conversion from PDB to PDBQT failed')
+        raise FormatConversionError('Conversion from MOL to PDBQT failed')
 
 
 def read_mol_from_pdb(pdb_file: PathType) -> Chem.Mol:
