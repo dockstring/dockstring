@@ -6,8 +6,10 @@ from pathlib import Path
 import pytest
 from rdkit.Chem import AllChem as Chem
 
-from dockstring import list_all_target_names, load_target, DockingError
-from dockstring.utils import (smiles_to_mol, embed_mol, check_vina_output, parse_scores_from_output,
+from dockstring import list_all_target_names, load_target
+from dockstring.errors import (DockstringError, EmbeddingError, StructureOptimizationError, SanityError,
+                               PoseProcessingError, ParsingError, FormatConversionError)
+from dockstring.utils import (smiles_to_mol, embed_mol, check_vina_output, parse_affinities_from_output,
                               canonicalize_smiles, refine_mol_with_ff, protonate_mol, write_mol_to_mol_file)
 
 
@@ -19,7 +21,7 @@ class TestLoader:
         assert all(load_target(name) for name in names)
 
     def test_wrong_target(self):
-        with pytest.raises(DockingError):
+        with pytest.raises(DockstringError):
             load_target('does_not_exist')
 
 
@@ -33,7 +35,7 @@ class TestConversions:
         assert smiles_to_mol('C')
 
     def test_convert_string_fail(self):
-        with pytest.raises(DockingError):
+        with pytest.raises(ParsingError):
             smiles_to_mol('not_a_mol')
 
     def test_charged_mol(self):
@@ -43,7 +45,7 @@ class TestConversions:
     def test_write_fail(self):
         mol = smiles_to_mol(lysine_smiles)
         with tempfile.NamedTemporaryFile(suffix='.mol') as f:
-            with pytest.raises(DockingError):
+            with pytest.raises(DockstringError):
                 write_mol_to_mol_file(mol, mol_file=f.name)
 
     @pytest.mark.parametrize('smiles,charge_ph7', [
@@ -62,14 +64,14 @@ resources_dir = Path(os.path.dirname(os.path.realpath(__file__))) / 'resources'
 
 
 class TestParser:
-    def test_score_parser(self):
+    def test_affinities_parser(self):
         vina_output = resources_dir / 'vina.out'
         assert check_vina_output(vina_output) is None
 
-        scores = parse_scores_from_output(vina_output)
+        affinities = parse_affinities_from_output(vina_output)
         expected = [-4.7, -4.6, -4.5, -4.5, -4.4, -4.4, -4.4, -4.3, -4.3]
-        assert len(scores) == len(expected)
-        assert all(math.isclose(a, b) for a, b in zip(scores, expected))
+        assert len(affinities) == len(expected)
+        assert all(math.isclose(a, b) for a, b in zip(affinities, expected))
 
 
 class TestEmbedding:
@@ -91,7 +93,7 @@ class TestEmbedding:
     def test_impossible(self, smiles: str):
         canonical_smiles = canonicalize_smiles(smiles)
         mol = smiles_to_mol(canonical_smiles)
-        with pytest.raises(DockingError):
+        with pytest.raises(EmbeddingError):
             embed_mol(mol, seed=1)
 
 
@@ -120,7 +122,7 @@ class TestRefinement:
         canonical_smiles = canonicalize_smiles(smiles)
         mol = smiles_to_mol(canonical_smiles)
         embedded_mol = embed_mol(mol, seed=1)
-        with pytest.raises(DockingError):
+        with pytest.raises(StructureOptimizationError):
             refine_mol_with_ff(embedded_mol)
 
     @pytest.mark.parametrize('smiles', [
@@ -184,13 +186,26 @@ class TestDocking:
         assert total_charge == charge
         assert math.isclose(energy, docking_energy)
 
+    def test_positive_score(self):
+        target = load_target('AR')
+        smiles = r'O1/C(=N\CCC=2C=3C(NC2)=CC=CC3)/[C@]4(N(C(=O)C5C=6[C@H]4[C@H]7[C@@H](CC6[C@@H]8[C@H]([C@H]5C)C(=O)N(C8=O)C9=CC=CC=C9)C(=O)N(C7=O)C%10=CC=CC=C%10)C1=O)CC%11=CC=CC=C%11'
+        score, aux = target.dock(smiles)
+        assert score >= 0.0
+
+    def test_mol_to_pdbqt_error(self):
+        # works for any target actually
+        target = load_target('CYP3A4')
+        with pytest.raises(FormatConversionError):
+            target.dock(
+                'S(=O)(=O)(N1C=C(C2(C[C@H](NC(OC(C)(C)C)=O)C(OC)=O)C3=C(NC2=O)C=CC=C3)C=4C1=CC=CC4)CC[Si](C)(C)C')
+
     def test_pdbqt_to_pdb_error(self):
         target = load_target('CYP3A4')
         score, aux = target.dock('O=C1N(C=2N=C(OC)N=CC2N=C1C=3C=CC=CC3)C4CC4')
-        scores = [-9.0, -8.8, -8.4, -8.3, -8.3, -7.9, -7.7, -7.7, -7.6]
+        affinities = [-9.0, -8.8, -8.4, -8.3, -8.3, -7.9, -7.7, -7.7, -7.6]
         assert aux['ligand'].GetNumConformers() == 9
-        assert len(aux['scores']) == len(scores)
-        assert all(math.isclose(a, b) for a, b in zip(aux['scores'], scores))
+        assert len(aux['affinities']) == len(affinities)
+        assert all(math.isclose(a, b) for a, b in zip(aux['affinities'], affinities))
 
     def test_chiral_centers(self):
         target = load_target('CYP3A4')
@@ -232,17 +247,17 @@ class TestDocking:
 
     def test_multiple_molecules(self):
         target = load_target('ABL1')
-        with pytest.raises(DockingError):
+        with pytest.raises(SanityError):
             target.dock('C.C')
-        with pytest.raises(DockingError):
+        with pytest.raises(SanityError):
             target.dock('C.CO')
 
     def test_radicals(self):
         target = load_target('ABL1')
-        with pytest.raises(DockingError):
+        with pytest.raises(SanityError):
             target.dock('C[CH2]')
 
-        with pytest.raises(DockingError):
+        with pytest.raises(SanityError):
             target.dock('C[CH]')
 
     @pytest.mark.parametrize(
@@ -253,7 +268,7 @@ class TestDocking:
         ])
     def test_bond_assignment_fails(self, target_name: str, ligand_smiles: str):
         target = load_target('ABL1')
-        with pytest.raises(DockingError):
+        with pytest.raises(PoseProcessingError):
             target.dock(ligand_smiles)
 
     # Commented out because takes too long

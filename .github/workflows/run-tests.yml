@@ -29,7 +29,7 @@ jobs:
         uses: actions/cache@v2
         env:
           # Increase this value to reset cache if environment.yml has not changed
-          CACHE_NUMBER: 0
+          CACHE_NUMBER: 1
         with:
           path: ~/conda_pkgs_dir
           key:
@@ -44,6 +44,11 @@ jobs:
           channel-priority: strict
           environment-file: test-environment.yml
           use-only-tar-bz2: true # IMPORTANT: This needs to be set for caching to work properly!
+
+      - name: Show environment
+        run: |
+          conda activate dockstring
+          conda list
 
       - name: Test with pytest
         run: |
