@@ -101,7 +101,7 @@ class Target:
 
         # If failure, raise DockingError
         if cmd_return.returncode != 0:
-            raise VinaError('Docking with Vina failed')
+            raise VinaError(f'Docking with Vina failed: {output}')
 
     def dock(
         self,
