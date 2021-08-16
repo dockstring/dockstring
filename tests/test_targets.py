@@ -187,16 +187,10 @@ class TestDocking:
         assert math.isclose(energy, docking_energy)
 
     def test_positive_score(self):
-        target = load_target('PPARD')
-        smiles = 'C1(=C(C=CC(=C1)C=2C=C(NN2)NC(C3=CC=C(C=C3)N4CCN(CC4)C)=O)NC(NC=5C=C(ON5)C)=O)C'
+        target = load_target('AR')
+        smiles = r'O1/C(=N\CCC=2C=3C(NC2)=CC=CC3)/[C@]4(N(C(=O)C5C=6[C@H]4[C@H]7[C@@H](CC6[C@@H]8[C@H]([C@H]5C)C(=O)N(C8=O)C9=CC=CC=C9)C(=O)N(C7=O)C%10=CC=CC=C%10)C1=O)CC%11=CC=CC=C%11'
         score, aux = target.dock(smiles)
         assert score >= 0.0
-
-    def test_vina_pose_error(self):
-        target = load_target('PPARD')
-        smiles = r'O=C1CCC(C(=C1C)/C=C/C(/C)=C/C=C/C(=C/C=C/C=C(/C=C/C=C(/C=C/C=2C(CCC(=O)C2C)(C)C)\C)\C)/C)(C)C'
-        score, aux = target.dock(smiles)
-        assert score is None
 
     def test_mol_to_pdbqt_error(self):
         # works for any target actually
