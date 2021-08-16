@@ -37,6 +37,10 @@ def setup_logger(level: Union[int, str] = logging.INFO, path: Optional[str] = No
         logger.addHandler(fh)
 
 
+def is_file_empty(path) -> bool:
+    return os.stat(path).st_size == 0
+
+
 def get_vina_filename() -> str:
     system_name = platform.system()
     if system_name == 'Linux':
@@ -269,7 +273,7 @@ def write_mol_to_mol_file(mol: Chem.Mol, mol_file: PathType):
 
 def check_vina_output(output_file: Path):
     # If Vina does not find any appropriate poses, the output file will be empty
-    if os.stat(output_file).st_size == 0:
+    if is_file_empty(output_file):
         raise DockingError('AutoDock Vina could not find any appropriate pose')
 
 
