@@ -3,6 +3,7 @@ import os
 import re
 import subprocess
 import tempfile
+from collections.abc import Iterable
 from pathlib import Path
 from typing import Optional, List, Union, Tuple, Dict, Any
 
@@ -178,7 +179,7 @@ class Target:
             'affinities': affinities,
         }
 
-    def view(self, mols: List[Chem.Mol] = None, search_box=True):
+    def view(self, mol: Union[Chem.Mol, List[Chem.Mol], None] = None, search_box=True):
         """
         Start pymol and view the receptor and the search box.
         """
@@ -195,13 +196,16 @@ class Target:
             ]
             # yapf: enable
 
-        if mols:
+        if mol:
+            if not isinstance(mol, Iterable):
+                mol = [mol]
+
             tmp_dir_handle = tempfile.TemporaryDirectory()
             tmp_dir = Path(tmp_dir_handle.name).resolve()
 
-            for index, mol in enumerate(mols):
+            for index, pose in enumerate(mol):
                 mol_file = tmp_dir / f'ligand_{index}.mol'
-                write_mol_to_mol_file(mol, mol_file)
+                write_mol_to_mol_file(pose, mol_file)
                 commands += [str(mol_file)]
 
         return subprocess.run(commands)
