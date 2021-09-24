@@ -18,8 +18,7 @@ setup(
     version=version_dict['__version__'],
     description='Package for easy ligand preparation and docking with AutoDock Vina against '
     'a highly-curated selection of 58 protein targets. One of the three '
-    'components of the DOCKSTRING bundle (package, dataset and benchmark tasks).',
-    # TODO When in ArXiV or somewhere public, add link to the paper in the description.
+    'components of the DOCKSTRING bundle (package, dataset, and benchmark tasks).',
     long_description=readme(),
     classifiers=['Programming Language :: Python :: 3.7'],
     python_requires='>=3.7',
