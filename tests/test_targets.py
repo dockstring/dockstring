@@ -55,7 +55,7 @@ class TestConversions:
     ])
     def test_protonation(self, smiles, charge_ph7):
         mol = smiles_to_mol(smiles)
-        protonated_mol = protonate_mol(mol)
+        protonated_mol = protonate_mol(mol, pH=7.4)
         charges = tuple(sum(atom.GetFormalCharge() for atom in m.GetAtoms()) for m in (mol, protonated_mol))
         assert charges == (0, charge_ph7)
 
