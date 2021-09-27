@@ -3,12 +3,28 @@
 ![CI Tests](https://github.com/mgarort/dockstring/workflows/Install%20conda%20env%20and%20run%20pytest./badge.svg?branch=main)
 ![Code Style: yapf](https://img.shields.io/badge/code%20style-yapf-orange.svg)
 
-A dockstring benchmark for ML applications. (TODO improve description)
+A Python package for easy molecular docking.
 
 ## Installation
 
+1. Create a new `conda` environment from the `environment.yml` file in this repository:
+   ```bash
+   conda env create -f environment.yml
+   ```
+1. Activate the new `conda` environment:
+   ```bash
+   conda actiate dockstring
+   ```
+1. Install the dockstring package with `pip`:
+   ```bash
+   pip install .
+   ```
+
+### Optional
+
+Install [PyMol](https://pymol.org/) for target, search box and ligand visualization:
 ```bash
-conda env create -f environment.yml
+conda install -c conda-forge pymol-open-source 
 ```
 
 ## Development
