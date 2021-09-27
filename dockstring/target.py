@@ -1,5 +1,6 @@
 import logging
 import os
+import pathlib
 import re
 import subprocess
 import tempfile
@@ -36,31 +37,32 @@ def list_all_target_names() -> List[str]:
 
 
 class Target:
-    def __init__(self, name, working_dir: Optional[PathType] = None):
+    def __init__(self, name, working_dir: Optional[PathType] = None, targets_dir: Optional[PathType] = None):
         self.name = name
 
         # Directory where the ligand and output files will be saved
         self._custom_working_dir = working_dir
         self._tmp_dir_handle: Optional[tempfile.TemporaryDirectory] = None
+        self.targets_dir: Path = pathlib.Path(targets_dir) if targets_dir else get_targets_dir()
 
         # Ensure input files exist
-        if not all(p.exists() for p in [self.pdb_path, self.pdbqt_path, self.conf_path]):
+        if not all(p.exists() for p in [self.pdbqt_path, self.conf_path]):
             raise DockstringError(f"'{self.name}' is not a supported target")
 
     def __repr__(self):
-        return f"Target(name='{self.name}', working_dir='{self.working_dir}')"
+        return f"Target(name='{self.name}', working_dir='{self.working_dir}', targets_dir='{self.targets_dir}')"
 
     @property
     def pdb_path(self) -> Path:
-        return get_targets_dir() / (self.name + '_target.pdb')
+        return self.targets_dir / (self.name + '_target.pdb')
 
     @property
     def pdbqt_path(self) -> Path:
-        return get_targets_dir() / (self.name + '_target.pdbqt')
+        return self.targets_dir / (self.name + '_target.pdbqt')
 
     @property
     def conf_path(self) -> Path:
-        return get_targets_dir() / (self.name + '_conf.txt')
+        return self.targets_dir / (self.name + '_conf.txt')
 
     @property
     def working_dir(self) -> Path:
@@ -183,7 +185,7 @@ class Target:
         """
         Start pymol and view the receptor and the search box.
         """
-        commands: List[Union[str, PathType]] = ['pymol', self.pdb_path]
+        commands: List[Union[str, PathType]] = ['pymol', self.pdbqt_path]
 
         if search_box:
             pymol_script = get_resources_dir() / 'view_search_box.py'
