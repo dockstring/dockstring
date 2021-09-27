@@ -109,6 +109,7 @@ class Target:
     def dock(
         self,
         smiles: str,
+        pH=7.4,
         num_cpus: Optional[int] = None,
         seed=974528263,
         verbose=False,
@@ -141,7 +142,7 @@ class Target:
         check_obabel_install()
 
         # Protonate ligand
-        protonated_mol = protonate_mol(mol)
+        protonated_mol = protonate_mol(mol, pH=pH)
         check_mol(protonated_mol)
 
         # Embed ligand

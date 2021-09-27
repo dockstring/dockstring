@@ -216,9 +216,9 @@ def convert_pdbqt_to_pdb(pdbqt_file: PathType, pdb_file: PathType, disable_bondi
         raise FormatConversionError('Conversion from PDBQT to PDB failed')
 
 
-def protonate_mol(mol: Chem.Mol, verbose=False) -> Chem.Mol:
+def protonate_mol(mol: Chem.Mol, pH: float, verbose=False) -> Chem.Mol:
     smiles = Chem.MolToSmiles(mol)
-    protonated_smiles = protonate_smiles(smiles, verbose=verbose)
+    protonated_smiles = protonate_smiles(smiles, pH=pH, verbose=verbose)
     mol = Chem.MolFromSmiles(protonated_smiles)
     if not mol:
         raise ProtonationError(f'Cannot read protonated SMILES: {protonated_smiles}')
@@ -226,10 +226,10 @@ def protonate_mol(mol: Chem.Mol, verbose=False) -> Chem.Mol:
     return mol
 
 
-def protonate_smiles(smiles: str, verbose=False) -> str:
+def protonate_smiles(smiles: str, pH: float, verbose=False) -> str:
     # Protonate SMILES with OpenBabel at given pH
     # cmd list format raises errors, therefore one string
-    cmd = f'obabel -:"{smiles}" -ismi -ocan -p7.4'
+    cmd = f'obabel -:"{smiles}" -ismi -ocan -p{pH}'
     cmd_return = subprocess.run(cmd, capture_output=True, shell=True)
     output = cmd_return.stdout.decode('utf-8')
 
