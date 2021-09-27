@@ -26,7 +26,7 @@ def list_all_target_names() -> List[str]:
     targets_dir = get_targets_dir()
     file_names = [f for f in os.listdir(targets_dir) if os.path.isfile(os.path.join(targets_dir, f))]
 
-    target_re = re.compile(r'^(?P<name>\w+)_target\.pdb$')
+    target_re = re.compile(r'^(?P<name>\w+)_target\.pdbqt$')
     names = []
     for file_name in file_names:
         match = target_re.match(file_name)
