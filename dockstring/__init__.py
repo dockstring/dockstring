@@ -1,4 +1,4 @@
-from .dockstring import load_target, list_all_target_names
+from .target import load_target, list_all_target_names
 from .errors import (DockstringError, CanonicalizationError, ParsingError, OutputError, SanityError, EmbeddingError,
                      StructureOptimizationError, FormatConversionError, ProtonationError, PoseProcessingError,
                      VinaError, DockingError)
