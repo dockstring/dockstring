@@ -21,12 +21,13 @@ from .errors import (DockstringError, CanonicalizationError, ParsingError, Sanit
 PathType = Union[str, os.PathLike]
 
 
-def setup_logger(level: Union[int, str] = logging.INFO, path: Optional[str] = None) -> None:
+def setup_logger(level: Union[int, str] = logging.INFO, path: Optional[str] = None) -> logging.Logger:
     """
     Setup "dockstring" logger.
 
     :param level: log level (int or string)
     :param path: path to which log messages are written
+    :return: dockstring logger
     """
     logger = logging.getLogger("dockstring")
     logger.setLevel(level)
@@ -41,6 +42,8 @@ def setup_logger(level: Union[int, str] = logging.INFO, path: Optional[str] = No
         fh = logging.FileHandler(path)
         fh.setFormatter(formatter)
         logger.addHandler(fh)
+
+    return logger
 
 
 def is_file_empty(path) -> bool:
@@ -253,14 +256,13 @@ def check_obabel_install() -> None:
                            expected_version + ' required.')
 
 
-def convert_pdbqt_to_pdb(pdbqt_file: PathType, pdb_file: PathType, disable_bonding=False, verbose=False) -> None:
+def convert_pdbqt_to_pdb(pdbqt_file: PathType, pdb_file: PathType, disable_bonding=False) -> None:
     """
     Convert a PDBQT file to a PDB file with Open Babel.
 
     :param pdbqt_file: path to the PDBQT input file
     :param pdb_file: path to the PDB output file
     :param disable_bonding: disable automatic bonding with Open Babel
-    :param verbose: log stdout messages
     """
     # yapf: disable
     cmd_args = [
@@ -278,25 +280,22 @@ def convert_pdbqt_to_pdb(pdbqt_file: PathType, pdb_file: PathType, disable_bondi
 
     cmd_return = subprocess.run(cmd_args, stdout=subprocess.PIPE, stderr=subprocess.STDOUT)
     stdout = cmd_return.stdout.decode('utf-8')
-
-    if verbose:
-        logging.info(stdout)
+    logging.debug(stdout)
 
     if cmd_return.returncode != 0:
         raise FormatConversionError('Conversion from PDBQT to PDB failed')
 
 
-def protonate_mol(mol: Chem.Mol, pH: float, verbose=False) -> Chem.Mol:
+def protonate_mol(mol: Chem.Mol, pH: float) -> Chem.Mol:
     """
     Protonate molecule at given pH
 
     :param mol: molecule to be protonated
     :param pH: pH at which the molecule should be protonated
-    :param verbose: log stdout messages
     :return: protonated molecule
     """
     smiles = Chem.MolToSmiles(mol)
-    protonated_smiles = protonate_smiles(smiles, pH=pH, verbose=verbose)
+    protonated_smiles = protonate_smiles(smiles, pH=pH)
     mol = Chem.MolFromSmiles(protonated_smiles)
     if not mol:
         raise ProtonationError(f'Cannot read protonated SMILES: {protonated_smiles}')
@@ -304,13 +303,12 @@ def protonate_mol(mol: Chem.Mol, pH: float, verbose=False) -> Chem.Mol:
     return mol
 
 
-def protonate_smiles(smiles: str, pH: float, verbose=False) -> str:
+def protonate_smiles(smiles: str, pH: float) -> str:
     """
     Protonate SMILES string with OpenBabel at given pH
 
     :param smiles: SMILES string of molecule to be protonated
     :param pH: pH at which the molecule should be protonated
-    :param verbose: log stdout messages
     :return: SMILES string of protonated structure
     """
 
@@ -318,9 +316,7 @@ def protonate_smiles(smiles: str, pH: float, verbose=False) -> str:
     cmd = f'obabel -:"{smiles}" -ismi -ocan -p{pH}'
     cmd_return = subprocess.run(cmd, capture_output=True, shell=True)
     output = cmd_return.stdout.decode('utf-8')
-
-    if verbose:
-        logging.info(output)
+    logging.debug(output)
 
     if cmd_return.returncode != 0:
         raise ProtonationError('Ligand protonation with OpenBabel failed')
@@ -328,13 +324,12 @@ def protonate_smiles(smiles: str, pH: float, verbose=False) -> str:
     return output.strip()
 
 
-def convert_mol_file_to_pdbqt(mol_file: PathType, pdbqt_file: PathType, verbose=False) -> None:
+def convert_mol_file_to_pdbqt(mol_file: PathType, pdbqt_file: PathType) -> None:
     """
     Convert MOL file to PDBQT file
 
     :param mol_file: path to MOL input file
     :param pdbqt_file: path to PDBQT output file
-    :param verbose: log stdout messages
     """
     # yapf: disable
     cmd_list = [
@@ -347,9 +342,7 @@ def convert_mol_file_to_pdbqt(mol_file: PathType, pdbqt_file: PathType, verbose=
     # yapf: enable
     cmd_return = subprocess.run(cmd_list, stdout=subprocess.PIPE, stderr=subprocess.STDOUT)
     output = cmd_return.stdout.decode('utf-8')
-
-    if verbose:
-        logging.info(output)
+    logging.debug(output)
 
     if cmd_return.returncode != 0 or is_file_empty(pdbqt_file):
         raise FormatConversionError('Conversion from MOL to PDBQT failed')
@@ -397,7 +390,7 @@ def assign_bond_orders(subject: Chem.Mol, ref: Chem.Mol, verbose=False) -> Chem.
 
     :param subject: molecules the bond orders of which are to be determined
     :param ref: reference molecule
-    :param verbose: print error messages
+    :param verbose: log error messages
     :return: new molecule with assigned bond orders
     """
     if not verbose:

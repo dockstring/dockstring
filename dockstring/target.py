@@ -105,15 +105,7 @@ class Target:
 
         return Path(self._tmp_dir_handle.name).resolve()
 
-    def _dock_pdbqt(
-        self,
-        pdbqt_path,
-        log_path,
-        out_path,
-        seed,
-        num_cpus: Optional[int] = None,
-        verbose=False,
-    ) -> None:
+    def _dock_pdbqt(self, pdbqt_path, log_path, out_path, seed, num_cpus: Optional[int] = None) -> None:
         """
         Run AutoDock Vina.
 
@@ -122,7 +114,6 @@ class Target:
         :param out_path: path to output file
         :param seed: random seed
         :param num_cpus: number of CPU cores available to AutoDock Vina
-        :param verbose: enable verbose output
         """
         # yapf: disable
         cmd_list = [
@@ -140,9 +131,7 @@ class Target:
 
         cmd_return = subprocess.run(cmd_list, stdout=subprocess.PIPE, stderr=subprocess.STDOUT)
         output = cmd_return.stdout.decode('utf-8')
-
-        if verbose:
-            logging.info(output)
+        logging.debug(output)
 
         # If failure, raise DockingError
         if cmd_return.returncode != 0:
@@ -182,7 +171,7 @@ class Target:
         check_mol(mol)
         check_charges(mol)
 
-        # Check that the right openbabel version is available
+        # Check that the right Open Babel version is available
         check_obabel_install()
 
         # Protonate ligand
@@ -196,8 +185,8 @@ class Target:
 
         # Dock
         write_mol_to_mol_file(refined_mol, ligand_mol_file)
-        convert_mol_file_to_pdbqt(ligand_mol_file, ligand_pdbqt, verbose=verbose)
-        self._dock_pdbqt(ligand_pdbqt, vina_logfile, vina_outfile, seed=seed, num_cpus=num_cpus, verbose=verbose)
+        convert_mol_file_to_pdbqt(ligand_mol_file, ligand_pdbqt)
+        self._dock_pdbqt(ligand_pdbqt, vina_logfile, vina_outfile, seed=seed, num_cpus=num_cpus)
 
         # Process docking output
         try:
@@ -205,7 +194,7 @@ class Target:
         except DockingError:
             return None, {}
 
-        convert_pdbqt_to_pdb(pdbqt_file=vina_outfile, pdb_file=docked_ligand_pdb, disable_bonding=True, verbose=verbose)
+        convert_pdbqt_to_pdb(pdbqt_file=vina_outfile, pdb_file=docked_ligand_pdb, disable_bonding=True)
         raw_ligand = read_mol_from_pdb(docked_ligand_pdb)
 
         # Assign bond orders and stereochemistry
