@@ -148,7 +148,7 @@ def check_charges(mol: Chem.Mol) -> None:
 def check_mol(mol: Chem.Mol) -> None:
     """Check that there aren't any explicit hydrogens, radicals or multiple molecular fragments."""
     # Check that there aren't any hydrogen atoms left in the RDKit.Mol
-    no_hs = all(atom.GetAtomicNum() != 0 for atom in mol.GetAtoms())
+    no_hs = all(atom.GetAtomicNum() != 1 for atom in mol.GetAtoms())
     if not no_hs:
         raise SanityError("Cannot process molecule: hydrogen atoms couldn't be removed")
 
