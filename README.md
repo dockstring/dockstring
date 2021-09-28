@@ -13,7 +13,7 @@ A Python package for easy molecular docking.
    ```
 1. Activate the new `conda` environment:
    ```bash
-   conda actiate dockstring
+   conda activate dockstring
    ```
 1. Install the dockstring package with `pip`:
    ```bash
