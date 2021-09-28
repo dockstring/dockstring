@@ -18,12 +18,23 @@ from .utils import (smiles_to_mol, embed_mol, refine_mol_with_ff, convert_pdbqt_
                     convert_mol_file_to_pdbqt, check_charges, check_obabel_install)
 
 
-def load_target(name: str, *args, **kwargs):
+def load_target(name: str, *args, **kwargs) -> 'Target':
+    """
+    Load target with name <name>.
+
+    :return: a target
+    """
     return Target(name, *args, **kwargs)
 
 
-def list_all_target_names() -> List[str]:
-    targets_dir = get_targets_dir()
+def list_all_target_names(targets_dir: Optional[PathType] = None) -> List[str]:
+    """
+    List all available targets in <targets_dir>.
+
+    :return: list of available names targets
+    """
+    if targets_dir is None:
+        targets_dir = get_targets_dir()
     file_names = [f for f in os.listdir(targets_dir) if os.path.isfile(os.path.join(targets_dir, f))]
 
     target_re = re.compile(r'^(?P<name>\w+)_target\.pdbqt$')
@@ -37,7 +48,21 @@ def list_all_target_names() -> List[str]:
 
 
 class Target:
-    def __init__(self, name, working_dir: Optional[PathType] = None, targets_dir: Optional[PathType] = None):
+    def __init__(
+        self,
+        name: str,
+        working_dir: Optional[PathType] = None,
+        targets_dir: Optional[PathType] = None,
+    ) -> None:
+        """
+        Target to dock against. Two files are required: <name>_target.pdbqt and <name>_conf.txt.
+        <name>_target.pdbqt contains the the protein structure including partial charges.
+        <name>_conf.txt contains the coordinates of the search box.
+
+        :param name: target name (e.g,. ABL1)
+        :param working_dir: directory for temporary and output files. If None, a temporary directory will be created.
+        :param targets_dir: directory in which the required files can be found. If None, a default path will be chosen.
+        """
         self.name = name
 
         # Directory where the ligand and output files will be saved
@@ -53,19 +78,24 @@ class Target:
         return f"Target(name='{self.name}', working_dir='{self.working_dir}', targets_dir='{self.targets_dir}')"
 
     @property
-    def pdb_path(self) -> Path:
-        return self.targets_dir / (self.name + '_target.pdb')
-
-    @property
     def pdbqt_path(self) -> Path:
+        """
+        Path to PDBQT file
+        """
         return self.targets_dir / (self.name + '_target.pdbqt')
 
     @property
     def conf_path(self) -> Path:
+        """
+        Path to configuration file
+        """
         return self.targets_dir / (self.name + '_conf.txt')
 
     @property
     def working_dir(self) -> Path:
+        """
+        Path to working directory
+        """
         if self._custom_working_dir:
             return Path(self._custom_working_dir).resolve()
 
@@ -75,21 +105,33 @@ class Target:
 
         return Path(self._tmp_dir_handle.name).resolve()
 
-    def _dock_pdbqt(self,
-                    ligand_pdbqt,
-                    vina_logfile,
-                    vina_outfile,
-                    seed,
-                    num_cpus: Optional[int] = None,
-                    verbose=False):
+    def _dock_pdbqt(
+        self,
+        pdbqt_path,
+        log_path,
+        out_path,
+        seed,
+        num_cpus: Optional[int] = None,
+        verbose=False,
+    ) -> None:
+        """
+        Run AutoDock Vina.
+
+        :param pdbqt_path: path to PDBQT file
+        :param log_path: path to log file
+        :param out_path: path to output file
+        :param seed: random seed
+        :param num_cpus: number of CPU cores available to AutoDock Vina
+        :param verbose: enable verbose output
+        """
         # yapf: disable
         cmd_list = [
             get_vina_path(),
             '--receptor', self.pdbqt_path,
             '--config', self.conf_path,
-            '--ligand', ligand_pdbqt,
-            '--log', vina_logfile,
-            '--out', vina_outfile,
+            '--ligand', pdbqt_path,
+            '--log', log_path,
+            '--out', out_path,
             '--seed', str(seed),
         ]
         # yapf: enable
@@ -116,12 +158,14 @@ class Target:
     ) -> Tuple[Optional[float], Dict[str, Any]]:
         """
         Given a molecule, this method will return a docking score against the current target.
-        - smiles: SMILES string
-        - num_cpus: number of cpus that AutoDock Vina should use for the docking. By default,
-          it will try to find all the cpus on the system, and failing that, it will use 1.
-        - seed: integer random seed for reproducibility
-        """
 
+        :param smiles: SMILES string of ligand
+        :param pH: pH at which the docking should take place (default: 7.4, don't change unless you know what you are doing)
+        :param num_cpus: number of CPUs cores available to AutoDock Vina
+        :param seed: random seed for conformation generation and docking
+        :param verbose: increase verbosity of log messages
+        :return: docking score and dictionary containing all poses and binding free energies
+        """
         # Auxiliary files
         ligand_mol_file = self.working_dir / 'ligand.mol'
         ligand_pdbqt = self.working_dir / 'ligand.pdbqt'
@@ -170,7 +214,7 @@ class Target:
         assign_stereochemistry(ligand)
 
         # Verify docked ligand
-        verify_docked_ligand(ref=refined_mol_no_hs, ligand=ligand)
+        verify_docked_ligand(ref=refined_mol_no_hs, subject=ligand)
 
         # Parse scores
         affinities = parse_affinities_from_output(docked_ligand_pdb)
@@ -182,13 +226,21 @@ class Target:
             'affinities': affinities,
         }
 
-    def view(self, mol: Union[Chem.Mol, List[Chem.Mol], None] = None, search_box=True):
+    def view(
+        self,
+        mol: Union[Chem.Mol, List[Chem.Mol], None] = None,
+        include_search_box=True,
+    ) -> int:
         """
-        Start pymol and view the receptor and the search box.
+        Launch PyMol and view the receptor and the search box.
+
+        :param mol: RDKit molecule or list of RDKit molecules containing a conformation
+        :param include_search_box: view search box
+        :return: return code of PyMol command
         """
         commands: List[Union[str, PathType]] = ['pymol', self.pdbqt_path]
 
-        if search_box:
+        if include_search_box:
             pymol_script = get_resources_dir() / 'view_search_box.py'
             conf = parse_search_box_conf(self.conf_path)
             # yapf: disable
@@ -211,4 +263,4 @@ class Target:
                 write_mol_to_mol_file(pose, mol_file)
                 commands += [str(mol_file)]
 
-        return subprocess.run(commands)
+        return subprocess.run(commands).returncode
