@@ -66,7 +66,7 @@ resources_dir = Path(os.path.dirname(os.path.realpath(__file__))) / 'resources'
 class TestParser:
     def test_affinities_parser(self):
         vina_output = resources_dir / 'vina.out'
-        assert check_vina_output(vina_output) is None
+        check_vina_output(vina_output)
 
         affinities = parse_affinities_from_output(vina_output)
         expected = [-4.7, -4.6, -4.5, -4.5, -4.4, -4.4, -4.4, -4.3, -4.3]
@@ -145,18 +145,18 @@ class TestDocking:
 
         smiles_1 = 'CCO'
         energy_1, _ = target.dock(smiles_1)
-        assert math.isclose(energy_1, -2.4)
+        assert energy_1 is not None and math.isclose(energy_1, -2.4)
 
         smiles_2 = 'CC'
         energy_2, _ = target.dock(smiles_2)
-        assert math.isclose(energy_2, -1.8)
+        assert energy_2 is not None and math.isclose(energy_2, -1.8)
 
     # Test different SMILES representations of lysine
     @pytest.mark.parametrize('smiles', [lysine_smiles, 'NCCCC[C@H](N)C(=O)O'])
     def test_charged(self, smiles):
         target = load_target('CYP3A4')
         energy, aux = target.dock(smiles)
-        assert math.isclose(energy, -4.6)
+        assert energy is not None and math.isclose(energy, -4.6)
 
         charge = sum(atom.GetFormalCharge() for atom in aux['ligand'].GetAtoms())
         assert charge == 1
@@ -165,7 +165,7 @@ class TestDocking:
     def test_seeds(self, seed: int, score: float):
         target = load_target('CYP3A4')
         energy, aux = target.dock(lysine_smiles, seed=seed)
-        assert math.isclose(energy, score)
+        assert energy is not None and math.isclose(energy, score)
 
         charge = sum(atom.GetFormalCharge() for atom in aux['ligand'].GetAtoms())
         assert charge == 1
@@ -184,13 +184,13 @@ class TestDocking:
         docking_energy, aux = target.dock(smiles)
         total_charge = sum(atom.GetFormalCharge() for atom in aux['ligand'].GetAtoms())
         assert total_charge == charge
-        assert math.isclose(energy, docking_energy)
+        assert docking_energy is not None and math.isclose(energy, docking_energy)
 
     def test_positive_score(self):
         target = load_target('AR')
         smiles = r'O1/C(=N\CCC=2C=3C(NC2)=CC=CC3)/[C@]4(N(C(=O)C5C=6[C@H]4[C@H]7[C@@H](CC6[C@@H]8[C@H]([C@H]5C)C(=O)N(C8=O)C9=CC=CC=C9)C(=O)N(C7=O)C%10=CC=CC=C%10)C1=O)CC%11=CC=CC=C%11'
         score, aux = target.dock(smiles)
-        assert score >= 0.0
+        assert score is not None and score >= 0.0
 
     def test_mol_to_pdbqt_error(self):
         # works for any target actually
@@ -211,11 +211,11 @@ class TestDocking:
         target = load_target('CYP3A4')
 
         score, aux = target.dock('[H]C(C)(F)Cl')
-        assert math.isclose(score, -3.1)
+        assert score is not None and math.isclose(score, -3.1)
         assert Chem.MolToSmiles(aux['ligand']) == 'C[C@H](F)Cl'
 
         score, aux = target.dock('C[C@H](F)Cl')
-        assert math.isclose(score, -3.1)
+        assert score is not None and math.isclose(score, -3.1)
         assert Chem.MolToSmiles(aux['ligand']) == 'C[C@H](F)Cl'
 
     def test_bond_stereo(self):
@@ -223,17 +223,17 @@ class TestDocking:
 
         smiles = r'C\C=C\C'  # E
         score, aux = target.dock(smiles)
-        assert math.isclose(score, -3.4)
+        assert score is not None and math.isclose(score, -3.4)
         assert aux['ligand'].GetBondWithIdx(1).GetStereo() == Chem.BondStereo.STEREOE
 
         smiles = r'C/C=C\C'  # Z
         score, aux = target.dock(smiles)
-        assert math.isclose(score, -3.5)
+        assert score is not None and math.isclose(score, -3.5)
         assert aux['ligand'].GetBondWithIdx(1).GetStereo() == Chem.BondStereo.STEREOZ
 
         smiles = 'CC=CC'  # unspecified
         score, aux = target.dock(smiles)
-        assert math.isclose(score, -3.5)
+        assert score is not None and math.isclose(score, -3.5)
         assert aux['ligand'].GetBondWithIdx(1).GetStereo() == Chem.BondStereo.STEREOZ
 
     @pytest.mark.parametrize('target_name, ligand', [
