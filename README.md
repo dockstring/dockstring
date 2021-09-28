@@ -29,7 +29,7 @@ conda install -c conda-forge pymol-open-source
 
 ## Tutorial
 
-Checkout this [tutorial](tutorials/1_docking_risperidone_against_DRD2.ipynb) to get started!
+Check out this [tutorial](tutorials/1_docking_risperidone_against_DRD2.ipynb) to get started!
 
 ## Development
 
