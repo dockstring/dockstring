@@ -13,7 +13,7 @@ A Python package for easy molecular docking.
    ```
 1. Activate the new `conda` environment:
    ```bash
-   conda actiate dockstring
+   conda activate dockstring
    ```
 1. Install the dockstring package with `pip`:
    ```bash
@@ -26,6 +26,10 @@ Install [PyMol](https://pymol.org/) for target, search box and ligand visualizat
 ```bash
 conda install -c conda-forge pymol-open-source 
 ```
+
+## Tutorial
+
+Check out this [tutorial](tutorials/1_docking_risperidone_against_DRD2.ipynb) to get started!
 
 ## Development
 
