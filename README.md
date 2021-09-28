@@ -27,6 +27,10 @@ Install [PyMol](https://pymol.org/) for target, search box and ligand visualizat
 conda install -c conda-forge pymol-open-source 
 ```
 
+## Tutorial
+
+Checkout this [tutorial](tutorials/1_docking_risperidone_against_DRD2.ipynb) to get started!
+
 ## Development
 
 ### Code format
