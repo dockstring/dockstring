@@ -10,6 +10,37 @@ Welcome to dockstring's documentation!
    :maxdepth: 2
    :caption: Contents:
 
+Dockstring is very easy to use.
+
+.. code-block:: python
+   :linenos:
+
+   from dockstring import load_target
+
+   # Choose which protein you want to dock
+   target = load_target("DRD2")
+
+   # Specify molecule as a smiles string
+   smiles = "CCCC=O"
+
+   # Run the docking simulation
+   score, info = target.dock(smiles)
+   print(score)
+
+That's it! For more details see our API below:
+
+.. autoclass:: dockstring.target.Target
+    :members:
+    :show-inheritance:
+
+.. automodule:: dockstring.errors
+    :members:
+    :show-inheritance:
+
+.. automodule:: dockstring
+    :members:
+    :undoc-members:
+    :show-inheritance:
 
 
 Indices and tables
