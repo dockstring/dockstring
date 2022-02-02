@@ -4,6 +4,14 @@
 ![Code Style: yapf](https://img.shields.io/badge/code%20style-yapf-orange.svg)
 
 A Python package for easy molecular docking.
+For details, see our paper:
+
+**DOCKSTRING: easy molecular docking yields better benchmarks for ligand design**<br>
+Miguel García-Ortegón, Gregor N. C. Simm, Austin J. Tripp, José Miguel Hernández-Lobato, Andreas Bender, Sergio Bacallado<br>
+https://arxiv.org/abs/2110.15486
+
+Our **dataset** containing docking scores and poses of more than 260K ligands for 58 medically-relevant targets
+can be downloaded [here](https://figshare.com/s/95f2fed733dec170b998?file=30562257).
 
 ## Installation
 
@@ -27,9 +35,10 @@ Install [PyMol](https://pymol.org/) for target, search box and ligand visualizat
 conda install -c conda-forge pymol-open-source 
 ```
 
-## Tutorial
+## Tutorials
 
-Check out this [tutorial](tutorials/1_docking_risperidone_against_DRD2.ipynb) to get started!
+- Check out this [tutorial](tutorials/1_docking_risperidone_against_DRD2.ipynb) to get started!
+- This [tutorial](tutorials/tbd.ipynb) shows you how to access our dataset.
 
 ## Development
 
