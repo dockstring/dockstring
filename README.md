@@ -11,7 +11,7 @@ Miguel García-Ortegón, Gregor N. C. Simm, Austin J. Tripp, José Miguel Herná
 https://arxiv.org/abs/2110.15486
 
 Our **dataset** containing docking scores and poses of more than 260K ligands for 58 medically-relevant targets
-can be downloaded [here](https://figshare.com/s/95f2fed733dec170b998?file=30562257).
+can be downloaded [here](https://figshare.com/s/95f2fed733dec170b998?file=30562257) (`dockstring-dataset.tsv`).
 
 ## Installation
 
