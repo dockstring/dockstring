@@ -4,6 +4,7 @@
 ![Code Style: yapf](https://img.shields.io/badge/code%20style-yapf-orange.svg)
 
 A Python package for easy molecular docking.
+We can dock molecules in a few lines of code from just a SMILES string!
 For details, see our paper:
 
 **DOCKSTRING: easy molecular docking yields better benchmarks for ligand design**<br>
@@ -12,6 +13,12 @@ https://arxiv.org/abs/2110.15486
 
 Our **dataset** containing docking scores and poses of more than 260K ligands for 58 medically-relevant targets
 can be downloaded [here](https://figshare.com/s/95f2fed733dec170b998?file=30562257) (`dockstring-dataset.tsv`).
+You can use the following lines of code to download the dataset:
+
+```bash
+mkdir -p datasets
+wget -O datasets/dockstring-dataset.tsv https://figshare.com/ndownloader/files/30562257?private_link=95f2fed733dec170b998
+```
 
 ## Installation
 
@@ -37,7 +44,7 @@ conda install -c conda-forge pymol-open-source
 
 ## Tutorials
 
-- Check out this [tutorial](tutorials/1_docking_risperidone_against_DRD2.ipynb) to get started!
+- Check out this [tutorial](tutorials/1_docking_risperidone_against_DRD2.ipynb) to see dockstring's basic usage.
 - This [tutorial](tutorials/tbd.ipynb) shows you how to access our dataset.
 
 ## Development
