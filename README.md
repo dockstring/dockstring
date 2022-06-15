@@ -45,7 +45,8 @@ conda install -c conda-forge pymol-open-source
 ## Tutorials
 
 - Check out this [tutorial](tutorials/1_docking_risperidone_against_DRD2.ipynb) to see dockstring's basic usage.
-- This [tutorial](tutorials/tbd.ipynb) shows you how to access our dataset.
+- This [tutorial](tutorials/2_dockstring_dataset.ipynb) shows you how to access our dataset.
+- This [tutorial](tutorials/3_dummy_regression_benchmark.ipynb) shows you how to run the regression benchmark from our [paper](https://arxiv.org/abs/2110.15486).
 
 ## Development
 
