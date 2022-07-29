@@ -1,7 +1,9 @@
 """Benchmarks for original dockstring paper."""
 
 import functools
+import math
 from typing import Dict
+
 from .utils import BenchmarkObjective, safe_dock_function, QED as QED_function
 
 
@@ -15,11 +17,15 @@ def F2_score(*, F2: float, QED: float) -> float:
 
 
 def promiscuous_PPAR_score(*, PPARA: float, PPARD: float, PPARG: float, QED: float) -> float:
+    # Max of a list of NaNs is not always NaN so we check this manually
+    if any(math.isnan(v) for v in [PPARA, PPARD, PPARG]):
+        return math.nan
     return max(PPARA, PPARD, PPARG) + QED_penalty(QED)
 
 
 def selective_JAK2_score(*, JAK2: float, LCK: float, QED: float) -> float:
-    return JAK2 - min(LCK, -8.1) + QED_penalty(QED)
+    lck_median_score = -8.1
+    return JAK2 - min(LCK - lck_median_score, 0) + QED_penalty(QED)
 
 
 def get_benchmark_functions(**dock_kwargs) -> Dict[str, BenchmarkObjective]:
