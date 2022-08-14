@@ -24,6 +24,10 @@ def promiscuous_PPAR_score(*, PPARA: float, PPARD: float, PPARG: float, QED: flo
 
 
 def selective_JAK2_score(*, JAK2: float, LCK: float, QED: float) -> float:
+
+    # Note: there was a small error in the formula for this objective
+    # in our JCIM publication. *THIS* is the correct formula,
+    # which matches the numbers in all of our tables
     lck_median_score = -8.1
     return JAK2 - min(LCK - lck_median_score, 0) + QED_penalty(QED)
 
