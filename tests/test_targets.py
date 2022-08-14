@@ -139,17 +139,22 @@ class TestRefinement:
         assert refine_mol_with_ff(embedded_mol)
 
 
-class TestDocking:
-    def test_simple_docking(self):
-        target = load_target('ABL1')
+def test_simple_docking():
+    """Simple docking test, set to run in all cases."""
+    target = load_target('ABL1')
 
-        smiles_1 = 'CCO'
-        energy_1, _ = target.dock(smiles_1)
-        assert energy_1 is not None and math.isclose(energy_1, -2.4)
+    smiles_1 = 'CCO'
+    energy_1, _ = target.dock(smiles_1)
+    assert energy_1 is not None and math.isclose(energy_1, -2.4)
 
-        smiles_2 = 'CC'
-        energy_2, _ = target.dock(smiles_2)
-        assert energy_2 is not None and math.isclose(energy_2, -1.8)
+    smiles_2 = 'CC'
+    energy_2, _ = target.dock(smiles_2)
+    assert energy_2 is not None and math.isclose(energy_2, -1.8)
+
+
+@pytest.mark.slow
+class TestDocking_Slow:
+    """Run a large number of slower docking tests."""
 
     # Test different SMILES representations of lysine
     @pytest.mark.parametrize('smiles', [lysine_smiles, 'NCCCC[C@H](N)C(=O)O'])
@@ -271,24 +276,11 @@ class TestDocking:
         with pytest.raises(PoseProcessingError):
             target.dock(ligand_smiles)
 
-    # Commented out because takes too long
-    # @pytest.mark.parametrize('target_name, ligand', [
-    #     ('ABL1', 'S(=O)(=O)(N(C[C@@H]1OCCCC[C@@H](OC=2C(C(=O)N(C[C@H]1C)[C@@H](CO)C)=CC(NC(=O)NC=3C=CC(F)=CC3)=CC2)C)C)C=4SC=CC4'),
-    # ])
-    # def test_atom_valence_exception(self, target_name: str, ligand: str):
-    #     target = load_target(target_name, working_dir='/home/gregor/.config/JetBrains/PyCharm2021.1/scratches/failure')
-    #     assert target.dock(ligand)
-
-    # Commented out because test takes too long
-    """
-    @pytest.mark.parametrize(
-        'target, ligand',
-        [
-            ('PTPN1', 'O=S(=O)(C1=CC=C(N(C(C2=CC=C(C=C2)NC(C3=CC=C(C=C3)C#N)=O)=O)C)C=C1)NC4=NC=CS4'),
-        ],
-    )
-    def test_docking_failure(self, target, ligand):
-        target = load_target(target)
-        with pytest.raises(DockingError):
-            target.dock(ligand)
-    """
+    @pytest.mark.parametrize('target_name, ligand', [
+        ('ABL1',
+         'S(=O)(=O)(N(C[C@@H]1OCCCC[C@@H](OC=2C(C(=O)N(C[C@H]1C)[C@@H](CO)C)=CC(NC(=O)NC=3C=CC(F)=CC3)=CC2)C)C)C=4SC=CC4'
+         ),
+    ])
+    def test_atom_valence_exception(self, target_name: str, ligand: str):
+        target = load_target(target_name)
+        assert target.dock(ligand)
