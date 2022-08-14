@@ -24,6 +24,7 @@ class TestOriginalBenchmarks:
         """Can I load the benchmark functions?"""
         assert set(original_benchmarks.keys()) == {"F2", "promiscuous_PPAR", "selective_JAK2"}
 
+    @pytest.mark.slow
     @pytest.mark.parametrize("name,top_smiles,expected_obj_parts,expected_obj", [
         ("F2", "CC1=CC2(c3cccc(C(=O)NC4=NC(=O)CC(F)=N4)c3)CC(=C1)C=CC2=O", dict(F2=-12.7, QED=0.85955), -11.2955),
         ("promiscuous_PPAR", "O=C1C=CC2=CC=C3C=C(Nc4cccc(C5C=c6cc7c(cc6=C5)CC=C7)c4)N=C3C12",
@@ -55,6 +56,7 @@ class TestOriginalBenchmarks:
         for key in actual_obj_parts.keys():
             assert close_enough(actual_obj_parts[key], expected_obj_parts[key])
 
+    @pytest.mark.slow
     @pytest.mark.parametrize(
         "name,nan_smiles",
         [

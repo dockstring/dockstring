@@ -58,6 +58,11 @@ Before committing, please run the following to make sure that all tests pass:
 python -m pytest tests/
 ```
 
+Alternatively, to skip a variety of slow tests, run:
+```bash
+python -m pytest -m "not slow" tests/
+```
+
 ## Citation
 
 If you use the dockstring package/dataset/benchmark in your work,

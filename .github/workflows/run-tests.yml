@@ -53,4 +53,4 @@ jobs:
       - name: Test with pytest
         run: |
           conda activate dockstring
-          python3 -m pytest tests
+          python3 -m pytest -m "not slow" tests
