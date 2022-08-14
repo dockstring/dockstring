@@ -12,18 +12,33 @@ and our [website](https://dockstring.github.io/):
 
 ## Installation
 
-1. Create a new `conda` environment from the `environment.yml` file in this repository:
-   ```bash
-   conda env create -f environment.yml
-   ```
-1. Activate the new `conda` environment:
-   ```bash
-   conda activate dockstring
-   ```
-1. Install the dockstring package with `pip`:
+To ensure compatibility with the dockstring dataset,
+the package has very strict versioning requirements
+for its main dependencies (`rdkit` and `openbabel`).
+As such, we recommend you install it in the following way.
+
+1. Clone this repository.
+1. Choose whether to install into an existing environment or create a new environment.
+    - To install into an existing environment, install the correct version of `openbabel` and `rdkit`:
+      ```bash
+      conda install -c conda-forge rdkit=2021.03.3 openbabel=3.1.1
+      ```
+    - To install into a new environment, run:
+      ```bash
+      conda env create -f environment.yml
+      conda activate dockstring
+      ```
+1. Install the dockstring package with `pip` from this repository:
    ```bash
    pip install .
    ```
+1. Check whether the installation was successful by running a test script.
+   Running without error inducates a successful install.
+   ```bash
+   python tutorials/simple_example.py
+   ```
+
+If this method of installation does not work for you, please raise a github issue and we will try to help.
 
 ### Optional
 
@@ -59,6 +74,7 @@ python -m pytest tests/
 ```
 
 Alternatively, to skip a variety of slow tests, run:
+
 ```bash
 python -m pytest -m "not slow" tests/
 ```
@@ -68,7 +84,7 @@ python -m pytest -m "not slow" tests/
 If you use the dockstring package/dataset/benchmark in your work,
 please use the following citation:
 
-```
+```tex
 @article{garciaortegon2022dockstring,
     author = {García-Ortegón, Miguel and Simm, Gregor N. C. and Tripp, Austin J. and Hernández-Lobato, José Miguel and Bender, Andreas and Bacallado, Sergio},
     title = {DOCKSTRING: Easy Molecular Docking Yields Better Benchmarks for Ligand Design},
@@ -78,6 +94,6 @@ please use the following citation:
     pages = {3486-3502},
     year = {2022},
     doi = {10.1021/acs.jcim.1c01334},
-    URL = {https://doi.org/10.1021/acs.jcim.1c01334},
+    URL = {https://doi.org/10.1021/acs.jcim.1c01334}
 }
 ```
