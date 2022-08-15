@@ -61,6 +61,8 @@ def get_vina_filename() -> str:
     system_name = platform.system()
     if system_name == 'Linux':
         return 'vina_linux'
+    if system_name == 'Darwin':
+        return 'vina_mac_catalina'
     else:
         raise DockstringError(f"System '{system_name}' not yet supported")
 
