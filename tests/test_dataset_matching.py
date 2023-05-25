@@ -1,6 +1,11 @@
 """Tests that the output of the dock function matches the values in the dataset."""
 
+from __future__ import annotations
+
 import math
+import os
+import random
+import urllib.request
 
 import pytest
 
@@ -44,3 +49,62 @@ def test_value_matches(target_name: str, smiles: str, value: float):
     computed_value, _ = target.dock(smiles)
     assert isinstance(computed_value, float)
     assert math.isclose(value, computed_value)
+
+
+@pytest.fixture(scope="module")
+def whole_dockstring_dataset() -> list[tuple[str, str, float]]:
+    """
+    Loads the whole dockstring dataset as a list of (target, SMILES, score) tuples.
+    """
+
+    # Download the dataset from figshare and read it in
+    file_name, _ = urllib.request.urlretrieve("https://figshare.com/ndownloader/files/35948138")
+    with open(file_name) as f:
+        lines = f.readlines()
+
+    # Read the dataset line by line
+    output_tuples: list[tuple[str, str, float]] = []
+    header = lines[0].strip().split()
+    for line in lines[1:]:
+        items = line.strip().split()
+        for i, docking_score in enumerate(items[2:]):
+            output_tuples.append((header[i + 2], items[1], float(docking_score)))
+    return output_tuples
+
+
+@pytest.mark.slow
+def test_random_matching_from_dataset(whole_dockstring_dataset: list[tuple[str, str, float]]) -> None:
+
+    # Sanity check: make sure random tuples above are in the dataaset
+    dataset_as_set = set(whole_dockstring_dataset)
+    for t in random_dataset_tuples:
+        assert t in dataset_as_set
+
+    # Shuffle the dataset
+    rng = random.Random(888)
+    rng.shuffle(whole_dockstring_dataset)
+
+    # Choose the first N molecules to dock, where N can be customized
+    num_docking_scores_to_validate = int(os.environ.get("num_dockstring_test_molecules", 100))
+    dataset_to_use = whole_dockstring_dataset[:num_docking_scores_to_validate]
+    del whole_dockstring_dataset
+
+    # Dock all molecules
+    scores: list[float] = []
+    expected_scores: list[float] = []
+    for target_name, smiles, true_score in dataset_to_use:
+        target = load_target(target_name)
+        computed_value, _ = target.dock(smiles)
+        assert isinstance(computed_value, float)
+        scores.append(computed_value)
+        expected_scores.append(true_score)
+
+    # Now check that scores match
+    assert len(scores) == len(expected_scores)
+    scores_match = [math.isclose(s, e) for s, e in zip(scores, expected_scores)]
+    if not all(scores_match):
+        print("Scores do not match for the following molecules:")
+        for i, (target_name, smiles, true_score) in enumerate(dataset_to_use):
+            if not scores_match[i]:
+                print(target_name, smiles, true_score, scores[i])
+        raise AssertionError
