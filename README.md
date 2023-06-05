@@ -2,7 +2,7 @@
 
 ![CI Tests](https://github.com/mgarort/dockstring/workflows/Install%20conda%20env%20and%20run%20pytest./badge.svg?branch=main)
 ![Code Style: yapf](https://img.shields.io/badge/code%20style-yapf-orange.svg)
-<a href=\"https://colab.research.google.com/github/syedzayyan/dockstring/blob/main/dockstring_example.ipynb\" target=\"_parent\"><img src=\"https://colab.research.google.com/assets/colab-badge.svg\" alt=\"Open In Colab\"/></a>
+![Open In Colab](https://colab.research.google.com/github/syedzayyan/dockstring/blob/main/dockstring_example.ipynb)
 
 A Python package for easy molecular docking and docking benchmarking.
 We can dock molecules in a few lines of code from just a SMILES string!
