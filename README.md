@@ -12,6 +12,12 @@ and our [website](https://dockstring.github.io/):
 
 ## Installation
 
+Currently this package is **only supported on Linux**,
+and we do not plan to add support for Mac/Windows.
+See [this issue](https://github.com/dockstring/dockstring/issues/141)
+for more information on why this is
+(feel free to re-open it if you want to help us provide Mac/Windows support).
+
 To ensure compatibility with the dockstring dataset,
 the package has very strict versioning requirements
 for its main dependencies (`rdkit` and `openbabel`).

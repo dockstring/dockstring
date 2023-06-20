@@ -10,6 +10,7 @@ from typing import List, Union, Dict, Optional
 import warnings
 
 import pkg_resources
+import rdkit
 from rdkit import rdBase
 from rdkit.Chem import AllChem as Chem
 from rdkit.Chem.Descriptors import NumRadicalElectrons
@@ -262,6 +263,15 @@ def check_obabel_install() -> None:
     if not stdout.startswith(expected_version):
         raise DockingError("The obabel test command succeeded but the version doesn't seem to match. " +
                            expected_version + ' required.')
+
+
+def check_rdkit_version() -> None:
+    """Check that the correct version of rdkit is installed."""
+    required_rdkit_version = "2021.03"
+    if not rdkit.__version__.startswith(required_rdkit_version):
+        warnings.warn(message=f"Incorrect rdkit version {rdkit.__version__} "
+                      f"(expected {required_rdkit_version}.*). "
+                      "You can still run docking, but be advised that the output may not match the dockstring dataset.")
 
 
 def convert_pdbqt_to_pdb(pdbqt_file: PathType, pdb_file: PathType, disable_bonding=False) -> None:
