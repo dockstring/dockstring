@@ -66,7 +66,8 @@ def get_vina_filename() -> str:
         warnings.warn(
             "Although Mac use is supported, docking scores on Mac generally *do not* "
             "match scores from linux and should therefore not be compared to results on other platforms. "
-            "In particular, please DO NOT USE THESE SCORES FOR THE DOCKSTRING BENCHMARK TASKS.", DockstringWarning)
+            "In particular, please DO NOT REPORT THESE SCORES FOR THE DOCKSTRING BENCHMARK TASKS."
+            "(unless you run all methods on Mac).", DockstringWarning)
         return 'vina_mac_catalina'
     else:
         raise DockstringError(f"System '{system_name}' not yet supported")
