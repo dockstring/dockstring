@@ -1,3 +1,8 @@
+class DockstringWarning(Warning):
+    """Base warning for Dockstring"""
+    pass
+
+
 class DockstringError(Exception):
     """Base exception for Dockstring"""
     pass
