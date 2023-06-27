@@ -16,8 +16,8 @@ from rdkit.Chem import AllChem as Chem
 from rdkit.Chem.Descriptors import NumRadicalElectrons
 from rdkit.Chem.MolStandardize.rdMolStandardize import Uncharger
 
-from .errors import (DockstringError, CanonicalizationError, ParsingError, SanityError, EmbeddingError,
-                     StructureOptimizationError, FormatConversionError, ProtonationError, DockingError,
+from .errors import (DockstringError, DockstringWarning, CanonicalizationError, ParsingError, SanityError,
+                     EmbeddingError, StructureOptimizationError, FormatConversionError, ProtonationError, DockingError,
                      PoseProcessingError, OutputError)
 
 PathType = Union[str, os.PathLike]
@@ -63,6 +63,13 @@ def get_vina_filename() -> str:
     system_name = platform.system()
     if system_name == 'Linux':
         return 'vina_linux'
+    if system_name == 'Darwin':
+        warnings.warn(
+            "Although Mac use is supported, docking scores on Mac generally *do not* "
+            "match scores from linux and should therefore not be compared to results on other platforms. "
+            "In particular, please DO NOT REPORT THESE SCORES FOR THE DOCKSTRING BENCHMARK TASKS."
+            "(unless you run all methods on Mac).", DockstringWarning)
+        return 'vina_mac_catalina'
     else:
         raise DockstringError(f"System '{system_name}' not yet supported")
 
