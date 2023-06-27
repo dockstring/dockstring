@@ -70,7 +70,7 @@ def test_random_matching_from_dataset(whole_dockstring_dataset: list[tuple[str, 
 
     # Test: assert that all scores match and give detailed error message if they don't
     max_deviation = max([0.] + [abs(s - e) for _, _, s, e in non_matching_points])
-    error_str = (f"Scores do not match for {len(non_matching_points)} molecules. " +
+    error_str = (f"Scores do not match for {len(non_matching_points)}/{len(dataset_to_use)} molecules. " +
                  f"Max deviation: {max_deviation}. Scores without match:")
     for target_name, smiles, expected_score, observed_score in non_matching_points:
         error_str += f"\nTarget: {target_name}\nSMILES: {smiles}\nExpected score: {expected_score}Observed score: {observed_score}\n"
