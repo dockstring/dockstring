@@ -12,11 +12,9 @@ and our [website](https://dockstring.github.io/):
 
 ## Installation
 
-Currently this package is **only supported on Linux**,
-and we do not plan to add support for Mac/Windows.
-See [this issue](https://github.com/dockstring/dockstring/issues/141)
-for more information on why this is
-(feel free to re-open it if you want to help us provide Mac/Windows support).
+This package is primarily intended for Linux, but we have some support for Mac.
+Please note that the scores from the Mac version do not always perfectly match the Linux version,
+so we encourage the use of the Linux version whenever possible.
 
 To ensure compatibility with the dockstring dataset,
 the package has very strict versioning requirements
@@ -43,6 +41,15 @@ As such, we recommend you install it in the following way.
    ```bash
    python tutorials/simple_example.py
    ```
+1. *(optional)* Check whether your local version of dockstring matches the dockstring dataset.
+   This is only necessary if you plan to mix pre-computed docking scores from the dockstring dataset
+   with locally-computed scores, or if you want to compare results with the dockstring paper.
+   We have created a `pytest` test for this. To run it:
+   ```bash
+   conda install -c conda-forge pytest  # only if not installed already
+   python -m pytest tests/test_dataset_matching.py
+   ```
+   If the test passes then your local version of docktring matches the dataset exactly! 🥳
 
 If this method of installation does not work for you, please raise a github issue and we will try to help.
 
