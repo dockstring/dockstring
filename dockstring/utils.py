@@ -65,10 +65,11 @@ def get_vina_filename() -> str:
         return 'vina_linux'
     if system_name == 'Darwin':
         warnings.warn(
-            "Although Mac use is supported, docking scores on Mac generally *do not* "
-            "match scores from linux and should therefore not be compared to results on other platforms. "
-            "In particular, please DO NOT REPORT THESE SCORES FOR THE DOCKSTRING BENCHMARK TASKS "
-            "(unless you run all methods on Mac).", DockstringWarning)
+            "Although Mac use is supported, docking scores on Mac do not always perfectly match scores from Linux. "
+            "Therefore, extra care should be taken when comparing results to other platforms. "
+            "In particular, the baselines in the DOCKSTRING paper were computed on Linux, "
+            "so please do not directly compare your docking scores to the scores reported on the paper.",
+            DockstringWarning)
         return 'vina_mac_catalina'
     else:
         raise DockstringError(f"System '{system_name}' not yet supported")
