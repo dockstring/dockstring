@@ -46,7 +46,8 @@ As such, we recommend you install it in the following way.
    with locally-computed scores, or if you want to compare results with the dockstring paper.
    We have created a `pytest` test for this. To run it:
    ```bash
-   conda install -c conda-forge pymol-open-source 
+   conda install -c conda-forge pytest  # only if not installed already
+   python -m pytest tests/test_dataset_matching.py
    ```
    If the test passes then your local version of docktring matches the dataset exactly! 🥳
 
