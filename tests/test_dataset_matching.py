@@ -11,6 +11,27 @@ import pytest
 from dockstring import load_target, dataset as dockstring_dataset
 
 
+def compute_r2(observed_scores: list[float], expected_scores: list[float]) -> float:
+    """
+    Compute coefficient of determination (R2).
+    """
+
+    # sum of squares total
+    mean_expected_scores = sum(expected_scores) / len(expected_scores)
+    ss_total = 0
+    for each_expected_score in expected_scores:
+        ss_total += math.pow(each_expected_score - mean_expected_scores, 2)
+    
+    # sum of squares residual
+    ss_residual = 0
+    for each_observed_score, each_expected_score in zip(observed_scores,
+                                                        expected_scores):
+        ss_residual += math.pow(each_observed_score - each_expected_score, 2)
+
+    return 1 - ss_residual/ss_total
+
+
+
 @pytest.fixture()
 def whole_dockstring_dataset() -> list[tuple[str, str, float]]:
     """
@@ -56,12 +77,14 @@ def test_random_matching_from_dataset(whole_dockstring_dataset: list[tuple[str, 
 
     # Dock all molecules and check whether scores match
     observed_scores: list[float] = []
+    expected_scores: list[float] = []
     non_matching_points = []
     for target_name, smiles, expected_score in dataset_to_use:
         target = load_target(target_name)
         observed_score, _ = target.dock(smiles)
         assert isinstance(observed_score, float)
         observed_scores.append(observed_score)
+        expected_scores.append(expected_score)
 
         # Matching
         if not math.isclose(observed_score, expected_score):
@@ -70,8 +93,10 @@ def test_random_matching_from_dataset(whole_dockstring_dataset: list[tuple[str, 
 
     # Test: assert that all scores match and give detailed error message if they don't
     max_deviation = max([0.] + [abs(s - e) for _, _, s, e in non_matching_points])
-    error_str = (f"Scores do not match for {len(non_matching_points)}/{len(dataset_to_use)} molecules. " +
-                 f"Max deviation: {max_deviation}. Scores without match:")
+    r2 = compute_r2(observed_scores=observed_scores, expected_scores=expected_scores)
+    error_str = (f"Scores do not match perfectly for {len(non_matching_points)}/{len(dataset_to_use)} molecules. " +
+                 f"Coefficient of determination (R^2): {r2}. Max deviation: {max_deviation}. " + 
+                 "Scores without match:")
     for target_name, smiles, expected_score, observed_score in non_matching_points:
         error_str += f"\nTarget: {target_name}\nSMILES: {smiles}\nExpected score: {expected_score}\nObserved score: {observed_score}\n"
     assert len(non_matching_points) == 0, error_str
