@@ -18,18 +18,16 @@ def compute_r2(observed_scores: list[float], expected_scores: list[float]) -> fl
 
     # sum of squares total
     mean_expected_scores = sum(expected_scores) / len(expected_scores)
-    ss_total = 0
+    ss_total = 0.
     for each_expected_score in expected_scores:
         ss_total += math.pow(each_expected_score - mean_expected_scores, 2)
-    
+
     # sum of squares residual
-    ss_residual = 0
-    for each_observed_score, each_expected_score in zip(observed_scores,
-                                                        expected_scores):
+    ss_residual = 0.
+    for each_observed_score, each_expected_score in zip(observed_scores, expected_scores):
         ss_residual += math.pow(each_observed_score - each_expected_score, 2)
 
-    return 1 - ss_residual/ss_total
-
+    return 1 - ss_residual / ss_total
 
 
 @pytest.fixture()
@@ -95,7 +93,7 @@ def test_random_matching_from_dataset(whole_dockstring_dataset: list[tuple[str, 
     max_deviation = max([0.] + [abs(s - e) for _, _, s, e in non_matching_points])
     r2 = compute_r2(observed_scores=observed_scores, expected_scores=expected_scores)
     error_str = (f"Scores do not match perfectly for {len(non_matching_points)}/{len(dataset_to_use)} molecules. " +
-                 f"Coefficient of determination (R^2): {r2}. Max deviation: {max_deviation}. " + 
+                 f"Coefficient of determination (R^2): {r2}. Max deviation: {max_deviation}. " +
                  "Scores without match:")
     for target_name, smiles, expected_score, observed_score in non_matching_points:
         error_str += f"\nTarget: {target_name}\nSMILES: {smiles}\nExpected score: {expected_score}\nObserved score: {observed_score}\n"
