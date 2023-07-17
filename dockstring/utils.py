@@ -99,6 +99,11 @@ def get_bin_dir() -> Path:
     return path
 
 
+def get_dataset_path() -> Path:
+    """Path to dockstring dataset (not downloaded by default)."""
+    return get_resources_dir() / 'dataset' / "dockstring-dataset.tsv"
+
+
 def get_vina_path() -> Path:
     """Path pointing to system-dependent AutoDock Vina executable."""
     path = get_bin_dir() / get_vina_filename()
