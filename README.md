@@ -12,26 +12,39 @@ and our [website](https://dockstring.github.io/):
 
 ## Installation
 
+**Supported platforms:**
 This package is primarily intended for Linux, but we have some support for Mac.
 Please note that the scores from the Mac version do not always perfectly match the Linux version,
 so we encourage the use of the Linux version whenever possible.
 
-To ensure compatibility with the dockstring dataset,
-the package has very strict versioning requirements
-for its main dependencies (`rdkit` and `openbabel`).
-As such, we recommend you install it in the following way.
+**Package versions:**
+When installing dockstring, please be mindful of which package versions you install.
+The dockstring dataset was created using:
+
+- `rdkit=2021.03.3`
+- `openbabel=3.1.1`
+- `python=3.7.10`
+
+If you want to reproduce the calculations of the dockstring dataset
+(or calculate docking scores completely consistent with the dataset)
+then ideally install these versions of the packages above.
+However, python 3.7 has reached end of life, so we have tested higher versions of the packages:
+It appears that `python<=3.10, openbabel=3.1.1, rdkit<=2022.03` will also work.
+Ultimately we just suggest being mindful of which version you install,
+and test whether it matches the dataset values after installation (instructions on this below).
+If in doubt, use our `environment.yml` file.
+Note that if you do not care about consistency with our pre-computed dataset then any package version is ok.
+
+**Installation instructions:**
 
 1. Clone this repository.
 1. Choose whether to install into an existing environment or create a new environment.
-    - To install into an existing environment, install the correct version of `openbabel` and `rdkit`:
-      ```bash
-      conda install -c conda-forge rdkit=2021.03.3 openbabel=3.1.1
-      ```
     - To install into a new environment, run:
       ```bash
       conda env create -f environment.yml
       conda activate dockstring
       ```
+    - To install into an existing environment, simply install the desired versions of `openbabel` and `rdkit`.
 1. Install the dockstring package with `pip` from this repository:
    ```bash
    pip install .
