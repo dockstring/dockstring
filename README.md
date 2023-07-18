@@ -12,11 +12,9 @@ and our [website](https://dockstring.github.io/):
 
 ## Installation
 
-Currently this package is **only supported on Linux**,
-and we do not plan to add support for Mac/Windows.
-See [this issue](https://github.com/dockstring/dockstring/issues/141)
-for more information on why this is
-(feel free to re-open it if you want to help us provide Mac/Windows support).
+This package is primarily intended for Linux, but we have some support for Mac.
+Please note that the scores from the Mac version do not always perfectly match the Linux version,
+so we encourage the use of the Linux version whenever possible.
 
 To ensure compatibility with the dockstring dataset,
 the package has very strict versioning requirements
@@ -43,15 +41,28 @@ As such, we recommend you install it in the following way.
    ```bash
    python tutorials/simple_example.py
    ```
+1. *(optional)* Install [PyMol](https://pymol.org/) for target, search box and ligand visualization:
+   ```bash
+   conda install -c conda-forge pymol-open-source 
+   ```
+1. *(optional)* Check whether your local version of dockstring matches the dockstring dataset.
+   This is only necessary if you plan to mix pre-computed docking scores from the dockstring dataset
+   with locally-computed scores, or if you want to compare results with the dockstring paper.
+
+   We have created a `pytest` test which randomly docks `N` molecules from the dockstring dataset
+   and checks whether they match. The value of `N` can be changed by setting the environment variable
+   `num_dockstring_test_molecules`. We recommend starting with `N=50`, then progressing to `N=1000`
+   to do a full test. The test can be run with the following commands:
+   ```bash
+   conda install -c conda-forge pytest  # only if not installed already
+   num_dockstring_test_molecules=1000 python -m pytest tests/test_dataset_matching.py  # change "1000" to the number you wish to dock
+   ```
+   If the test passes then your local version of docktring matches the dataset exactly! 🥳
+   If the test does not pass, we encourage you to look how the error rate (this will be displayed in the error messages).
+   If 99%+ of scores match then it is probably ok to use dockstring in the benchmarks, but there will of course be some error
+   and this should be noted.
 
 If this method of installation does not work for you, please raise a github issue and we will try to help.
-
-### Optional
-
-Install [PyMol](https://pymol.org/) for target, search box and ligand visualization:
-```bash
-conda install -c conda-forge pymol-open-source 
-```
 
 ## Tutorials
 

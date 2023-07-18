@@ -16,8 +16,8 @@ from rdkit.Chem import AllChem as Chem
 from rdkit.Chem.Descriptors import NumRadicalElectrons
 from rdkit.Chem.MolStandardize.rdMolStandardize import Uncharger
 
-from .errors import (DockstringError, CanonicalizationError, ParsingError, SanityError, EmbeddingError,
-                     StructureOptimizationError, FormatConversionError, ProtonationError, DockingError,
+from .errors import (DockstringError, DockstringWarning, CanonicalizationError, ParsingError, SanityError,
+                     EmbeddingError, StructureOptimizationError, FormatConversionError, ProtonationError, DockingError,
                      PoseProcessingError, OutputError)
 
 PathType = Union[str, os.PathLike]
@@ -63,6 +63,14 @@ def get_vina_filename() -> str:
     system_name = platform.system()
     if system_name == 'Linux':
         return 'vina_linux'
+    if system_name == 'Darwin':
+        warnings.warn(
+            "Although Mac use is supported, docking scores on Mac do not always perfectly match scores from Linux. "
+            "Therefore, extra care should be taken when comparing results to other platforms. "
+            "In particular, the baselines in the DOCKSTRING paper were computed on Linux, "
+            "so please do not directly compare your docking scores to the scores reported on the paper.",
+            DockstringWarning)
+        return 'vina_mac_catalina'
     else:
         raise DockstringError(f"System '{system_name}' not yet supported")
 
@@ -89,6 +97,11 @@ def get_bin_dir() -> Path:
     if not path.is_dir():
         raise DockstringError("'bin' directory not found")
     return path
+
+
+def get_dataset_path() -> Path:
+    """Path to dockstring dataset (not downloaded by default)."""
+    return get_resources_dir() / 'dataset' / "dockstring-dataset.tsv"
 
 
 def get_vina_path() -> Path:
