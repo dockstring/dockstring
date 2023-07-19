@@ -25,7 +25,7 @@ The dockstring dataset was created using:
 - `openbabel=3.1.1`
 - `python=3.7.10`
 
-If you want to reproduce the calculations of the dockstring dataset
+If you want to reproduce the calculations of the dockstring dataset exactly
 (or calculate docking scores completely consistent with the dataset)
 then ideally install these versions of the packages above.
 However, python 3.7 has reached end of life, so we have tested higher versions of the packages:
