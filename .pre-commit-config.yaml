@@ -19,8 +19,6 @@ repos:
     -   id: end-of-file-fixer
     -   id: name-tests-test
         args: ["--pytest-test-first"]
-    -   id: trailing-whitespace
-        args: [--markdown-linebreak-ext=md]
 
 # yapf (code formatting)
 -   repo: https://github.com/google/yapf
