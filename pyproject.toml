@@ -1,0 +1,36 @@
+[build-system]
+# Minimum requirements for the build system to execute
+requires = ["setuptools>=45", "setuptools_scm[toml]>=6.2"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "dockstring"
+authors = [
+    {name = "Miguel Garcia-Ortegon", email = "mg770@cam.ac.uk"},
+    {name = "Gregor Simm"},
+    {name = "Austin Tripp", email = "ajt212@cam.ac.uk"},
+]
+description = """\
+Package for easy ligand preparation and docking with AutoDock Vina against \
+a highly-curated selection of 58 protein targets. One of the three \
+components of the DOCKSTRING bundle (package, dataset, and benchmark tasks).\
+"""
+readme = "README.md"
+requires-python = ">=3.7"
+license = {file = "LICENSE"}
+dynamic = ["version"]  # version is set from git tags
+dependencies = [
+    "rdkit>=2021.03,<2022.04",
+    "openbabel=3.1.1"
+]
+
+[project.optional-dependencies]
+dev = [
+  "pytest",
+  "pre-commit"
+]
+
+[tool.setuptools]
+# Specifies location of package to install
+# Guidance from: https://setuptools.pypa.io/en/latest/userguide/pyproject_config.html
+packages = ["dockstring"]
