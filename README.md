@@ -56,7 +56,7 @@ Note that if you do not care about consistency with our pre-computed dataset the
    ```
 1. *(optional)* Install [PyMol](https://pymol.org/) for target, search box and ligand visualization:
    ```bash
-   conda install -c conda-forge pymol-open-source 
+   conda install -c conda-forge pymol-open-source
    ```
 1. *(optional)* Check whether your local version of dockstring matches the dockstring dataset.
    This is only necessary if you plan to mix pre-computed docking scores from the dockstring dataset

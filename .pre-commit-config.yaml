@@ -1,5 +1,27 @@
 repos:
 
+# Generally useful pre-commit hooks
+-   repo: https://github.com/pre-commit/pre-commit-hooks
+    rev: v4.4.0
+    hooks:
+    -   id: check-added-large-files
+    -   id: check-case-conflict
+    -   id: check-docstring-first
+    -   id: check-executables-have-shebangs
+    -   id: check-json
+    -   id: check-merge-conflict
+    -   id: check-symlinks
+    -   id: check-toml
+    -   id: check-yaml
+    -   id: debug-statements
+    -   id: destroyed-symlinks
+    -   id: detect-private-key
+    -   id: end-of-file-fixer
+    -   id: name-tests-test
+        args: ["--pytest-test-first"]
+    -   id: trailing-whitespace
+        args: [--markdown-linebreak-ext=md]
+
 # yapf (code formatting)
 -   repo: https://github.com/google/yapf
     rev: 'v0.40.1'  # Use the sha / tag you want to point at
