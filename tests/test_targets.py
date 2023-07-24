@@ -7,10 +7,25 @@ import pytest
 from rdkit.Chem import AllChem as Chem
 
 from dockstring import list_all_target_names, load_target
-from dockstring.errors import (DockstringError, EmbeddingError, StructureOptimizationError, SanityError,
-                               PoseProcessingError, ParsingError, FormatConversionError)
-from dockstring.utils import (smiles_to_mol, embed_mol, check_vina_output, parse_affinities_from_output,
-                              canonicalize_smiles, refine_mol_with_ff, protonate_mol, write_mol_to_mol_file)
+from dockstring.errors import (
+    DockstringError,
+    EmbeddingError,
+    FormatConversionError,
+    ParsingError,
+    PoseProcessingError,
+    SanityError,
+    StructureOptimizationError,
+)
+from dockstring.utils import (
+    canonicalize_smiles,
+    check_vina_output,
+    embed_mol,
+    parse_affinities_from_output,
+    protonate_mol,
+    refine_mol_with_ff,
+    smiles_to_mol,
+    write_mol_to_mol_file,
+)
 
 
 class TestLoader:

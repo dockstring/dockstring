@@ -5,9 +5,9 @@ import platform
 import re
 import subprocess
 import sys
-from pathlib import Path
-from typing import List, Union, Dict, Optional
 import warnings
+from pathlib import Path
+from typing import Dict, List, Optional, Union
 
 import pkg_resources  # type: ignore  # no type hints for this package
 from rdkit import rdBase
@@ -15,9 +15,20 @@ from rdkit.Chem import AllChem as Chem
 from rdkit.Chem.Descriptors import NumRadicalElectrons
 from rdkit.Chem.MolStandardize.rdMolStandardize import Uncharger
 
-from .errors import (DockstringError, DockstringWarning, CanonicalizationError, ParsingError, SanityError,
-                     EmbeddingError, StructureOptimizationError, FormatConversionError, ProtonationError, DockingError,
-                     PoseProcessingError, OutputError)
+from .errors import (
+    CanonicalizationError,
+    DockingError,
+    DockstringError,
+    DockstringWarning,
+    EmbeddingError,
+    FormatConversionError,
+    OutputError,
+    ParsingError,
+    PoseProcessingError,
+    ProtonationError,
+    SanityError,
+    StructureOptimizationError,
+)
 
 PathType = Union[str, os.PathLike]
 

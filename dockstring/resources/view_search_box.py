@@ -2,7 +2,7 @@
 # PyMOL script for visualization of bounding box
 
 from pymol import cmd
-from pymol.cgo import BEGIN, END, VERTEX, LINES, LINEWIDTH, COLOR
+from pymol.cgo import BEGIN, COLOR, END, LINES, LINEWIDTH, VERTEX
 
 
 def view_search_box(center_x, center_y, center_z, size_x, size_y, size_z):

@@ -4,7 +4,8 @@ import functools
 import math
 from typing import Dict
 
-from .utils import BenchmarkObjective, safe_dock_function, QED as QED_function
+from .utils import QED as QED_function
+from .utils import BenchmarkObjective, safe_dock_function
 
 
 # Raw functions

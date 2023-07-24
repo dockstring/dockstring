@@ -8,7 +8,8 @@ import random
 
 import pytest
 
-from dockstring import load_target, dataset as dockstring_dataset
+from dockstring import dataset as dockstring_dataset
+from dockstring import load_target
 
 
 def compute_r2(observed_scores: list[float], expected_scores: list[float]) -> float:

@@ -1,8 +1,8 @@
 """Code related to the dockstring dataset."""
 
 import math
-from typing import Dict
 import urllib.request
+from typing import Dict
 
 from .utils import get_dataset_path
 

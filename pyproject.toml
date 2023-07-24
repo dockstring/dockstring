@@ -51,3 +51,16 @@ check_untyped_defs = true
 column_limit=120
 indent_width=4
 blank_line_before_nested_class_or_def = false
+
+[tool.ruff]
+line-length = 120
+# Check https://beta.ruff.rs/docs/rules/ for full list of rules
+select = [
+  "E", "W",  # pycodestyle
+  "F",  # Pyflakes
+  "I",  # isort
+]
+ignore = [
+  # E501: Line too long -- triggered by comments and such.
+  "E501",
+]

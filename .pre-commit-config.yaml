@@ -7,12 +7,12 @@ repos:
     -   id: yapf
         args: [--recursive, --in-place, .]
 
-# flake8
--   repo: https://github.com/pycqa/flake8
-    rev: '3.9.2'  # pick a git hash / tag to point to
+# linting with ruff
+-   repo: https://github.com/charliermarsh/ruff-pre-commit
+    rev: 'v0.0.280'
     hooks:
-    -   id: flake8
-        args: [--config=.flake8]
+      - id: ruff
+        args: [--fix]
 
 # mypy (type checking)
 -  repo: https://github.com/pre-commit/mirrors-mypy
