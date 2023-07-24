@@ -19,4 +19,3 @@ repos:
    rev: 'v0.971'  # pick a git hash / tag to point to
    hooks:
    -   id: mypy
-       args: [--config=.mypy.ini]

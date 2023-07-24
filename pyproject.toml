@@ -41,3 +41,8 @@ packages = ["dockstring"]
 [tool.setuptools.package-data]
 # Include type hints for mypy when installing package.
 "dockstring" = ["py.typed"]
+
+[tool.mypy]
+python_version = 3.9  # pin modern python version
+ignore_missing_imports = true
+check_untyped_defs = True
