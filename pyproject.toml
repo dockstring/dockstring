@@ -37,3 +37,7 @@ dev = [
 # Specifies location of package to install
 # Guidance from: https://setuptools.pypa.io/en/latest/userguide/pyproject_config.html
 packages = ["dockstring"]
+
+[tool.setuptools.package-data]
+# Include type hints for mypy when installing package.
+"dockstring" = ["py.typed"]
