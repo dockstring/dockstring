@@ -9,7 +9,7 @@ from pathlib import Path
 from typing import List, Union, Dict, Optional
 import warnings
 
-import pkg_resources
+import pkg_resources  # type: ignore  # no type hints for this package
 from rdkit import rdBase
 from rdkit.Chem import AllChem as Chem
 from rdkit.Chem.Descriptors import NumRadicalElectrons

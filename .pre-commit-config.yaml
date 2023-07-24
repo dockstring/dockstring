@@ -16,6 +16,6 @@ repos:
 
 # mypy (type checking)
 -  repo: https://github.com/pre-commit/mirrors-mypy
-   rev: 'v0.971'  # pick a git hash / tag to point to
+   rev: 'v1.4.1'  # pick a git hash / tag to point to
    hooks:
    -   id: mypy
