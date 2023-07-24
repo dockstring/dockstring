@@ -19,10 +19,13 @@ readme = "README.md"
 requires-python = ">=3.7"
 license = {file = "LICENSE"}
 dynamic = ["version"]  # version is set from git tags
-dependencies = [
-    "rdkit>=2021.03,<2022.04",
-    "openbabel=3.1.1"
-]
+
+# True dependencies are openbabel and rdkit.
+# However, openbabel seems to not be installable via pip (see e.g. https://github.com/openbabel/openbabel/issues/2571).
+# Therefore, we suggesting installing it via conda.
+# Since we are excluding openbabel from the dependencies we decided to exclude rdkit too
+# and just leave installation up to the user.
+dependencies = []
 
 [project.optional-dependencies]
 dev = [
