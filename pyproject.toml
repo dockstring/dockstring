@@ -45,4 +45,9 @@ packages = ["dockstring"]
 [tool.mypy]
 python_version = 3.9  # pin modern python version
 ignore_missing_imports = true
-check_untyped_defs = True
+check_untyped_defs = true
+
+[tool.yapf]
+column_limit=120
+indent_width=4
+blank_line_before_nested_class_or_def = false
