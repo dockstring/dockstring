@@ -11,6 +11,8 @@ and the project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.
 
 ### Fixed
 
+- Change packaging to use `pyproject.toml` ([#161](https://github.com/dockstring/dockstring/pull/161)) ([@austint])
+
 ## [0.2.0] - 2023-07-24
 
 :seedling: First tagged version.
