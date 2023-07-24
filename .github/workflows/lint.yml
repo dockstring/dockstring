@@ -18,12 +18,12 @@ jobs:
     - name: Check for yapf formatting
       run: |
         # stop build if yapf formatting fails
-        yapf --style=.style.yapf --diff --recursive .
+        yapf --diff --recursive .
     - name: Lint with flake8
       run: |
         # stop build if flake8 formatting fails
-        flake8 --config=.flake8 .
+        flake8 .
     - name: Check type annotations with mypy
       run: |
         # stop build if mypy fails
-        mypy --config-file=.mypy.ini .
+        mypy .
