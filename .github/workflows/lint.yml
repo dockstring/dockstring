@@ -12,18 +12,9 @@ jobs:
       uses: actions/setup-python@v2
       with:
         python-version: 3.7
-    - name: Install dependencies
+    - name: Install pre-commit
       run: |
-        pip install flake8 yapf mypy pytest types-pkg_resources
-    - name: Check for yapf formatting
+        pip install pre-commit
+    - name: Run all pre-commit checks
       run: |
-        # stop build if yapf formatting fails
-        yapf --style=.style.yapf --diff --recursive .
-    - name: Lint with flake8
-      run: |
-        # stop build if flake8 formatting fails
-        flake8 --config=.flake8 .
-    - name: Check type annotations with mypy
-      run: |
-        # stop build if mypy fails
-        mypy --config-file=.mypy.ini .
+        pre-commit run --verbose --all-files

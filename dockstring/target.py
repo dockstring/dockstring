@@ -6,35 +6,35 @@ import subprocess
 import tempfile
 from collections.abc import Iterable
 from pathlib import Path
-from typing import Optional, List, Union, Tuple, Dict, Any
+from typing import Any, Dict, List, Optional, Tuple, Union
 
 from rdkit.Chem import AllChem as Chem
 
-from .errors import DockstringError, VinaError, DockingError
+from .errors import DockingError, DockstringError, VinaError
 from .utils import (
-    smiles_to_mol,
-    embed_mol,
-    refine_mol_with_ff,
-    convert_pdbqt_to_pdb,
-    read_mol_from_pdb,
-    parse_affinities_from_output,
-    parse_search_box_conf,
     PathType,
+    assign_bond_orders,
+    assign_stereochemistry,
+    canonicalize_smiles,
+    check_charges,
+    check_mol,
+    check_obabel_install,
+    check_vina_output,
+    convert_mol_file_to_pdbqt,
+    convert_pdbqt_to_pdb,
+    embed_mol,
+    get_resources_dir,
     get_targets_dir,
     get_vina_path,
-    get_resources_dir,
-    check_mol,
-    canonicalize_smiles,
-    verify_docked_ligand,
-    check_vina_output,
-    assign_stereochemistry,
-    assign_bond_orders,
-    sanitize_mol,
+    parse_affinities_from_output,
+    parse_search_box_conf,
     protonate_mol,
+    read_mol_from_pdb,
+    refine_mol_with_ff,
+    sanitize_mol,
+    smiles_to_mol,
+    verify_docked_ligand,
     write_mol_to_mol_file,
-    convert_mol_file_to_pdbqt,
-    check_charges,
-    check_obabel_install,
 )
 
 
