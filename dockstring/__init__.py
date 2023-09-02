@@ -24,7 +24,7 @@ __all__ = [
 ]
 
 try:
-    __version__ = version("package-name")
+    __version__ = version("dockstring")
 except PackageNotFoundError:
     # package is not installed
     pass

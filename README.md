@@ -37,6 +37,14 @@ Note that if you do not care about consistency with our pre-computed dataset the
 
 **Installation instructions:**
 
+Dockstring is on PyPI and can be installed into an existing environment by running:
+
+```bash
+python3 -m pip install dockstring
+```
+
+Alternatively, install from this repository directly:
+
 1. Clone this repository.
 1. Choose whether to install into an existing environment or create a new environment.
     - To install into a new environment, run:
