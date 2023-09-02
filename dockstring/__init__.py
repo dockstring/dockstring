@@ -1,3 +1,5 @@
+from importlib.metadata import PackageNotFoundError, version
+
 from .errors import (
     CanonicalizationError,
     DockingError,
@@ -20,3 +22,9 @@ __all__ = [
     'OutputError', 'SanityError', 'EmbeddingError', 'StructureOptimizationError', 'FormatConversionError',
     'ProtonationError', 'PoseProcessingError', 'VinaError', 'DockingError'
 ]
+
+try:
+    __version__ = version("package-name")
+except PackageNotFoundError:
+    # package is not installed
+    pass
