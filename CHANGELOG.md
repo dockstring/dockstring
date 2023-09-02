@@ -11,7 +11,8 @@ and the project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.
 
 ### Fixed
 
-- Change packaging to use `pyproject.toml` ([#161](https://github.com/dockstring/dockstring/pull/161)) ([@austint])
+- Change packaging to use `pyproject.toml` ([#161](https://github.com/dockstring/dockstring/pull/161),[#162](https://github.com/dockstring/dockstring/pull/162)) ([@austint])
+- Update metadata and README for installation from PyPI  ([#163](https://github.com/dockstring/dockstring/pull/163)) ([@austint])
 
 ## [0.2.0] - 2023-07-24
 

@@ -5,16 +5,18 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "dockstring"
+# NOTE: emails excluded because it rendered weirdly on PyPI
 authors = [
-    {name = "Miguel Garcia-Ortegon", email = "mg770@cam.ac.uk"},
+    {name = "Miguel García-Ortegón"},
     {name = "Gregor Simm"},
-    {name = "Austin Tripp", email = "ajt212@cam.ac.uk"},
+    {name = "Austin Tripp"},
 ]
 description = """\
 Package for easy ligand preparation and docking with AutoDock Vina against \
 a highly-curated selection of 58 protein targets. One of the three \
 components of the DOCKSTRING bundle (package, dataset, and benchmark tasks).\
 """
+keywords = ["docking", "ligand", "protein", "binding", "benchmark"]
 readme = "README.md"
 requires-python = ">=3.7"
 license = {file = "LICENSE"}
@@ -32,6 +34,11 @@ dev = [
   "pytest",
   "pre-commit"
 ]
+
+[project.urls]
+Homepage = "https://github.com/dockstring/dockstring"
+Repository = "https://github.com/dockstring/dockstring.git"
+Changelog = "https://github.com/dockstring/dockstring/blob/main/CHANGELOG.md"
 
 [tool.setuptools]
 # Specifies location of package to install
