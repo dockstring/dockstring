@@ -18,6 +18,7 @@ Please note that the scores from the Mac version do not always perfectly match t
 so we encourage the use of the Linux version whenever possible.
 
 **Package versions:**
+
 When installing dockstring, please be mindful of which package versions you install.
 The dockstring dataset was created using:
 
@@ -37,13 +38,23 @@ Note that if you do not care about consistency with our pre-computed dataset the
 
 **Installation instructions:**
 
-Dockstring is on PyPI and can be installed into an existing environment by running:
+We recommend installing with `conda` using our package on [conda-forge](https://anaconda.org/conda-forge/dockstring):
+this will automatically install the correct versions of `rdkit` and `openbabel` (which currently cannot be installed with pip).
+To do this, run:
+
+```bash
+conda install -c conda-forge dockstring
+```
+
+It can alternatively be installed from [PyPI](https://pypi.org/project/dockstring/) by running:
 
 ```bash
 python3 -m pip install dockstring
 ```
 
-Alternatively, install from this repository directly:
+However, this will *not* install the dependencies because `openbabel` currently cannot be installed with pip.
+
+If you want to use dockstring for benchmarking, we recommend installing the latest version by cloning this repo:
 
 1. Clone this repository.
 1. Choose whether to install into an existing environment or create a new environment.
