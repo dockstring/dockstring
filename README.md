@@ -69,7 +69,7 @@ If you want to use dockstring for benchmarking, we recommend installing the late
    pip install .
    ```
 1. Check whether the installation was successful by running a test script.
-   Running without error inducates a successful install.
+   Running without error indicates a successful install.
    ```bash
    python tutorials/simple_example.py
    ```
