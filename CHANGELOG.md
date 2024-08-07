@@ -11,6 +11,12 @@ and the project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.
 
 ### Fixed
 
+## [0.3.3] - 2024-08-07
+
+### Changed
+
+- Remove dependency on `pkg-resources` ([#178](https://github.com/dockstring/dockstring/pull/178)) ([@miguelgondu])
+
 ## [0.3.2] - 2023-09-02
 
 - Change packaging to use `pyproject.toml` ([#161](https://github.com/dockstring/dockstring/pull/161),[#162](https://github.com/dockstring/dockstring/pull/162)) ([@austint])
@@ -24,4 +30,5 @@ and the project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.
 [0.3.2]: https://github.com/dockstring/dockstring/releases/tag/v0.3.2
 [0.2.0]: https://github.com/dockstring/dockstring/releases/tag/v0.2.0
 
+[@miguelgondu]: https://github.com/miguelgondu
 [@austint]: https://github.com/AustinT
