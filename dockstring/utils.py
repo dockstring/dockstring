@@ -9,7 +9,6 @@ import warnings
 from pathlib import Path
 from typing import Dict, List, Optional, Union
 
-import pkg_resources  # type: ignore  # no type hints for this package
 from rdkit import rdBase
 from rdkit.Chem import AllChem as Chem
 from rdkit.Chem.Descriptors import NumRadicalElectrons
@@ -87,7 +86,7 @@ def get_vina_filename() -> str:
 
 def get_resources_dir() -> Path:
     """Directory of resources (including targets and binaries)."""
-    path = Path(pkg_resources.resource_filename(__package__, 'resources'))
+    path = Path(__file__).parent.resolve() / "resources"
     if not path.is_dir():
         raise DockstringError("'resources' directory not found")
     return path
