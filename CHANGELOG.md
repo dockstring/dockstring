@@ -11,6 +11,10 @@ and the project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.
 
 ### Fixed
 
+## [0.3.4] - 2024-10-25
+
+This is a dummy release to test our new publishing system.
+
 ## [0.3.3] - 2024-08-07
 
 ### Changed
@@ -26,7 +30,9 @@ and the project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.
 
 :seedling: First tagged version.
 
-[Unreleased]: https://github.com/dockstring/dockstring/compare/v0.2.0...HEAD
+[Unreleased]: https://github.com/dockstring/dockstring/compare/v0.3.4...HEAD
+[0.3.4]: https://github.com/dockstring/dockstring/releases/tag/v0.3.4
+[0.3.3]: https://github.com/dockstring/dockstring/releases/tag/v0.3.3
 [0.3.2]: https://github.com/dockstring/dockstring/releases/tag/v0.3.2
 [0.2.0]: https://github.com/dockstring/dockstring/releases/tag/v0.2.0
 
