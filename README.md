@@ -106,27 +106,7 @@ our dataset and benchmarks.
 
 ## Development
 
-We use [pre-commit](https://pre-commit.com/) to enforce code formatting and style.
-Install by running:
-
-```bash
-conda install -c conda-forge pre-commit
-pre-commit install
-```
-
-We use [pytest](https://docs.pytest.org) to test our code.
-You can install pytest by running `conda install -c conda-forge pytest`.
-Before committing, please run the following to make sure that all tests pass:
-
-```bash
-python -m pytest tests/
-```
-
-Alternatively, to skip a variety of slow tests, run:
-
-```bash
-python -m pytest -m "not slow" tests/
-```
+See `DEVELOPMENT.md`
 
 ## Citation
 
