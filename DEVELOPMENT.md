@@ -47,4 +47,6 @@ The workflow to publish a new version of dockstring is:
 4. Publish a new release on github with the title `X.Y.Z`.
 
 A GitHub workflow will automatically publish this release to PyPI,
-which will automatically get mirrored on `conda-forge`.
+which will automatically trigger a PR to update the release on `conda-forge`.
+A maintainer of the repo <https://github.com/conda-forge/dockstring-feedstock>
+will need to approve the PR to ensure that the package is updated.
