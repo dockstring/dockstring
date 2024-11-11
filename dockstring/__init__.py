@@ -1,4 +1,10 @@
-from importlib.metadata import PackageNotFoundError, version
+try:
+    # Python >=3.8
+    from importlib.metadata import PackageNotFoundError, version
+except ModuleNotFoundError:
+    # Python 3.7
+    from importlib_metadata import PackageNotFoundError, version
+
 
 from .errors import (
     CanonicalizationError,
