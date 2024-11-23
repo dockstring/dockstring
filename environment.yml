@@ -1,7 +1,7 @@
-name: dockstring-repro
+name: dockstring
 channels:
   - conda-forge
 dependencies:
-  - rdkit==2021.03.3
+  - rdkit>=2021.03,<2022.04
   - openbabel=3.1.1
-  - python==3.7.10
+  - python>=3.7,<3.11
