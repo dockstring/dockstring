@@ -1,4 +1,4 @@
-from importlib.metadata import PackageNotFoundError, version
+from importlib_metadata import PackageNotFoundError, version
 
 from .errors import (
     CanonicalizationError,
