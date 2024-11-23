@@ -1,6 +1,7 @@
 #!/usr/bin/env bash
 
 docker run -it --rm \
-    --mount "type=bind,source=$(pwd),target=/workspaces/dockstring" \
+    --mount "type=bind,source=$(pwd),target=/dockstring" \
     docker.io/library/dockstring:latest \
-    bash
+    bash -c "conda activate dockstring && pip install /dockstring pytest && pytest /dockstring --collect-only"
+    

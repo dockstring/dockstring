@@ -40,10 +40,10 @@ Homepage = "https://github.com/dockstring/dockstring"
 Repository = "https://github.com/dockstring/dockstring.git"
 Changelog = "https://github.com/dockstring/dockstring/blob/main/CHANGELOG.md"
 
-[tool.setuptools]
+[tool.setuptools.packages.find]
 # Specifies location of package to install
 # Guidance from: https://setuptools.pypa.io/en/latest/userguide/pyproject_config.html
-packages = ["dockstring"]
+where = ["dockstring"]
 
 [tool.setuptools.package-data]
 # Include type hints for mypy when installing package.
