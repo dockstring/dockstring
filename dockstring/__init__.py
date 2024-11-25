@@ -3,8 +3,7 @@ try:
     from importlib.metadata import PackageNotFoundError, version
 except ModuleNotFoundError:
     # Python 3.7
-    from importlib_metadata import PackageNotFoundError, version
-
+    from importlib_metadata import PackageNotFoundError, version  # type: ignore[no-redef]
 
 from .errors import (
     CanonicalizationError,
