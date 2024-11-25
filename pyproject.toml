@@ -43,7 +43,7 @@ Changelog = "https://github.com/dockstring/dockstring/blob/main/CHANGELOG.md"
 [tool.setuptools.packages.find]
 # Specifies location of package to install
 # Guidance from: https://setuptools.pypa.io/en/latest/userguide/pyproject_config.html
-where = ["dockstring"]
+include = ["dockstring", "dockstring.*"]
 
 [tool.setuptools.package-data]
 # Include type hints for mypy when installing package.
@@ -52,7 +52,7 @@ where = ["dockstring"]
 [tool.setuptools_scm]
 
 [tool.mypy]
-python_version = 3.9  # pin modern python version
+python_version = "3.9"  # pin modern python version
 ignore_missing_imports = true
 check_untyped_defs = true
 
