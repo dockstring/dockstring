@@ -1,6 +1,6 @@
 try:
     # Python >=3.8
-    from importlib.metadata import PackageNotFoundError, version
+    from importlib.metadata import PackageNotFoundError, version  # pyright: ignore[reportMissingImports]
 except ModuleNotFoundError:
     # Python 3.7
     from importlib_metadata import PackageNotFoundError, version  # type: ignore[no-redef]
