@@ -1,0 +1,26 @@
+{
+    "name": "dockstring",
+    "image": "dockstring",
+    "features": {
+        "ghcr.io/devcontainers/features/common-utils": {
+            "username": "vscode",
+            "userUid": "${localEnv:UID}",
+            "userGid": "${localEnv:UID}"
+        }
+    },
+    "containerUser": "vscode",
+    "customizations": {
+        "vscode": {
+            "extensions": [
+                "ms-python.python",
+                "tamasfe.even-better-toml",
+                "redhat.vscode-yaml"
+            ],
+            "settings": {
+                "python.defaultInterpreterPath": "/opt/miniforge3/envs/dockstring/bin/python",
+                "python.testing.unittestEnabled": false,
+                "python.testing.pytestEnabled": true
+            }
+        }
+    }
+}
