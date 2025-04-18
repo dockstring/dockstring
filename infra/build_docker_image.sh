@@ -10,6 +10,7 @@ FILE="infra/dockstring.dockerfile"
 
 echo "Building Docker image with tag \"${TAG}\"" 
 
+# To ignore the cache, use --no-cache
 docker build \
     --progress=plain \
     --tag=${TAG} \
