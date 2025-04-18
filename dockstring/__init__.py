@@ -1,9 +1,9 @@
-try:
-    # Python >=3.8
-    from importlib.metadata import PackageNotFoundError, version  # pyright: ignore[reportMissingImports]
-except ModuleNotFoundError:
-    # Python 3.7
-    from importlib_metadata import PackageNotFoundError, version  # type: ignore[no-redef]
+import sys
+
+if sys.version_info >= (3, 8):
+    from importlib.metadata import PackageNotFoundError, version
+else:
+    from importlib_metadata import PackageNotFoundError, version
 
 from .errors import (
     CanonicalizationError,
