@@ -10,10 +10,13 @@ FILE="infra/dockstring.dockerfile"
 
 echo "Building Docker image with tag \"${TAG}\"" 
 
+# For repro-builds, use the build-arg UBUNTU_VERSION=bionic-20230530
+
 # To ignore the cache, use --no-cache
 docker build \
     --progress=plain \
     --tag=${TAG} \
+    --build-arg UBUNTU_VERSION=noble-20250805 \
     --file=${FILE} \
     . \
     2>&1 | tee -a "build_${TAG}.log"

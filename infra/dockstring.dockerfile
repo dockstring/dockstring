@@ -1,5 +1,6 @@
 # syntax=docker/dockerfile:1
-FROM ubuntu:bionic-20230530
+ARG UBUNTU_VERSION=bionic-20230530  # for repro-builds
+FROM ubuntu:${UBUNTU_VERSION}
 
 RUN apt-get update && apt-get install -y \
     wget \
