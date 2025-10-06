@@ -89,7 +89,7 @@ If you want to use dockstring for benchmarking, we recommend installing the late
    conda install -c conda-forge pytest  # only if not installed already
    num_dockstring_test_molecules=1000 python -m pytest tests/test_dataset_matching.py  # change "1000" to the number you wish to dock
    ```
-   If the test passes then your local version of docktring matches the dataset exactly! 🥳
+   If the test passes then your local version of dockstring matches the dataset exactly! 🥳
    If the test does not pass, we encourage you to look how the error rate (this will be displayed in the error messages).
    If 99%+ of scores match then it is probably ok to use dockstring in the benchmarks, but there will of course be some error
    and this should be noted.
